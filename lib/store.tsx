@@ -348,32 +348,38 @@ export function useApp() {
 }
 
 export async function callGemini(prompt: string, system?: string): Promise<string> {
-  const key = process.env.NEXT_PUBLIC_GEMINI_KEY
-  if (!key || key === 'PASTE_YOUR_KEY_HERE') {
-    return '⚠️ AI features need a Gemini API key. Add NEXT_PUBLIC_GEMINI_KEY to your .env.local file, then restart the dev server.'
+  const key = process.env.NEXT_PUBLIC_GROQ_KEY
+  if (!key) {
+    return '⚠️ AI features need a Groq API key. Add NEXT_PUBLIC_GROQ_KEY to your .env.local file, then restart the dev server.'
   }
   try {
-    const full = `${system || 'You are a career advisor for Egyptian college students. Be concise and encouraging.'}\n\n${prompt}`
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: full }] }],
-          generationConfig: { maxOutputTokens: 800, temperature: 0.7 },
-        }),
-      }
-    )
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: system || 'You are a career advisor for Egyptian college students. Be concise and encouraging.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 800,
+        temperature: 0.7,
+      }),
+    })
     const data = await res.json()
-    if (data.error) {
-      const code = data.error.code
-      if (code === 429) return '⏳ Too many requests — please wait 30 seconds and try again. (Free tier: 15 requests/minute)'
-      if (code === 403) return '🔑 API key invalid or restricted. Check your key at aistudio.google.com/app/apikey'
-      if (code === 400) return '❌ Bad request. Please try rephrasing your question.'
-      return `API error ${code}: ${data.error.message}`
+    if (!res.ok) {
+      const status = res.status
+      if (status === 429) return '⏳ Too many requests — please wait a moment and try again.'
+      if (status === 401) return '🔑 Groq API key is invalid. Check your key at console.groq.com/keys'
+      return `AI error ${status}: ${data.error?.message ?? 'Unknown error'}`
     }
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received. Please try again.'
+    return data.choices?.[0]?.message?.content?.trim() || 'No response received. Please try again.'
   } catch (e: unknown) {
     return `🌐 Connection error: ${e instanceof Error ? e.message : 'Check your internet connection and try again.'}`
   }

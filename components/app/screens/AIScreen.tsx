@@ -63,7 +63,7 @@ export function AIScreen() {
           </div>
           <div>
             <h2 className="text-sm font-bold text-neutral-900">{ar ? 'مساعد المسيرة المهنية' : 'Career Assistant'}</h2>
-            <p className="text-2xs text-violet-500">{ar ? 'مدعوم بـ Gemini AI' : 'Powered by Gemini AI'}</p>
+            <p className="text-2xs text-violet-500">{ar ? 'مدعوم بـ Groq AI' : 'Powered by Groq AI'}</p>
           </div>
         </div>
         {state.chat.length > 0 && (
