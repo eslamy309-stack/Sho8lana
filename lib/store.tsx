@@ -1,10 +1,11 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import type {
   Lang, Screen, UserProfile, Application, ChatMessage, Badge,
   MatchScore, SimTrack, SimTask, LiveJob, DocumentFile,
 } from './types'
+import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl } from './supabase'
 
 interface AppState {
   lang: Lang
@@ -320,7 +321,9 @@ const Ctx = createContext<{ state: AppState; dispatch: React.Dispatch<Action> } 
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, getInitialState)
+  const profileSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem('sho8_user', JSON.stringify(state.user))
     localStorage.setItem('sho8_apps', JSON.stringify(state.applications))
@@ -328,15 +331,53 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sho8_xp', JSON.stringify(state.simXP))
     localStorage.setItem('sho8_badges', JSON.stringify(state.simBadges))
     localStorage.setItem('sho8_saved', JSON.stringify(state.savedJobs))
-    // Strip session-only Object URLs before persisting — Firebase URLs are kept
+    // Strip session-only Object URLs before persisting — Supabase signed URLs are also session-only
     const docMeta = Object.fromEntries(
-      Object.entries(state.documentFiles).map(([k, v]) => [
-        k,
-        { ...v, url: v.storageType === 'firebase' ? v.url : undefined },
-      ])
+      Object.entries(state.documentFiles).map(([k, v]) => [k, { ...v, url: undefined }])
     )
     localStorage.setItem('sho8_doc_meta', JSON.stringify(docMeta))
   }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles])
+
+  // ── Sync profile to Supabase (debounced) ──────────────────────────────────
+  useEffect(() => {
+    if (!state.user.supabaseId) return
+    if (profileSaveTimer.current) clearTimeout(profileSaveTimer.current)
+    profileSaveTimer.current = setTimeout(() => {
+      sbSaveProfile(state.user.supabaseId!, state.user)
+    }, 1500)
+    return () => { if (profileSaveTimer.current) clearTimeout(profileSaveTimer.current) }
+  }, [state.user])
+
+  // ── Restore Supabase session on mount ────────────────────────────────────
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const uid = session.user.id
+        const email = session.user.email ?? ''
+
+        // Load profile from Supabase
+        const profile = await sbLoadProfile(uid)
+        dispatch({ type: 'SET_USER', user: { supabaseId: uid, email, ...(profile ?? {}) } })
+
+        // Load documents from Supabase and refresh signed URLs
+        const docs = await sbLoadDocuments(uid)
+        for (const doc of docs) {
+          const url = await sbGetDocumentUrl(uid, doc.key, doc.name)
+          dispatch({ type: 'SET_DOCUMENT_FILE', file: { ...doc, url: url ?? undefined } })
+          dispatch({ type: 'SET_USER', user: { documents: { ...state.user.documents, [doc.key]: true } } })
+        }
+
+        // Skip onboard if profile already complete
+        if (profile?.name) {
+          dispatch({ type: 'GO', screen: 'home' })
+        }
+      } else {
+        dispatch({ type: 'SET_USER', user: { supabaseId: undefined } })
+      }
+    })
+    return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>
 }

@@ -150,7 +150,7 @@ function DocCard({
               </p>
               <p className="text-2xs text-emerald-600 mt-0.5">
                 {formatBytes(docFile.size)} · {formatAge(docFile.uploadedAt)}
-                {docFile.storageType === 'firebase' && ' · ☁️'}
+                {docFile.storageType === 'supabase' && ' · ☁️'}
               </p>
             </div>
           )}

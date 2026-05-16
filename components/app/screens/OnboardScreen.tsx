@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { useDocumentUpload } from '@/lib/useDocumentUpload'
+import { sbSignUp } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { DOCUMENTS, GOVERNORATES } from '@/lib/data'
@@ -38,8 +39,10 @@ export function OnboardScreen() {
   const { lang, user, onboardStep } = state
   const ar = lang === 'ar'
 
-  // ── Step 0 validation ───────────────────────────────────────────────────────
+  // ── Step 0 state ────────────────────────────────────────────────────────────
+  const [password, setPassword]     = useState('')
   const [step0Errors, setStep0Errors] = useState<Record<string, string>>({})
+  const [authLoading, setAuthLoading] = useState(false)
 
   function validateStep0() {
     const errs: Record<string, string> = {}
@@ -47,6 +50,8 @@ export function OnboardScreen() {
     if (!user.email.trim()) errs.email = ar ? 'البريد الإلكتروني مطلوب' : 'Email is required'
     if (user.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email))
       errs.email = ar ? 'بريد إلكتروني غير صالح' : 'Invalid email address'
+    if (!password || password.length < 6)
+      errs.password = ar ? 'كلمة المرور 6 أحرف على الأقل' : 'Password must be at least 6 characters'
     setStep0Errors(errs)
     return Object.keys(errs).length === 0
   }
@@ -59,12 +64,29 @@ export function OnboardScreen() {
   } = useDocumentUpload()
 
   // ── Navigation ──────────────────────────────────────────────────────────────
-  function goNext() {
+  async function goNext() {
     if (onboardStep === 0) {
       if (!validateStep0()) return
+      setAuthLoading(true)
+      try {
+        const sbUser = await sbSignUp(user.email.trim(), password, user.name.trim())
+        if (sbUser) dispatch({ type: 'SET_USER', user: { supabaseId: sbUser.id } })
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('email')) {
+          setStep0Errors(prev => ({
+            ...prev,
+            email: ar ? 'هذا البريد مسجّل بالفعل — سجّل دخولك' : 'Email already registered — sign in instead',
+          }))
+          setAuthLoading(false)
+          return
+        }
+        // Allow proceeding without account if Supabase fails (offline / config issue)
+      } finally {
+        setAuthLoading(false)
+      }
       dispatch({ type: 'SET_ONBOARD_STEP', step: 1 })
     } else {
-      // Step 1 — only proceed if required docs are uploaded
       if (!allRequiredOk) return
       dispatch({ type: 'SET_ONBOARD_STEP', step: 0 })
       dispatch({ type: 'GO', screen: 'home' })
@@ -158,6 +180,35 @@ export function OnboardScreen() {
                 )}
               </motion.div>
             ))}
+
+            {/* Password */}
+            <motion.div variants={up} custom={6} initial="hidden" animate="visible">
+              <label className="text-xs font-semibold text-neutral-500 block mb-1.5">
+                {ar ? 'كلمة المرور *' : 'Password *'}
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => {
+                    setPassword(e.target.value)
+                    if (step0Errors.password) setStep0Errors(prev => { const n = { ...prev }; delete n.password; return n })
+                  }}
+                  className={cn('pl-9', step0Errors.password ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : '')}
+                />
+              </div>
+              {step0Errors.password && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {step0Errors.password}
+                </p>
+              )}
+              <p className="text-xs text-neutral-400 mt-1">
+                {ar ? 'ستستخدمه لتسجيل الدخول لاحقاً' : 'You\'ll use this to sign in next time'}
+              </p>
+            </motion.div>
 
             <motion.div variants={up} custom={6} initial="hidden" animate="visible" className="flex gap-3">
               <div className="flex-1">
@@ -323,9 +374,9 @@ export function OnboardScreen() {
           )}
 
           {onboardStep === 0 ? (
-            <Button size="lg" className="flex-1 gap-2" onClick={goNext}>
-              {ar ? 'متابعة' : 'Continue'}
-              <ChevronRight className="w-4 h-4" />
+            <Button size="lg" className="flex-1 gap-2" onClick={goNext} disabled={authLoading}>
+              {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
+              {authLoading ? (ar ? 'جاري الإنشاء...' : 'Creating account…') : (ar ? 'متابعة' : 'Continue')}
             </Button>
           ) : (
             <Button

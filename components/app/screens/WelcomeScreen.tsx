@@ -60,6 +60,15 @@ export function WelcomeScreen() {
           <Button variant="ghost-dark" size="lg" onClick={() => dispatch({ type: 'GO', screen: 'home' })} className="gap-2">
             {tx.browse} <ArrowRight className="w-4 h-4" />
           </Button>
+          <p className="text-center text-sm text-neutral-400 pt-1">
+            {lang === 'ar' ? 'لديك حساب بالفعل؟ ' : 'Already have an account? '}
+            <button
+              onClick={() => dispatch({ type: 'GO', screen: 'login' })}
+              className="text-brand-400 font-semibold hover:text-brand-300 transition-colors"
+            >
+              {lang === 'ar' ? 'سجّل دخولك' : 'Sign in'}
+            </button>
+          </p>
         </motion.div>
 
         <motion.div variants={stagger} className="flex gap-8 pt-2">

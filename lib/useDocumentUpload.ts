@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useApp } from './store'
 import { idbSet, idbDelete, idbGetObjectUrl } from './idb'
-import { isFirebaseConfigured, uploadDocument } from './firebase'
+import { sbUploadDocument, sbSaveDocumentMeta, sbDeleteDocument } from './supabase'
 import { DOCUMENTS } from './data'
 import type { DocumentFile } from './types'
 
@@ -14,7 +14,7 @@ export function useDocumentUpload() {
   const inputRefs   = useRef<Record<string, HTMLInputElement | null>>({})
   const objectUrls  = useRef<string[]>([])
 
-  // Restore Object URLs from IndexedDB on mount (for local-stored files)
+  // Restore Object URLs from IndexedDB on mount (for locally-stored files without a Supabase URL)
   useEffect(() => {
     const restore = async () => {
       for (const [key, df] of Object.entries(state.documentFiles)) {
@@ -84,18 +84,14 @@ export function useDocumentUpload() {
         return
       }
 
-      // ── Storage: Firebase → IndexedDB fallback ────────────────────────────
+      // ── Storage: Supabase → IndexedDB fallback ────────────────────────────
       let url: string | undefined
-      let storageType: 'local' | 'firebase' = 'local'
+      let storageType: 'local' | 'supabase' = 'local'
 
-      if (isFirebaseConfigured()) {
+      if (state.user.supabaseId) {
         try {
-          const uid = state.user.email || 'anonymous'
-          const result = await uploadDocument(uid, file, docKey)
-          if (result && !result.startsWith('local://')) {
-            url = result
-            storageType = 'firebase'
-          }
+          url = await sbUploadDocument(state.user.supabaseId, file, docKey)
+          storageType = 'supabase'
         } catch { /* fall through to local */ }
       }
 
@@ -117,6 +113,10 @@ export function useDocumentUpload() {
         type: 'SET_USER',
         user: { documents: { ...state.user.documents, [docKey]: true } },
       })
+      // Persist metadata to Supabase if user is authenticated
+      if (state.user.supabaseId && storageType === 'supabase') {
+        sbSaveDocumentMeta(state.user.supabaseId, docFile)
+      }
       clearErr()
     } catch {
       setErrors(prev => ({
@@ -129,7 +129,11 @@ export function useDocumentUpload() {
   }
 
   function handleRemove(docKey: string) {
+    const existing = state.documentFiles[docKey]
     idbDelete(`doc_${docKey}`)
+    if (state.user.supabaseId && existing?.storageType === 'supabase') {
+      sbDeleteDocument(state.user.supabaseId, docKey, existing.name)
+    }
     dispatch({ type: 'REMOVE_DOCUMENT_FILE', key: docKey })
     const docs = { ...state.user.documents }
     delete docs[docKey]

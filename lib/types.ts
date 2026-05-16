@@ -1,7 +1,7 @@
 export type Lang = 'en' | 'ar'
 
 export type Screen =
-  | 'lang' | 'welcome' | 'onboard'
+  | 'lang' | 'welcome' | 'onboard' | 'login'
   | 'home' | 'detail' | 'tracker'
   | 'sim' | 'simTasks' | 'simTask' | 'simDone'
   | 'ai' | 'profile' | 'feeds' | 'map' | 'companyPortal'
@@ -66,8 +66,8 @@ export interface DocumentFile {
   mimeType: string
   uploadedAt: string
   status: 'uploading' | 'uploaded' | 'failed'
-  storageType: 'local' | 'firebase'
-  url?: string   // Firebase URL (persistent) or Object URL (session-only)
+  storageType: 'local' | 'supabase'
+  url?: string   // Supabase signed URL (1h) or Object URL (session-only)
   error?: string
 }
 
@@ -129,6 +129,7 @@ export interface UserProfile {
   bio?: string
   linkedinUrl?: string
   portfolioUrl?: string
+  supabaseId?: string  // Supabase auth user id
 }
 
 export interface Application {

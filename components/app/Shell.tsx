@@ -6,6 +6,7 @@ import { BottomNav } from './BottomNav'
 import { LangScreen }          from './screens/LangScreen'
 import { WelcomeScreen }       from './screens/WelcomeScreen'
 import { OnboardScreen }       from './screens/OnboardScreen'
+import { LoginScreen }         from './screens/LoginScreen'
 import { HomeScreen }          from './screens/HomeScreen'
 import { JobDetailScreen }     from './screens/JobDetailScreen'
 import { TrackerScreen }       from './screens/TrackerScreen'
@@ -35,6 +36,7 @@ function ScreenRouter() {
     lang:          <LangScreen />,
     welcome:       <WelcomeScreen />,
     onboard:       <OnboardScreen />,
+    login:         <LoginScreen />,
     home:          <HomeScreen />,
     detail:        <JobDetailScreen />,
     tracker:       <TrackerScreen />,
