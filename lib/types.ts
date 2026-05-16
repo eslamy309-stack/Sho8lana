@@ -52,7 +52,23 @@ export interface Document {
   label: string
   labelAr: string
   description: string
+  descriptionAr: string
   required: boolean
+  acceptedTypes: string   // HTML input accept attribute value
+  mimeTypes: string[]     // MIME types for JS validation
+  maxSizeMB: number
+}
+
+export interface DocumentFile {
+  key: string
+  name: string
+  size: number
+  mimeType: string
+  uploadedAt: string
+  status: 'uploading' | 'uploaded' | 'failed'
+  storageType: 'local' | 'firebase'
+  url?: string   // Firebase URL (persistent) or Object URL (session-only)
+  error?: string
 }
 
 export interface Tutorial {
@@ -109,7 +125,7 @@ export interface UserProfile {
   phone: string
   location: string
   graduationYear: string
-  documents: Partial<Record<string, boolean>>
+  documents: Partial<Record<string, boolean>>  // true = uploaded (legacy compat)
   bio?: string
   linkedinUrl?: string
   portfolioUrl?: string

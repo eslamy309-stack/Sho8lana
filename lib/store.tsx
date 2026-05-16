@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import type {
   Lang, Screen, UserProfile, Application, ChatMessage, Badge,
-  MatchScore, SimTrack, SimTask, LiveJob,
+  MatchScore, SimTrack, SimTask, LiveJob, DocumentFile,
 } from './types'
 
 interface AppState {
@@ -41,6 +41,7 @@ interface AppState {
   liveJobs: LiveJob[]
   liveJobsLoading: boolean
   savedJobs: number[]
+  documentFiles: Record<string, DocumentFile>
 }
 
 type Action =
@@ -78,6 +79,9 @@ type Action =
   | { type: 'SET_LIVE_JOBS'; jobs: LiveJob[] }
   | { type: 'SET_LIVE_JOBS_LOADING'; loading: boolean }
   | { type: 'TOGGLE_SAVE_JOB'; id: number }
+  | { type: 'SET_DOCUMENT_FILE'; file: DocumentFile }
+  | { type: 'REMOVE_DOCUMENT_FILE'; key: string }
+  | { type: 'SET_DOC_URL'; key: string; url: string }
 
 const defaultUser: UserProfile = {
   name: '', university: '', major: '', gpa: '',
@@ -129,6 +133,7 @@ function getInitialState(): AppState {
     liveJobs: [],
     liveJobsLoading: false,
     savedJobs: loadFromStorage<number[]>('sho8_saved', []),
+    documentFiles: loadFromStorage<Record<string, DocumentFile>>('sho8_doc_meta', {}),
   }
 }
 
@@ -282,6 +287,30 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, savedJobs: saved }
     }
 
+    case 'SET_DOCUMENT_FILE':
+      return {
+        ...state,
+        documentFiles: { ...state.documentFiles, [action.file.key]: action.file },
+      }
+
+    case 'REMOVE_DOCUMENT_FILE': {
+      const files = { ...state.documentFiles }
+      delete files[action.key]
+      return { ...state, documentFiles: files }
+    }
+
+    case 'SET_DOC_URL': {
+      const existing = state.documentFiles[action.key]
+      if (!existing) return state
+      return {
+        ...state,
+        documentFiles: {
+          ...state.documentFiles,
+          [action.key]: { ...existing, url: action.url },
+        },
+      }
+    }
+
     default:
       return state
   }
@@ -299,7 +328,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sho8_xp', JSON.stringify(state.simXP))
     localStorage.setItem('sho8_badges', JSON.stringify(state.simBadges))
     localStorage.setItem('sho8_saved', JSON.stringify(state.savedJobs))
-  }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs])
+    // Strip session-only Object URLs before persisting — Firebase URLs are kept
+    const docMeta = Object.fromEntries(
+      Object.entries(state.documentFiles).map(([k, v]) => [
+        k,
+        { ...v, url: v.storageType === 'firebase' ? v.url : undefined },
+      ])
+    )
+    localStorage.setItem('sho8_doc_meta', JSON.stringify(docMeta))
+  }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles])
 
   return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>
 }
