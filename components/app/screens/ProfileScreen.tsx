@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, FileText, CheckCircle2, Edit3, Flame, Star,
@@ -8,11 +7,10 @@ import {
   Loader2, Lock, ShieldCheck, ChevronRight,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
+import { useDocumentUpload } from '@/lib/useDocumentUpload'
 import { DOCUMENTS } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { idbSet, idbDelete, idbGetObjectUrl } from '@/lib/idb'
-import { isFirebaseConfigured, uploadDocument } from '@/lib/firebase'
 import type { DocumentFile } from '@/lib/types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -241,160 +239,12 @@ function DocCard({
 export function ProfileScreen() {
   const { state, dispatch } = useApp()
   const ar = state.lang === 'ar'
-  const { user, simXP, simBadges, simDone, applications, documentFiles } = state
+  const { user, simXP, simBadges, simDone, applications } = state
 
-  const [uploading, setUploading] = useState<Record<string, boolean>>({})
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const objectUrlsRef = useRef<string[]>([])
-
-  // On mount: restore Object URLs from IndexedDB for local-stored files
-  useEffect(() => {
-    const restore = async () => {
-      for (const [key, df] of Object.entries(documentFiles)) {
-        if (df.status === 'uploaded' && df.storageType === 'local' && !df.url) {
-          const url = await idbGetObjectUrl(`doc_${key}`)
-          if (url) {
-            objectUrlsRef.current.push(url)
-            dispatch({ type: 'SET_DOC_URL', key, url })
-          }
-        }
-      }
-    }
-    restore()
-    return () => {
-      objectUrlsRef.current.forEach(u => URL.revokeObjectURL(u))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // ── Upload handler ────────────────────────────────────────────────────────
-
-  async function handleFileSelect(
-    e: React.ChangeEvent<HTMLInputElement>,
-    docKey: string
-  ) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Reset input so the same file can be re-selected after removal
-    if (inputRefs.current[docKey]) inputRefs.current[docKey]!.value = ''
-
-    const doc = DOCUMENTS.find(d => d.key === docKey)!
-
-    // ── Frontend validation (instant feedback) ──────────────────────────────
-    const clearError = () =>
-      setErrors(prev => { const n = { ...prev }; delete n[docKey]; return n })
-
-    if (!doc.mimeTypes.includes(file.type)) {
-      const allowed = doc.mimeTypes
-        .map(m =>
-          m.split('/').pop()!
-            .replace('vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx')
-            .replace('msword', 'doc')
-            .replace('jpeg', 'jpg')
-        )
-        .join(', ')
-      setErrors(prev => ({
-        ...prev,
-        [docKey]: `Invalid file type. Allowed: ${allowed.toUpperCase()}`,
-      }))
-      return
-    }
-    if (file.size > doc.maxSizeMB * 1024 * 1024) {
-      setErrors(prev => ({
-        ...prev,
-        [docKey]: `File too large. Maximum allowed size is ${doc.maxSizeMB} MB.`,
-      }))
-      return
-    }
-
-    clearError()
-    setUploading(prev => ({ ...prev, [docKey]: true }))
-
-    try {
-      // ── Backend validation (server-side enforcement) ─────────────────────
-      const validateRes = await fetch('/api/upload/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key: docKey,
-          name: file.name,
-          size: file.size,
-          mimeType: file.type,
-        }),
-      })
-      const validateData = await validateRes.json()
-
-      if (!validateRes.ok) {
-        setErrors(prev => ({ ...prev, [docKey]: validateData.error }))
-        return
-      }
-
-      // ── Storage: Firebase first, IndexedDB fallback ──────────────────────
-      let url: string | undefined
-      let storageType: 'local' | 'firebase' = 'local'
-
-      if (isFirebaseConfigured()) {
-        try {
-          const uid = user.email || 'anonymous'
-          const result = await uploadDocument(uid, file, docKey)
-          if (result && !result.startsWith('local://')) {
-            url = result
-            storageType = 'firebase'
-          }
-        } catch {
-          // Firebase upload failed — fall through to IndexedDB
-        }
-      }
-
-      if (storageType === 'local') {
-        await idbSet(`doc_${docKey}`, file)
-        const objUrl = URL.createObjectURL(file)
-        objectUrlsRef.current.push(objUrl)
-        url = objUrl
-      }
-
-      // ── Update state ─────────────────────────────────────────────────────
-      const docFile: DocumentFile = {
-        key: docKey,
-        name: file.name,
-        size: file.size,
-        mimeType: file.type,
-        uploadedAt: new Date().toISOString(),
-        status: 'uploaded',
-        storageType,
-        url,
-      }
-
-      dispatch({ type: 'SET_DOCUMENT_FILE', file: docFile })
-      dispatch({
-        type: 'SET_USER',
-        user: { documents: { ...user.documents, [docKey]: true } },
-      })
-      clearError()
-    } catch {
-      setErrors(prev => ({
-        ...prev,
-        [docKey]: 'Upload failed. Check your connection and try again.',
-      }))
-    } finally {
-      setUploading(prev => ({ ...prev, [docKey]: false }))
-    }
-  }
-
-  function handleRemove(docKey: string) {
-    idbDelete(`doc_${docKey}`)
-    dispatch({ type: 'REMOVE_DOCUMENT_FILE', key: docKey })
-    const docs = { ...user.documents }
-    delete docs[docKey]
-    dispatch({ type: 'SET_USER', user: { documents: docs } })
-    setErrors(prev => { const n = { ...prev }; delete n[docKey]; return n })
-  }
-
-  function triggerInput(docKey: string) {
-    inputRefs.current[docKey]?.click()
-  }
+  const {
+    uploading, errors, inputRefs, documentFiles,
+    allRequiredOk, handleFileSelect, handleRemove, triggerInput,
+  } = useDocumentUpload()
 
   // ── Derived values ────────────────────────────────────────────────────────
 
