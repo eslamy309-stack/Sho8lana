@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand */
+    --color-brand:        theme(colors.brand.600);
+    --color-brand-light:  theme(colors.brand.100);
+    --color-brand-dark:   theme(colors.brand.700);
+
+    /* Surface */
+    --color-surface:      theme(colors.neutral.50);
+    --color-surface-card: theme(colors.neutral.0);
+    --color-border:       theme(colors.neutral.200);
+    --color-border-strong:theme(colors.neutral.300);
+
+    /* Text */
+    --color-text-primary:   theme(colors.neutral.900);
+    --color-text-secondary: theme(colors.neutral.600);
+    --color-text-muted:     theme(colors.neutral.400);
+
+    /* Accents */
+    --color-warning:  theme(colors.warning.500);
+    --color-success:  theme(colors.success.500);
+    --color-danger:   theme(colors.danger.500);
+    --color-violet:   theme(colors.violet.600);
+  }
+
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* RTL support */
+  [dir="rtl"] { font-family: 'Noto Kufi Arabic', 'Outfit', sans-serif; }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar       { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: theme(colors.neutral.300); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: theme(colors.neutral.400); }
+  * { scrollbar-width: thin; scrollbar-color: theme(colors.neutral.300) transparent; }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .scroll-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scroll-hide::-webkit-scrollbar { display: none; }
+
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+
+  /* Mobile safe area */
+  .pb-safe  { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .pt-safe  { padding-top: max(8px, env(safe-area-inset-top)); }
+  .h-dvh    { height: 100dvh; }
+  .min-h-dvh { min-height: 100dvh; }
+}
+
+/* Gradient text helper */
+.gradient-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass morphism card */
+.glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.12);
+}

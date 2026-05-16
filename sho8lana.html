@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0D9488">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Sho8lana — شغلانة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--tl:#0D9488;--tll:#CCFBF1;--td:#065F56;--cr:#F97066;--crl:#FEF2F2;--nv:#0F172A;--sf:#F8FAFC;--wh:#FFFFFF;--t1:#0F172A;--t2:#475569;--t3:#94A3B8;--bd:#E2E8F0;--bd2:#CBD5E1;--gd:#F59E0B;--gdl:#FFFBEB;--ok:#10B981;--okl:#ECFDF5;--pu:#7C3AED;--pul:#EDE9FE;--font:'Outfit',sans-serif;--arfont:'Noto Kufi Arabic','Outfit',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:#000;color:var(--t1);-webkit-font-smoothing:antialiased}
+body.ar{font-family:var(--arfont);direction:rtl}
+body.ar *{font-family:var(--arfont)!important}
+#root{width:100%;height:100%;display:flex;justify-content:center;align-items:flex-start;background:#E2E8F0}
+.app{width:100%;max-width:430px;height:100vh;height:100dvh;background:var(--sf);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.2)}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.screen.active{z-index:10}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:.7}to{transform:translateX(0);opacity:1}}
+@keyframes slideInLeft{from{transform:translateX(-100%);opacity:.7}to{transform:translateX(0);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes celebrate{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.anim-enter{animation:slideInRight .32s cubic-bezier(.22,1,.36,1) both}
+.anim-up{animation:fadeUp .4s ease-out both}
+.anim-fade{animation:fadeIn .35s ease-out both}
+.anim-scale{animation:scaleIn .3s ease-out both}
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;background:var(--wh);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:30;flex-shrink:0}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 24px;border-radius:14px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .2s;outline:none}
+.btn-primary{background:var(--tl);color:#fff}.btn-primary:hover{background:var(--td)}.btn-primary:active{transform:scale(.98)}.btn-primary:disabled{opacity:.5;cursor:default}
+.btn-secondary{background:transparent;color:var(--tl);border:1.5px solid var(--tl)}.btn-secondary:hover{background:var(--tll)}
+.btn-white{background:#fff;color:var(--nv);font-weight:700}.btn-white:hover{background:#f0f0f0}
+.btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:10px;width:auto}
+/* Cards */
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:16px;padding:16px;transition:all .2s}
+.card.clickable{cursor:pointer}.card.clickable:hover{box-shadow:0 4px 20px rgba(0,0,0,.07);border-color:var(--bd2)}.card.clickable:active{transform:scale(.99)}
+/* Form */
+.input-field{width:100%;padding:13px 16px;border:1.5px solid var(--bd);border-radius:12px;font-size:14px;background:#fff;color:var(--t1);outline:none;font-family:var(--font);transition:border .2s}
+.input-field:focus{border-color:var(--tl)}
+.input-field::placeholder{color:var(--t3)}
+textarea.input-field{resize:vertical;min-height:100px;line-height:1.6}
+select.input-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block}
+/* Badge */
+.badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+/* Chips */
+.chip{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--t2);white-space:nowrap;font-family:var(--font);transition:.15s}
+.chip.active{background:var(--tl);color:#fff;border-color:var(--tl)}
+/* Doc upload */
+.doc-slot{border:1.5px dashed var(--bd2);border-radius:14px;padding:13px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s}
+.doc-slot:hover{border-color:var(--tl);background:var(--tll)}
+.doc-slot.done{border-color:var(--ok);border-style:solid;background:var(--okl)}
+/* Scroll hide */
+.scroll-x{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}.scroll-x::-webkit-scrollbar{display:none}
+/* Bottom Nav */
+.bottom-nav{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;flex-shrink:0;padding:6px 0 max(6px, env(safe-area-inset-bottom));z-index:30}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;cursor:pointer;color:var(--t3);border:none;background:none;font-family:var(--font);position:relative;transition:.2s}
+.nav-item.active{color:var(--tl)}.nav-item svg{transition:.2s}.nav-item span{font-size:9px;font-weight:600}
+.nav-badge{position:absolute;top:2px;right:calc(50% - 14px);width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff}
+/* Progress bar */
+.progress-bar{height:3px;border-radius:2px;background:var(--bd);overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .3s}
+/* Loader */
+.loader{width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--tl);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+/* Hint box */
+.hint-box{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid #FDE68A;border-radius:12px;padding:14px;margin-top:10px}
+/* Message bubbles */
+.msg-user{background:var(--tl);color:#fff;border-radius:18px 18px 4px 18px;padding:11px 15px;max-width:80%;margin-left:auto;font-size:13px;line-height:1.5;word-wrap:break-word}
+.msg-ai{background:var(--wh);border:1px solid var(--bd);border-radius:18px 18px 18px 4px;padding:11px 15px;max-width:85%;font-size:13px;line-height:1.6;color:var(--t2);word-wrap:break-word}
+body.ar .msg-user{border-radius:18px 18px 18px 4px;margin-left:0;margin-right:auto}
+body.ar .msg-ai{border-radius:18px 18px 4px 18px}
+/* Sim option button */
+.sim-option{padding:12px 16px;border-radius:12px;border:1.5px solid var(--bd);background:#fff;display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--font);font-size:13px;color:var(--t2);font-weight:400;text-align:left;transition:.15s;width:100%}
+.sim-option.selected{border-color:currentColor;font-weight:600}
+/* Source badge */
+.src-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:.3px}
+/* Track card */
+.track-card{border-radius:16px;padding:18px;cursor:pointer;border:2px solid transparent;transition:all .22s;margin-bottom:12px}
+.track-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.track-card:active{transform:scale(.99)}
+/* Step circle */
+.step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+/* Scrollbar for main areas */
+.screen::-webkit-scrollbar{width:4px}
+.screen::-webkit-scrollbar-track{background:transparent}
+.screen::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+/* Responsive: on larger screens, show centered card */
+@media(min-width:640px){.app{border-radius:24px;height:min(100vh, 900px);margin:auto;top:50%;position:relative;transform:translateY(-50%)}}
+/* Dark overlay for success */
+.overlay-success{position:absolute;inset:0;background:rgba(16,185,129,.06);display:flex;align-items:center;justify-content:center;z-index:20;pointer-events:none}
+/* Animated dots */
+.dots span{animation:pulse 1s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:.15s}
+.dots span:nth-child(3){animation-delay:.3s}
+</style>
+</head>
+<body>
+<div id="root"><div class="app" id="app"></div></div>
+
+<script>
+/* ════════════════════════════════════════
+   SHO8LANA — Complete Application
+   Pure HTML/CSS/JS · No dependencies
+   ════════════════════════════════════════ */
+
+// ── State ──
+const S = {
+  lang: null,
+  screen: 'lang',
+  history: [],
+  user: JSON.parse(localStorage.getItem('sho8_user') || '{"name":"","uni":"","major":"","gpa":"","email":"","phone":"","loc":"Cairo","grad":"2026","docs":{}}'),
+  apps: JSON.parse(localStorage.getItem('sho8_apps') || '[]'),
+  simDone: JSON.parse(localStorage.getItem('sho8_sim_done') || '[]'),
+  simXP: parseInt(localStorage.getItem('sho8_xp') || '0'),
+  simBadges: JSON.parse(localStorage.getItem('sho8_badges') || '[]'),
+  chat: [],
+  aiLoading: false,
+  cvLoading: false, cvText: '',
+  matchScore: null, matchLoading: false,
+  simTrack: null, simTask: null, simStep: 0,
+  simAnswers: {}, simMulti: {},
+  simFeedback: null, simFbLoading: false,
+  showHint: false, justApplied: null, onboardStep: 0,
+  showFilter: false, searchQ: '', locFilter: 'All',
+  selJob: null, selCo: null,
+};
+
+// ── Persist ──
+const save = () => {
+  localStorage.setItem('sho8_user', JSON.stringify(S.user));
+  localStorage.setItem('sho8_apps', JSON.stringify(S.apps));
+  localStorage.setItem('sho8_sim_done', JSON.stringify(S.simDone));
+  localStorage.setItem('sho8_xp', S.simXP);
+  localStorage.setItem('sho8_badges', JSON.stringify(S.simBadges));
+};
+
+// ── i18n ──
+const LANG = {
+  en:{tagline:"Your first career step starts here.",tagSub:"Find internships across Egypt. Practice real business tasks. Apply with one tap.",start:"Get started",browse:"Browse first",home:"Home",appNav:"Applied",sim:"Practice",ai:"AI",prof:"Profile",done:"Applied",apply:"Apply with 1 tap",noDoc:"Complete profile first",sent:"✓ Sent",noApps:"No applications yet",findJ:"Find internships",myApps:"My Applications",myProf:"My Profile",docVault:"Document Vault",upload:"Tap to upload",uploaded:"Uploaded",edit:"Edit",featured:"Featured",allJ:"All internships",results:"results",search:"Search title, skill, company...",filter:"Filters",location:"Location",industry:"Industry",about:"About this role",skills:"Skills",docs:"Documents auto-attached",simHub:"Practice Hub",simSub:"Simulate real business tasks. Get AI feedback. Earn badges.",chooseTrack:"Choose a track",yourProg:"Your Progress",xp:"XP",badges:"Badges",completed:"Completed",startTask:"Start task",taskDone:"Task Complete!",getAIFeedback:"Get AI Feedback",feedback:"AI Feedback",generating:"Generating...",backHub:"Back to hub",another:"Try another",guide:"Show guide",hideGuide:"Hide guide",next:"Next step",submit:"Submit task",aiChat:"AI Career Assistant",askPh:"Ask anything about careers...",cover:"Cover Letter",genCover:"Generate with AI",match:"AI Match Score",congrats:"Congratulations!",xpEarned:"XP Earned",badgeEarned:"Badge",continueBtn:"Continue",back:"Back",noXP:"No experience needed! Designed for students."},
+  ar:{tagline:"خطوتك المهنية الأولى تبدأ هنا.",tagSub:"اعثر على تدريبات في مصر. تدرّب على مهام حقيقية. قدّم بضغطة واحدة.",start:"ابدأ الآن",browse:"تصفّح أولاً",home:"الرئيسية",appNav:"الطلبات",sim:"تدريب",ai:"ذكاء",prof:"الملف",done:"تم التقديم",apply:"قدّم بضغطة",noDoc:"أكمل ملفك أولاً",sent:"✓ تم الإرسال",noApps:"لا توجد طلبات بعد",findJ:"ابحث عن تدريبات",myApps:"طلباتي",myProf:"ملفي الشخصي",docVault:"خزنة المستندات",upload:"اضغط للرفع",uploaded:"تم الرفع",edit:"تعديل",featured:"فرص مميزة",allJ:"جميع التدريبات",results:"نتائج",search:"ابحث بالعنوان أو المهارة...",filter:"تصفية",location:"الموقع",industry:"الصناعة",about:"عن هذا الدور",skills:"المهارات",docs:"المستندات المرفقة تلقائياً",simHub:"مركز التدريب",simSub:"تدرّب على مهام أعمال حقيقية. احصل على تقييم ذكي. اكسب شارات.",chooseTrack:"اختر مساراً",yourProg:"تقدمك",xp:"XP",badges:"شارات",completed:"مكتملة",startTask:"ابدأ المهمة",taskDone:"!أحسنت",getAIFeedback:"تقييم بالذكاء الاصطناعي",feedback:"تقييم ذكي",generating:"جاري التوليد...",backHub:"العودة للمركز",another:"جرّب مهمة أخرى",guide:"دليل",hideGuide:"إخفاء الدليل",next:"التالي",submit:"تسليم المهمة",aiChat:"مساعد ذكاء اصطناعي",askPh:"اسأل عن مهنتك...",cover:"خطاب تقديم",genCover:"توليد بالذكاء الاصطناعي",match:"درجة التوافق",congrats:"!تهانينا",xpEarned:"XP مكتسبة",badgeEarned:"شارة",continueBtn:"متابعة",back:"رجوع",noXP:"لا تحتاج خبرة سابقة! مصممة للطلاب."}
+};
+const t = k => (LANG[S.lang || 'en'][k] || k);
+const ar = () => S.lang === 'ar';
+
+// ── Data ──
+const GOVS = ['Cairo','Giza','Alexandria','New Capital','6th October','Smart Village','Maadi','Heliopolis','New Cairo','Sheikh Zayed','Nasr City','Mansoura'];
+const COS = [
+  {id:1,n:'Vodafone Egypt',l:'🔴',ind:'Telecom',loc:'Smart Village',r:4.3,c:'#E60000',d:'Leading telecom provider with 40M+ subscribers in Egypt.',da:'مزود اتصالات رائد مع أكثر من 40 مليون مشترك.'},
+  {id:2,n:'CIB Egypt',l:'🏦',ind:'Banking',loc:'New Cairo',r:4.5,c:'#003B71',d:"Egypt's leading private-sector bank.",da:'أكبر بنك خاص في مصر.'},
+  {id:3,n:'P&G Egypt',l:'🧴',ind:'FMCG',loc:'6th October',r:4.6,c:'#003DA5',d:'Global consumer goods leader since 1986 in Egypt.',da:'رائد عالمي في السلع الاستهلاكية منذ 1986.'},
+  {id:4,n:'Microsoft Egypt',l:'💻',ind:'Technology',loc:'Smart Village',r:4.7,c:'#00A4EF',d:'Tech giant empowering Egyptian businesses and developers.',da:'عملاق التكنولوجيا يدعم الأعمال المصرية.'},
+  {id:5,n:'McKinsey Cairo',l:'📊',ind:'Consulting',loc:'New Cairo',r:4.8,c:'#00205B',d:'Top-tier management consulting firm.',da:'شركة استشارات إدارية من الدرجة الأولى.'},
+  {id:6,n:'Fawry',l:'💳',ind:'Technology',loc:'Maadi',r:4.1,c:'#F7941D',d:"Egypt's leading fintech platform.",da:'منصة التكنولوجيا المالية الرائدة في مصر.'},
+  {id:7,n:'Orange Egypt',l:'🟠',ind:'Telecom',loc:'Smart Village',r:4.1,c:'#FF6600',d:'Telecom innovator serving 30M+ subscribers.',da:'مبتكر اتصالات يخدم أكثر من 30 مليون مشترك.'},
+  {id:8,n:'Nestlé Egypt',l:'☕',ind:'FMCG',loc:'6th October',r:4.2,c:'#7B5427',d:"World's largest food company with deep roots in Egypt.",da:'أكبر شركة أغذية في العالم بجذور عميقة في مصر.'},
+];
+const JOBS = [
+  {id:1,cid:1,t:'Marketing Intern',ta:'متدرب تسويق',loc:'Smart Village',pay:'EGP 5,000/mo',pd:'2d',ap:47,sk:['Social Media','Analytics','Content'],ind:'Telecom',d:'Join Vodafone\'s marketing team and work on real campaigns reaching millions of Egyptian subscribers.',dar:'انضم لفريق التسويق في فودافون واعمل على حملات حقيقية تصل لملايين المشتركين.',rq:['Marketing or Business student','Strong English skills','Basic analytics knowledge'],rqa:['طالب تسويق أو أعمال','إنجليزي قوي','معرفة أساسية بالتحليلات'],ft:true,src:'linkedin'},
+  {id:2,cid:2,t:'Financial Analyst Intern',ta:'متدرب محلل مالي',loc:'New Cairo',pay:'EGP 6,000/mo',pd:'1d',ap:32,sk:['Excel','Financial Modeling','Data Analysis'],ind:'Banking',d:'Work alongside CIB\'s finance team analyzing real portfolios and building financial models.',dar:'اعمل مع فريق المالية في CIB لتحليل محافظ حقيقية وبناء نماذج مالية.',rq:['Finance or Accounting major','Advanced Excel','GPA 3.0+'],rqa:['تخصص مالية أو محاسبة','Excel متقدم','معدل 3.0+'],ft:true,src:'company'},
+  {id:3,cid:4,t:'Software Engineering Intern',ta:'متدرب هندسة برمجيات',loc:'Smart Village',pay:'EGP 8,000/mo',pd:'5h',ap:89,sk:['Python','React','Azure'],ind:'Technology',d:'Build real features used by millions at Microsoft Egypt. Work with cutting-edge cloud and AI technologies.',dar:'ابنِ ميزات حقيقية يستخدمها الملايين في مايكروسوفت مصر مع تقنيات السحاب والذكاء الاصطناعي.',rq:['CS or Engineering major','Python/JS proficiency','Problem-solving skills'],rqa:['حاسبات أو هندسة','Python/JS','حل المشكلات'],ft:true,src:'linkedin'},
+  {id:4,cid:5,t:'Business Analyst Intern',ta:'متدرب محلل أعمال',loc:'New Cairo',pay:'EGP 10,000/mo',pd:'12h',ap:120,sk:['Problem Solving','Excel','PowerPoint'],ind:'Consulting',d:'Work on real client engagements at McKinsey. Analyze complex business problems.',dar:'اعمل على مشاريع عملاء حقيقية في ماكنزي. حلّل مشكلات الأعمال المعقدة.',rq:['Top university student','GPA 3.5+','Exceptional analytical skills'],rqa:['جامعة مرموقة','معدل 3.5+','مهارات تحليلية استثنائية'],ft:true,src:'linkedin'},
+  {id:5,cid:3,t:'Supply Chain Intern',ta:'متدرب سلسلة إمداد',loc:'6th October',pay:'EGP 4,500/mo',pd:'3d',ap:28,sk:['Logistics','SAP','Problem Solving'],ind:'FMCG',d:"Support P&G's supply chain operations across Egypt.",dar:'ادعم عمليات سلسلة الإمداد في P&G عبر مصر.',rq:['Business or Engineering student','Analytical mindset'],rqa:['طالب أعمال أو هندسة','تحليلي'],src:'wuzzuf'},
+  {id:6,cid:6,t:'Product Management Intern',ta:'متدرب إدارة منتجات',loc:'Maadi',pay:'EGP 6,000/mo',pd:'2d',ap:37,sk:['Product Thinking','UX','Agile'],ind:'Technology',d:"Shape Egypt's leading fintech platform at Fawry.",dar:'شكّل منصة التكنولوجيا المالية الرائدة في مصر مع فوري.',rq:['Business or CS student','User-centric mindset'],rqa:['أعمال أو حاسبات','تركيز على المستخدم'],src:'wuzzuf'},
+  {id:7,cid:7,t:'Data Analytics Intern',ta:'متدرب تحليل بيانات',loc:'Smart Village',pay:'EGP 5,500/mo',pd:'4d',ap:41,sk:['SQL','Python','Tableau'],ind:'Telecom',d:'Analyze customer data patterns for Orange Egypt. Build dashboards and generate insights.',dar:'حلّل أنماط بيانات العملاء لأورانج مصر. ابنِ لوحات البيانات.',rq:['Data Science or CS','SQL proficiency'],rqa:['علم بيانات أو حاسبات','إجادة SQL'],src:'company'},
+  {id:8,cid:8,t:'Brand Management Intern',ta:'متدرب إدارة العلامة التجارية',loc:'6th October',pay:'EGP 4,000/mo',pd:'1w',ap:55,sk:['Brand Strategy','Market Research','Presentation'],ind:'FMCG',d:"Assist Nestlé's brand team with market research and campaign analytics.",dar:'ساعد فريق العلامة التجارية في نستله بأبحاث السوق وتحليلات الحملات.',rq:['Marketing major','Creative thinker'],rqa:['تخصص تسويق','مفكر إبداعي'],src:'wuzzuf'},
+];
+const DOCS_DEF = [
+  {k:'cv',label:'CV / Resume',labelAr:'السيرة الذاتية',desc:'PDF format',req:true},
+  {k:'transcript',label:'Academic Transcript',labelAr:'كشف الدرجات',desc:'Official or unofficial',req:true},
+  {k:'nationalId',label:'National ID',labelAr:'البطاقة الشخصية',desc:'Front and back',req:true},
+  {k:'photo',label:'Personal Photo',labelAr:'صورة شخصية',desc:'Professional headshot',req:false},
+  {k:'certificates',label:'Certificates',labelAr:'الشهادات',desc:'Training or awards',req:false},
+];
+const SRC_CFG = {linkedin:{l:'in',c:'#0A66C2'},wuzzuf:{l:'W',c:'#FF6F00'},company:{l:'⚡',c:'#0D9488'}};
+
+// ── Simulation Tracks ──
+const SIM_TRACKS = [
+  { id:'marketing', label:'Marketing', labelAr:'التسويق', color:'#E8464E',
+    icon:`<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>`,
+    desc:'Run campaigns, analyze metrics, build brand strategies',
+    descAr:'أدِر الحملات، حلّل البيانات، ابنِ الاستراتيجيات',
+    tasks:[
+      { id:'m1', title:'Social Media Campaign Brief', titleAr:'موجز حملة وسائل التواصل',
+        scenario:'You are the marketing intern at a mid-size FMCG company launching a new snack product targeting Egyptian Gen Z (18–24). Your manager needs a social media campaign brief by end of week.',
+        scenarioAr:'أنت متدرب التسويق في شركة سلع استهلاكية تطلق منتج وجبات خفيفة جديد يستهدف الجيل Z المصري (18-24). مديرك يحتاج موجز حملة بنهاية الأسبوع.',
+        xp:120, badge:'Campaign Strategist', badgeAr:'استراتيجي حملات', time:'45 min',
+        steps:[
+          {t:'Define Your Target Audience',tAr:'حدد جمهورك المستهدف',type:'text',ph:'Describe in detail: age, interests, pain points, daily habits...',phAr:'صف بالتفصيل: العمر، الاهتمامات، نقاط الألم، العادات اليومية...',hint:'Egyptian Gen Z (18-24) spends 3+ hours daily on TikTok and Instagram. Think about what they care about: self-expression, trends, humor, local culture. What problem does your snack solve for them? Boredom? Study sessions? Social gatherings?',hintAr:'الجيل Z المصري (18-24) يقضي 3+ ساعات يومياً على TikTok و Instagram. ما الذي يهمهم؟ التعبير الذاتي، الترندات، الفكاهة، الثقافة المحلية. ما المشكلة التي يحلها منتجك؟'},
+          {t:'Choose Your Top 2 Platforms',tAr:'اختر أفضل منصتين',type:'multi',options:['TikTok','Instagram','Twitter/X','Facebook','YouTube','Snapchat'],hint:"Each platform needs different content. TikTok = short viral video (15-60s), Instagram = Reels + aesthetic Stories, Twitter/X = witty text + memes. Pick where your audience is most active and where your content fits best.",hintAr:"كل منصة تحتاج محتوى مختلف. TikTok = فيديو قصير، Instagram = Reels + Stories، اختر بناءً على مكان جمهورك."},
+          {t:'Write 3 Content Pillars',tAr:'اكتب 3 أعمدة محتوى',type:'text',ph:'Pillar 1: ...\nPillar 2: ...\nPillar 3: ...',phAr:'العمود 1: ...\nالعمود 2: ...\nالعمود 3: ...',hint:"Content pillars are recurring themes for your posts. Example: 1) 'Snack Moments' (relatable situations), 2) 'Fan Challenges' (UGC), 3) 'Behind the Flavor' (brand story). Each pillar = roughly 1/3 of your content.",hintAr:"أعمدة المحتوى هي المواضيع المتكررة في منشوراتك. مثال: 1) لحظات الوجبة، 2) تحديات المتابعين، 3) خلف الكواليس."},
+          {t:'Set 3 Campaign KPIs',tAr:'حدد 3 مؤشرات أداء',type:'multi',options:['Reach > 500,000 accounts','Engagement Rate > 4%','50+ UGC posts','10,000 website visits','Brand awareness +20%','TikTok views > 1M','CTR > 2.5%'],hint:"KPIs make success measurable. Reach = how many people see your content. Engagement Rate = (likes+comments+shares)/impressions × 100. Set ambitious but realistic targets for a 1-month campaign.",hintAr:"KPIs تجعل النجاح قابلاً للقياس. الوصول = عدد من رأوا المحتوى. معدل التفاعل = (الإعجابات+التعليقات)/المشاهدات × 100."},
+          {t:'Draft a Sample Post',tAr:'اكتب منشور نموذجي',type:'text',ph:'Write a full post: hook, body, call-to-action, hashtags...',phAr:'اكتب منشوراً كاملاً: خطاف، محتوى، دعوة للعمل، وسوم...',hint:"Structure: HOOK (first line stops scrolling — a question, bold claim, or relatable situation), BODY (2-3 lines of value/entertainment), CTA (comment, share, try it), HASHTAGS (3-5 targeted). Keep it casual, use Egyptian slang if appropriate.",hintAr:"الهيكل: خطاف (يوقف التمرير)، محتوى (2-3 أسطر)، دعوة للعمل (علّق، شارك)، وسوم (3-5)."}
+        ]
+      },
+      { id:'m2', title:'Competitor Analysis Report', titleAr:'تقرير تحليل المنافسين',
+        scenario:'Your marketing director needs a competitive analysis of 3 brands in the Egyptian snack market before the quarterly strategy meeting tomorrow morning.',
+        scenarioAr:'مدير التسويق يحتاج تحليلاً تنافسياً لـ 3 علامات تجارية في سوق الوجبات الخفيفة المصري قبل اجتماع الاستراتيجية الربعي صباح الغد.',
+        xp:100, badge:'Market Analyst', badgeAr:'محلل أسواق', time:'35 min',
+        steps:[
+          {t:'Name 3 Competitors & Why',tAr:'اذكر 3 منافسين ولماذا',type:'text',ph:'Competitor 1: [Name] — because...',phAr:'المنافس 1: [الاسم] — لأن...',hint:"Choose direct competitors (same product, same market). Consider: Chipsy (market leader), Frito-Lay Egypt, local brands. Ask: who is your customer buying instead of your product? Look at supermarket shelves for reference.",hintAr:"اختر منافسين مباشرين. فكّر في: شيبسي (رائد السوق)، فريتو لاي، العلامات المحلية. من يشتري العميل بدلاً من منتجك؟"},
+          {t:'Analyze Their Social Media',tAr:'حلّل حضورهم على السوشيال',type:'text',ph:'For each competitor: platforms, follower count, content style, engagement level...',phAr:'لكل منافس: المنصات، المتابعون، أسلوب المحتوى، مستوى التفاعل...',hint:"Visit their actual Instagram/TikTok. Note: follower count, last post date, average likes/comments, content themes, language (Arabic/English/mix), influencer partnerships. This is real market research.",hintAr:"زر Instagram/TikTok الخاص بهم. لاحظ: المتابعون، تاريخ آخر منشور، المتوسطات."},
+          {t:'SWOT Analysis',tAr:'تحليل SWOT',type:'text',ph:'Competitor 1 Strengths: ...\nWeaknesses: ...\nOpportunities you can exploit: ...\nThreats they pose: ...',phAr:'نقاط القوة، الضعف، الفرص التي يمكن استغلالها، التهديدات...',hint:"S: What do they do really well? W: Where are they weak or absent? O: What gaps in the market are they missing that YOU could fill? T: What might they do next that threatens you? Be honest and specific.",hintAr:"القوة: ما يفعلونه جيداً. الضعف: أين هم ضعفاء؟ الفرص: ما الفجوات التي يفوتونها؟ التهديدات: ما الذي قد يفعلونه بعد ذلك؟"},
+          {t:'Your Differentiation Strategy',tAr:'استراتيجية التمييز',type:'text',ph:'Based on the analysis, how should your brand position differently?',phAr:'بناءً على التحليل، كيف يجب أن تتمايز علامتك التجارية؟',hint:"Find the gap. If competitors are all serious and corporate, be playful. If they ignore TikTok, own it. If they don't collaborate with micro-influencers, you should. State your positioning in one sentence: 'We are the only snack brand that...'",hintAr:"اعثر على الفجوة. إذا كان المنافسون رسميين، كن مرحاً. إذا تجاهلوا TikTok، احتله أنت. اكتب تمايزك في جملة واحدة."}
+        ]
+      }
+    ]
+  },
+  { id:'finance', label:'Finance & Banking', labelAr:'المالية والمصرفية', color:'#3B82F6',
+    icon:`<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`,
+    desc:'Budget analysis, financial modeling, banking operations',
+    descAr:'تحليل الميزانيات، النمذجة المالية، العمليات المصرفية',
+    tasks:[
+      { id:'f1', title:'Monthly Budget Variance Analysis', titleAr:'تحليل انحراف الميزانية الشهرية',
+        scenario:"You're a finance intern at a 50-person tech startup in Cairo. The CFO gives you last month's expense data and asks you to identify where they overspent and recommend cuts without hurting growth.",
+        scenarioAr:'أنت متدرب مالية في شركة تقنية ناشئة بالقاهرة. المدير المالي يعطيك بيانات مصروفات الشهر الماضي ويطلب تحديد مجالات الإنفاق الزائد واقتراح تخفيضات.',
+        xp:130, badge:'Budget Analyst', badgeAr:'محلل ميزانيات', time:'40 min',
+        steps:[
+          {t:'Categorize the Expenses',tAr:'صنّف المصروفات',type:'multi',options:['Salaries overspent (budgeted EGP 200K, actual EGP 215K)','Marketing overspent (budgeted EGP 125K, actual EGP 155K)','Tech/Cloud overspent (budgeted EGP 75K, actual EGP 78K)','Office costs within budget (EGP 50K)','Travel overspent (budgeted EGP 20K, actual EGP 32K)','Misc within budget (EGP 30K)'],hint:"The monthly budget was EGP 500,000. Total actual spend was EGP 560,000. That's a 12% overrun. Your job is to identify WHICH categories went over and by how much — so you can investigate the WHY.",hintAr:"الميزانية الشهرية كانت 500,000 جنيه. الإنفاق الفعلي 560,000 جنيه. هذا تجاوز بنسبة 12%. مهمتك تحديد الفئات التي تجاوزت ولماذا."},
+          {t:'Calculate the Variance',tAr:'احسب الانحراف',type:'text',ph:'Category: Budgeted | Actual | Variance (EGP) | Variance (%)\nMarketing: 125,000 | 155,000 | ??? | ???',phAr:'الفئة | المخطط | الفعلي | الانحراف (جنيه) | الانحراف (%)\nالتسويق: 125,000 | 155,000 | ??? | ???',hint:"Variance = Actual − Budgeted. If positive, you overspent. Percentage variance = (Variance ÷ Budgeted) × 100. Example: Marketing variance = 155,000 − 125,000 = +30,000 (24% over). Calculate all 3 overspent categories.",hintAr:"الانحراف = الفعلي − المخطط. نسبة الانحراف = (الانحراف ÷ المخطط) × 100. مثال: انحراف التسويق = 155,000 − 125,000 = +30,000 (24% فوق)."},
+          {t:'Root Cause Investigation',tAr:'تحقيق في الأسباب الجذرية',type:'text',ph:'Marketing overspend: root cause is...\nSalary overspend: root cause is...\nTravel overspend: root cause is...',phAr:'تجاوز التسويق: السبب الجذري هو...\nتجاوز الرواتب: السبب الجذري هو...\nتجاوز السفر: السبب الجذري هو...',hint:"Don't just say 'they spent too much.' Dig deeper. Marketing: Was it an emergency campaign? Agency fees higher than quoted? An unapproved event? Salaries: New hire mid-month? Overtime? Travel: Conference attendance? Client visit? Each cause leads to a different solution.",hintAr:"لا تقل فقط 'أنفقوا أكثر.' تعمّق أكثر. التسويق: حملة طارئة؟ رسوم وكالة أعلى؟ رواتب: موظف جديد؟ عمل إضافي؟ كل سبب يقود لحل مختلف."},
+          {t:'Recommend 3 Cost Optimizations',tAr:'اقترح 3 تحسينات للتكاليف',type:'text',ph:'Recommendation 1 (save EGP ???/month): ...\nRecommendation 2: ...\nRecommendation 3: ...',phAr:'التوصية 1 (وفر ??? جنيه/شهر): ...\nالتوصية 2: ...\nالتوصية 3: ...',hint:"Be specific and quantifiable. NOT: 'spend less on marketing.' YES: 'Switch from external agency for social media graphics to a part-time freelancer: saves ~EGP 15,000/month.' Always attach a number to your recommendation.",hintAr:"كن محدداً وقابلاً للقياس. ليس: 'أنفق أقل.' نعم: 'التحول من وكالة خارجية لمستقل بدوام جزئي: يوفر ~15,000 جنيه/شهر.'"},
+          {t:'Write a 5-Sentence Executive Summary',tAr:'اكتب ملخصاً تنفيذياً من 5 جمل',type:'text',ph:'Lead with the key finding. Then explain. Then recommend.',phAr:'ابدأ بالنتيجة الرئيسية. ثم اشرح. ثم أوصِ.',hint:"CFOs are busy. Structure: 1) Bottom line (total overrun). 2) Top driver. 3) Root cause. 4) Your top recommendation. 5) Expected savings. Never bury the punchline — put the most important number in sentence 1.",hintAr:"المديرون مشغولون. الهيكل: 1) النتيجة الكلية. 2) المسبب الرئيسي. 3) السبب الجذري. 4) توصيتك الأولى. 5) الوفورات المتوقعة."}
+        ]
+      }
+    ]
+  },
+  { id:'operations', label:'Operations & Logistics', labelAr:'العمليات واللوجستيات', color:'#10B981',
+    icon:`<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M9 22h6"/></svg>`,
+    desc:'Process improvement, supply chain, solving bottlenecks',
+    descAr:'تحسين العمليات، سلاسل الإمداد، حل الاختناقات',
+    tasks:[
+      { id:'o1', title:'Warehouse Process Improvement', titleAr:'تحسين عمليات المستودع',
+        scenario:"You're an operations intern at a Cairo e-commerce warehouse. Order fulfillment time jumped from 24 to 48 hours last month. Your manager needs root cause analysis and a fix — by tomorrow.",
+        scenarioAr:'أنت متدرب عمليات في مستودع تجارة إلكترونية بالقاهرة. وقت تنفيذ الطلبات قفز من 24 إلى 48 ساعة الشهر الماضي. مديرك يريد تحليلاً وحلاً — بحلول الغد.',
+        xp:110, badge:'Process Optimizer', badgeAr:'محسّن عمليات', time:'35 min',
+        steps:[
+          {t:'Map Every Step of the Process',tAr:'ارسم كل خطوة في العملية',type:'text',ph:'Step 1: Order received → [time]\nStep 2: Picker assigned → [time]\nStep 3: ...',phAr:'الخطوة 1: استلام الطلب → [الوقت]\nالخطوة 2: تعيين المنتقي → [الوقت]\nالخطوة 3: ...',hint:"Process mapping: write EVERY step from customer clicks 'order' to they receive package. Include time for each step. Typical e-commerce: Order → System processes → Picker assigned (15 min) → Walk to item location (20 min) → Pick item (5 min) → Pack (10 min) → QC (5 min) → Handoff to courier (10 min).",hintAr:"رسم العملية: اكتب كل خطوة من نقر العميل على 'طلب' حتى استلام الطرد. شمّل الوقت لكل خطوة."},
+          {t:'Identify the Bottleneck',tAr:'حدد نقطة الاختناق',type:'multi',options:['Order processing delay in system','Pickers spending too long locating items','Packing station understaffed','QC check taking too long','Courier handoff delays','Shortage of packing materials','Staff shortage on certain shifts'],hint:"A bottleneck is the slowest step that limits the whole system. Even if you speed up every other step, the bottleneck determines your overall throughput. Hint: in most warehouses, the #1 issue is FINDING items — especially when inventory was reorganized.",hintAr:"الاختناق هو أبطأ خطوة تحد النظام بأكمله. حتى لو سرّعت كل خطوة أخرى، الاختناق يحدد الإنتاجية الكلية."},
+          {t:'Apply the 5 Whys',tAr:'طبّق أسلوب الـ 5 لماذا',type:'text',ph:'Problem: picking time doubled\nWhy 1: Pickers can\'t find items quickly\nWhy 2: ...\nWhy 3: ...\nWhy 4: ...\nWhy 5: Root cause: ...',phAr:'المشكلة: تضاعف وقت الانتقاء\nلماذا 1: المنتقون لا يجدون العناصر بسرعة\nلماذا 2: ...\nلماذا 5: السبب الجذري: ...',hint:"5 Whys: keep asking 'Why?' until you reach a root cause you can actually fix. Example: Picking slow → Items hard to find → Locations changed → New inventory system → Labels not updated → No one assigned to update. Root cause: missing ownership of the migration task.",hintAr:"5 لماذا: استمر في السؤال 'لماذا؟' حتى تصل لسبب جذري يمكنك إصلاحه فعلاً."},
+          {t:'Propose 3 Solutions (Impact × Effort)',tAr:'اقترح 3 حلول (التأثير × الجهد)',type:'text',ph:'Solution 1: [Action] | Impact: High/Med/Low | Effort: High/Med/Low | Timeline: ...\nSolution 2: ...\nSolution 3: ...',phAr:'الحل 1: [الإجراء] | التأثير: عالي/متوسط/منخفض | الجهد: عالي/متوسط/منخفض | الجدول الزمني: ...',hint:"Rank solutions by Impact vs Effort matrix. Quick wins = High Impact + Low Effort (do first). Long-term plays = High Impact + High Effort (plan for). Example quick win: 'Update top 200 item labels this week → reduces avg pick time from 25 min to 10 min.'",hintAr:"رتّب الحلول بمصفوفة التأثير × الجهد. المكاسب السريعة = تأثير عالي + جهد منخفض (ابدأ بها)."}
+        ]
+      }
+    ]
+  },
+  { id:'bizdev', label:'Business Development', labelAr:'تطوير الأعمال', color:'#8B5CF6',
+    icon:`<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    desc:'Research markets, pitch ideas, build partnerships',
+    descAr:'ابحث في الأسواق، قدّم الأفكار، ابنِ الشراكات',
+    tasks:[
+      { id:'b1', title:'University Partnership Proposal', titleAr:'اقتراح شراكة مع جامعة',
+        scenario:"You're a biz dev intern at an Egyptian EdTech startup. Your CEO asks you to draft a partnership proposal to pilot your learning platform with a major Egyptian university for next semester.",
+        scenarioAr:'أنت متدرب تطوير أعمال في شركة تعليم إلكتروني مصرية ناشئة. الرئيس التنفيذي يطلب منك صياغة اقتراح شراكة لتجربة منصتك مع جامعة مصرية كبرى للفصل القادم.',
+        xp:140, badge:'Deal Maker', badgeAr:'صانع صفقات', time:'50 min',
+        steps:[
+          {t:'Research the University',tAr:'ابحث عن الجامعة',type:'text',ph:'University: [Name]\nStudent count: ...\nBusiness/tech faculty size: ...\nExisting career services: ...\nKey contacts to reach: ...',phAr:'الجامعة: [الاسم]\nعدد الطلاب: ...\nحجم كلية الأعمال/التقنية: ...\nخدمات مهنية موجودة: ...',hint:"Pick a real Egyptian university: AUC (~6,000 students), GIU (~15,000), Cairo University (~250,000), BUE (~10,000). Research online: their career center, alumni placement rates, any existing industry partnerships. Find the name of the career center director or business dean — personalization is everything.",hintAr:"اختر جامعة مصرية حقيقية. ابحث عن: مركز التوظيف، معدلات توظيف الخريجين، الشراكات الموجودة. اعثر على اسم مدير مركز التوظيف — الشخصية هي كل شيء."},
+          {t:'Define the Value Proposition',tAr:'حدد عرض القيمة',type:'text',ph:"For the university: ...\nFor the students: ...\nFor your startup: ...",phAr:'للجامعة: ...\nللطلاب: ...\nلشركتك الناشئة: ...',hint:"Universities care about 3 things: (1) Graduate employment rates — affects rankings, (2) Student satisfaction, (3) Industry connections. Frame your pitch around these. DON'T say 'our platform is great.' SAY 'universities using similar platforms see 23% higher student employability within 6 months of graduation.'",hintAr:"الجامعات تهتم بـ 3 أشياء: معدلات توظيف الخريجين، رضا الطلاب، الروابط الصناعية. صغ خطابك حول هذه النقاط."},
+          {t:'Draft the Partnership Terms',tAr:'اكتب شروط الشراكة',type:'text',ph:'Pilot: [X students], [X months], [free/paid]\nDeliverables from us: ...\nDeliverables from university: ...\nPost-pilot terms: ...',phAr:'تجريبي: [X طالب]، [X أشهر]، [مجاني/مدفوع]\nما نقدمه: ...\nما تقدمه الجامعة: ...\nشروط ما بعد التجريبي: ...',hint:"Be specific. Vague terms kill deals. Example: '6-month pilot for 300 Business & CS students. We provide: platform access + weekly live sessions + placement support. University provides: enrollment facilitation + co-branding rights + alumni data access. Metrics reviewed at month 3. Revenue share post-pilot: 80/20.'",hintAr:"كن محدداً. الشروط الغامضة تقتل الصفقات. مثال: 6 أشهر تجريبية لـ 300 طالب. نقدم: وصول للمنصة + جلسات أسبوعية. الجامعة تقدم: تسهيل التسجيل + حقوق العلامة المشتركة."},
+          {t:'Write the Outreach Email',tAr:'اكتب بريد التواصل الأولي',type:'text',ph:'Subject: ...\n\nDear [Name],\n\n[Personalized opener]...',phAr:'الموضوع: ...\n\nعزيزي [الاسم]،\n\n[مقدمة شخصية]...',hint:"Email structure (under 180 words): 1) Personalized opener referencing something specific about their university, 2) One sentence on the problem, 3) Your solution in one line, 4) Social proof (who else uses you / traction), 5) Specific low-friction ask: '15-minute call this week?' Never lead with features.",hintAr:"هيكل البريد (أقل من 180 كلمة): 1) مقدمة شخصية، 2) المشكلة، 3) الحل، 4) إثبات اجتماعي، 5) طلب محدد منخفض الاحتكاك."},
+          {t:'Handle 3 Likely Objections',tAr:'تعامل مع 3 اعتراضات محتملة',type:'text',ph:"Objection 1: 'We already have career services'\nYour response: ...\nObjection 2: 'Our budget is tight this semester'\nYour response: ...\nObjection 3: ...",phAr:"الاعتراض 1: 'لدينا خدمات مهنية بالفعل'\nردك: ...\nالاعتراض 2: 'ميزانيتنا محدودة'\nردك: ...",hint:"Best objection-handling framework: Acknowledge → Reframe → Proof. Don't fight the objection. Example: 'We already have career services' → 'Absolutely — your center does excellent work. We're not replacing it; we add a practical skills layer that reduces the gap between what students learn and what employers actually need. Cairo University students using our platform got interviews 40% faster.'",hintAr:"إطار أفضل: اعترف → أعد الصياغة → قدم دليلاً. لا تحارب الاعتراض."}
+        ]
+      }
+    ]
+  }
+];
+
+// ── Utilities ──
+const el = id => document.getElementById(id);
+const html = (tag, attrs='', content='') => `<${tag} ${attrs}>${content}</${tag}>`;
+const svgIcon = {
+  search:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+  arrowLeft:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>`,
+  arrowRight:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>`,
+  chevronRight:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>`,
+  chevronDown:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>`,
+  chevronUp:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>`,
+  mapPin:`<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  star:`<svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  check:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  upload:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+  send:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
+  copy:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+  sparkles:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`,
+  trophy:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`,
+  flame:`<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  bulb:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+  wifi:`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`,
+  layers:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+  home:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  file:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  play:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>`,
+  msg:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  user:`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  lang:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  check2:`<svg width="20" height="20" fill="none" stroke="#10B981" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  alert:`<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  building:`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  circleCheck:`<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  rocket:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>`,
+};
+const backArrow = () => ar() ? svgIcon.arrowRight : svgIcon.arrowLeft;
+
+// ── Claude API ──
+// ── Gemini API Key — paste yours between the quotes ──
+const GEMINI_KEY = 'AIzaSyAB093CGicgL4_yM6IGI4GMDyrB1iaKHIU'; // <-- replace AIzaSyAB093CGicgL4_yM6IGI4GMDyrB1iaKHIU with your AIzaSy... key
+
+async function callClaude(prompt, system) {
+  if (!GEMINI_KEY || GEMINI_KEY === 'AIzaSyAB093CGicgL4_yM6IGI4GMDyrB1iaKHIU' || GEMINI_KEY.length < 10) {
+    return ar()
+      ? 'أضف مفتاح Gemini API في ملف HTML لتفعيل الذكاء الاصطناعي.'
+      : 'Add your Gemini API key in the HTML file to enable AI features.';
+  }
+  try {
+    const fullPrompt = `${system || `You are a career advisor for Egyptian college students. Be concise and encouraging. ${ar() ? 'Respond in Arabic.' : ''}`}\n\n${prompt}`;
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+          generationConfig: { maxOutputTokens: 800, temperature: 0.7 }
+        })
+      }
+    );
+    const data = await res.json();
+    const text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+    if (data.error) return (ar() ? 'خطأ Gemini: ' : 'Gemini error: ') + data.error.message;
+    return text || (ar() ? 'لا يوجد رد. حاول مرة أخرى.' : 'No response. Please try again.');
+  } catch(e) {
+    console.error('Gemini error:', e); return ar() ? 'خطأ في الاتصال: ' + e.message : 'Connection error: ' + e.message;
+  }
+}
+
+// ── Navigation ──
+function go(screen, opts = {}) {
+  S.history.push(S.screen);
+  if (opts.job) S.selJob = opts.job;
+  if (opts.co) S.selCo = opts.co;
+  if (['home','tracker','sim','ai','profile'].includes(screen)) S.currentTab = screen;
+  S.screen = screen;
+  render();
+  const scr = el('screen-' + screen);
+  if (scr) { scr.classList.add('anim-enter'); setTimeout(() => scr.classList.remove('anim-enter'), 400); }
+  // Scroll to top
+  setTimeout(() => { const s = el('screen-' + screen); if(s) s.scrollTop = 0; }, 10);
+}
+
+function goBack() {
+  if (S.history.length) { S.screen = S.history.pop(); render(); }
+  else go('home');
+}
+
+// ── Render engine ──
+function render() {
+  document.body.className = ar() ? 'ar' : '';
+  document.documentElement.dir = ar() ? 'rtl' : 'ltr';
+  const app = el('app');
+  app.innerHTML = buildScreen();
+  bindEvents();
+}
+
+function buildScreen() {
+  const screens = {
+    lang: buildLang,
+    welcome: buildWelcome,
+    onboard: buildOnboard,
+    home: buildHome,
+    detail: buildDetail,
+    tracker: buildTracker,
+    sim: buildSim,
+    simTasks: buildSimTasks,
+    simTask: buildSimTask,
+    simDone: buildSimDone,
+    ai: buildAI,
+    profile: buildProfile,
+    feeds: buildFeeds,
+  };
+  const navScreens = ['home','tracker','sim','ai','profile'];
+  const fn = screens[S.screen] || buildHome;
+  const content = fn();
+  const showNav = navScreens.includes(S.screen);
+  return `<div class="screen active" id="screen-${S.screen}">${content}</div>${showNav ? buildNav() : ''}`;
+}
+
+// ── Language Screen ──
+function buildLang() {
+  return `<div class="anim-fade" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 28px;background:linear-gradient(165deg,#0F172A 0%,#0D4F4A 50%,#0D9488 100%)">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--tl);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+      <svg width="28" height="28" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+    </div>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:32px;color:#fff;margin-bottom:4px;letter-spacing:-0.5px">Sho8lana</h1>
+    <p style="font-size:18px;color:rgba(255,255,255,.6);margin-bottom:24px;font-family:'Noto Kufi Arabic'">شغلانة</p>
+    <p style="font-size:16px;color:#fff;font-weight:600;margin-bottom:4px">Choose your language</p>
+    <p style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:28px;font-family:'Noto Kufi Arabic'">اختر لغتك</p>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px">
+      <button class="btn btn-white" onclick="setLang('en')" style="font-size:16px;padding:16px">
+        ${svgIcon.lang} English
+      </button>
+      <button class="btn btn-ghost" onclick="setLang('ar')" style="font-size:16px;padding:16px;font-family:'Noto Kufi Arabic'">
+        ${svgIcon.lang} العربية
+      </button>
+    </div>
+  </div>`;
+}
+
+function setLang(l) { S.lang = l; go('welcome'); }
+
+// ── Welcome ──
+function buildWelcome() {
+  return `<div class="anim-fade" dir="${ar()?'rtl':'ltr'}" style="min-height:100vh;background:linear-gradient(165deg,#0F172A 0%,#0D4F4A 50%,#0D9488 100%);display:flex;flex-direction:column;justify-content:center;padding:40px 28px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:15%;${ar()?'left':'right'}:-30px;width:180px;height:180px;border-radius:50%;background:rgba(249,112,102,.12);filter:blur(40px)"></div>
+    <div style="position:relative;z-index:2">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:42px;height:42px;border-radius:12px;background:var(--tl);display:flex;align-items:center;justify-content:center">
+          <svg width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <span style="font-family:'DM Serif Display',serif;font-size:26px;color:#fff">Sho8lana</span>
+        <button onclick="go('lang')" style="margin-inline-start:auto;background:rgba(255,255,255,.15);border:none;border-radius:8px;padding:6px 10px;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit">${svgIcon.lang}</button>
+      </div>
+      <h1 style="font-family:${ar()?"inherit":"'DM Serif Display',serif"};font-size:${ar()?'28px':'36px'};color:#fff;line-height:1.2;margin-bottom:16px;letter-spacing:${ar()?'0':'-0.5px'}">${t('tagline')}</h1>
+      <p style="font-size:15px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:40px">${t('tagSub')}</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="btn btn-white" onclick="go('onboard')" style="font-size:16px;padding:16px">${svgIcon.rocket} ${t('start')}</button>
+        <button class="btn btn-ghost" onclick="go('home')" style="padding:14px">${t('browse')}</button>
+      </div>
+      <div style="display:flex;gap:28px;margin-top:36px">
+        ${[{n:'214K+',l:ar()?'خريج/سنة':'Graduates/yr'},{n:'500+',l:ar()?'شركة':'Companies'},{n:'1-Tap',l:ar()?'تقديم':'Apply'}].map(s=>`<div style="text-align:center"><div style="font-size:20px;font-weight:700;color:#fff">${s.n}</div><div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">${s.l}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Onboarding ──
+function buildOnboard() {
+  const step = S.onboardStep;
+  return `<div dir="${ar()?'rtl':'ltr'}" style="min-height:100vh;background:#fff;padding-bottom:100px">
+    <div class="topbar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${backArrow()}</button>
+      <span style="font-weight:600;font-size:15px">${ar()?'إنشاء الملف':'Create Profile'}</span>
+      <span style="font-size:13px;color:var(--tl);font-weight:600">${step+1}/2</span>
+    </div>
+    <div style="display:flex;gap:4px;padding:0 20px;margin-top:12px">
+      ${[0,1].map(i=>`<div style="flex:1;height:3px;border-radius:2px;background:${i<=step?'var(--tl)':'var(--bd)'}"></div>`).join('')}
+    </div>
+    <div style="padding:24px 20px" class="anim-up">
+      ${step===0 ? buildOnboardStep1() : buildOnboardStep2()}
+    </div>
+    <div style="position:fixed;bottom:0;${ar()?'right':'left'}:50%;transform:translateX(${ar()?'50%':'-50%'});width:100%;max-width:430px;padding:16px 20px;background:#fff;border-top:1px solid var(--bd)">
+      <div style="display:flex;gap:10px">
+        ${step>0?`<button class="btn btn-secondary" style="width:auto;padding:12px 20px" onclick="S.onboardStep=0;render()">${t('back')}</button>`:''}
+        <button class="btn btn-primary" onclick="onboardNext()">${step<1?t('continueBtn'):ar()?'ابدأ':'Start'} ${svgIcon.chevronRight}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildOnboardStep1() {
+  const u = S.user;
+  return `<h2 style="font-size:22px;font-weight:700;margin-bottom:4px">${ar()?'معلوماتك الشخصية':'Personal Info'}</h2>
+  <p style="font-size:14px;color:var(--t2);margin-bottom:24px">${ar()?'لنبدأ بالأساسيات':'Let\'s start with the basics'}</p>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    ${[
+      {l:ar()?'الاسم الكامل':'Full Name',k:'name',ph:ar()?'مثال: داود علي':'e.g. Daoud Ali'},
+      {l:ar()?'البريد الإلكتروني':'Email',k:'email',ph:'you@university.edu.eg',type:'email'},
+      {l:ar()?'رقم الهاتف':'Phone',k:'phone',ph:ar()?'01XX XXX XXXX':'+20 1XX XXX XXXX'},
+      {l:ar()?'الجامعة':'University',k:'uni',ph:ar()?'مثال: الجامعة الألمانية الدولية':'e.g. German International University'},
+      {l:ar()?'التخصص':'Major',k:'major',ph:ar()?'مثال: إدارة الأعمال':'e.g. Business Administration'},
+    ].map(f=>`<div><label class="label">${f.l}</label><input class="input-field" type="${f.type||'text'}" placeholder="${f.ph}" value="${u[f.k]||''}" oninput="S.user['${f.k}']=this.value;save()"></div>`).join('')}
+    <div style="display:flex;gap:12px">
+      <div style="flex:1"><label class="label">GPA</label><input class="input-field" type="text" placeholder="3.5" value="${u.gpa||''}" oninput="S.user.gpa=this.value;save()"></div>
+      <div style="flex:1"><label class="label">${ar()?'سنة التخرج':'Grad Year'}</label>
+        <select class="input-field" onchange="S.user.grad=this.value;save()">
+          ${['2025','2026','2027','2028'].map(y=>`<option ${u.grad===y?'selected':''}>${y}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div><label class="label">${ar()?'المحافظة':'City / Governorate'}</label>
+      <select class="input-field" onchange="S.user.loc=this.value;save()">
+        ${GOVS.map(g=>`<option ${(u.loc||'Cairo')===g?'selected':''}>${g}</option>`).join('')}
+      </select>
+    </div>
+    <div style="background:var(--tll);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:flex-start">
+      ${svgIcon.sparkles.replace('14','18').replace('14','18')}
+      <p style="font-size:12px;color:var(--td);line-height:1.5">${t('noXP')}</p>
+    </div>
+  </div>`;
+}
+
+function buildOnboardStep2() {
+  return `<h2 style="font-size:22px;font-weight:700;margin-bottom:4px">${t('docVault')}</h2>
+  <p style="font-size:14px;color:var(--t2);margin-bottom:20px">${ar()?'ارفع مرة واحدة — قدّم في كل مكان':'Upload once — apply everywhere'}</p>
+  <div style="background:var(--gdl);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;margin-bottom:16px">
+    <svg width="16" height="16" fill="none" stroke="var(--gd)" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <p style="font-size:12px;color:#92400E;line-height:1.4">${ar()?'المستندات ترفع مرة واحدة وتُرفق تلقائياً مع كل طلب تقدمه.':'Documents are uploaded once and auto-attached to every application you submit.'}</p>
+  </div>
+  ${DOCS_DEF.map(doc => {
+    const up = S.user.docs[doc.k];
+    return `<div class="doc-slot ${up?'done':''}" onclick="toggleDoc('${doc.k}')" style="margin-bottom:8px">
+      <div style="width:40px;height:40px;border-radius:10px;background:${up?'var(--okl)':'var(--sf)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        ${up ? `<span style="color:var(--ok)">${svgIcon.check2}</span>` : `<span style="color:var(--t3)">${svgIcon.file}</span>`}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:${up?'var(--ok)':'var(--t1)'};display:flex;align-items:center;gap:4px">
+          ${ar()?doc.labelAr:doc.label}${doc.req?`<span style="color:var(--cr);font-size:10px;font-weight:700">*</span>`:''}
+        </div>
+        <div style="font-size:11px;color:${up?'#059669':'var(--t3)'};margin-top:2px">${up?t('uploaded')+' ✓':doc.desc}</div>
+      </div>
+      ${!up ? `<span style="color:var(--t3)">${svgIcon.upload}</span>` : ''}
+    </div>`;
+  }).join('')}
+  <p style="font-size:11px;color:var(--t3);margin-top:4px">* ${ar()?'مطلوب':'Required'}</p>`;
+}
+
+function toggleDoc(k) { S.user.docs[k] = S.user.docs[k] ? undefined : 1; Object.keys(S.user.docs).forEach(kk=>{ if(!S.user.docs[kk]) delete S.user.docs[kk]; }); save(); render(); }
+function onboardNext() { if (S.onboardStep < 1) { S.onboardStep = 1; render(); } else { S.onboardStep = 0; go('home'); } }
+
+// ── Home ──
+function buildHome() {
+  const q = S.searchQ.toLowerCase();
+  const jobs = JOBS.filter(j => {
+    const mq = !q || (ar()?j.ta:j.t).toLowerCase().includes(q) || j.sk.some(s=>s.toLowerCase().includes(q)) || COS.find(c=>c.id===j.cid)?.n.toLowerCase().includes(q);
+    const ml = S.locFilter==='All' || j.loc===S.locFilter;
+    return mq && ml;
+  });
+  const done = isProfileDone();
+  const upCount = Object.keys(S.user.docs).length;
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:10px">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--tl);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        </div>
+        <span style="font-family:'DM Serif Display',serif;font-size:18px">Sho8lana</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="go('feeds')" title="API Status" style="width:30px;height:30px;border-radius:8px;background:var(--sf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ok)">${svgIcon.wifi}</button>
+        <button onclick="go('lang')" style="width:30px;height:30px;border-radius:8px;background:var(--sf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">${svgIcon.lang}</button>
+      </div>
+    </div>
+    <div style="padding:12px 16px 0">
+      <div style="position:relative;margin-bottom:8px">
+        <span style="position:absolute;${ar()?'right':'left'}:12px;top:50%;transform:translateY(-50%);color:var(--t3)">${svgIcon.search}</span>
+        <input class="input-field" style="${ar()?'padding-right':'padding-left'}:36px;font-size:13px" placeholder="${t('search')}" value="${S.searchQ}" oninput="S.searchQ=this.value;render()">
+      </div>
+      <div class="scroll-x" style="display:flex;gap:7px;margin-bottom:12px;padding-bottom:2px">
+        ${['All',...[...new Set(JOBS.map(j=>j.loc))]].map(loc=>`<button class="chip ${S.locFilter===loc?'active':''}" onclick="S.locFilter='${loc}';render()" style="flex-shrink:0">${loc==='All'?(ar()?'الكل':'All'):loc}</button>`).join('')}
+      </div>
+      ${!done?`<div class="anim-up" onclick="go('onboard')" style="background:linear-gradient(135deg,var(--nv),var(--td));border-radius:16px;padding:16px 18px;color:#fff;cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+        <div><p style="font-size:14px;font-weight:600;margin-bottom:3px">${ar()?'أكمل ملفك للتقديم':'Complete profile to apply'}</p><p style="font-size:12px;opacity:.7">${ar()?'ارفع مستنداتك مرة واحدة':'Upload docs once, apply everywhere'}</p></div>
+        <div style="width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff">${Math.round((upCount/DOCS_DEF.length)*100)}%</div>
+      </div>`:''}
+      ${buildFeaturedJobs()}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="font-size:15px;font-weight:700">${jobs.length < JOBS.length ? `${jobs.length} ${t('results')}` : t('allJ')}</h3>
+      </div>
+      ${jobs.map((j,x) => buildJobCard(j, x)).join('')}
+      ${jobs.length===0?`<div style="text-align:center;padding:40px 20px;color:var(--t3)">${svgIcon.search}<p style="font-size:14px;margin-top:12px">${ar()?'لا توجد نتائج':'No results found'}</p></div>`:''}
+    </div>
+  </div>`;
+}
+
+function buildFeaturedJobs() {
+  const feat = JOBS.filter(j=>j.ft);
+  return `<div style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h3 style="font-size:15px;font-weight:700">${t('featured')}</h3>
+      <span style="color:var(--gd)">${svgIcon.star}</span>
+    </div>
+    <div class="scroll-x" style="display:flex;gap:10px;margin-${ar()?'left':'right'}:-16px;padding-bottom:4px">
+      ${feat.map((j,x) => {
+        const co = COS.find(c=>c.id===j.cid);
+        const sc = SRC_CFG[j.src];
+        return `<div class="anim-up card clickable" style="animation-delay:${x*.08}s;min-width:265px;background:linear-gradient(145deg,${co.c}11,#fff);flex-shrink:0;padding:14px" onclick="openJob(${j.id})">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:36px;height:36px;border-radius:10px;background:${co.c}15;display:flex;align-items:center;justify-content:center;font-size:16px">${co.l}</div>
+            <div style="flex:1;min-width:0"><p style="font-size:11px;color:var(--t2)">${co.n}</p><p style="font-size:14px;font-weight:700;line-height:1.2">${ar()?j.ta:j.t}</p></div>
+            <span class="src-badge" style="background:${sc.c}15;color:${sc.c}">${sc.l}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="badge" style="background:var(--tll);color:var(--td)">${svgIcon.mapPin} ${j.loc}</span><span class="badge" style="background:var(--gdl);color:#92400E">${j.pay}</span></div>
+          <p style="font-size:11px;color:var(--t3);margin-top:8px">${j.ap} ${ar()?'متقدم':'applicants'} · ${j.pd}</p>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function buildJobCard(j, x) {
+  const co = COS.find(c=>c.id===j.cid);
+  const sc = SRC_CFG[j.src];
+  const applied = S.apps.some(a=>a.jid===j.id);
+  return `<div class="card clickable anim-up" style="margin-bottom:10px;animation-delay:${x*.04}s" onclick="openJob(${j.id})">
+    <div style="display:flex;gap:12px">
+      <div style="width:44px;height:44px;border-radius:12px;background:${co.c}12;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${co.l}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><p style="font-size:14px;font-weight:700">${ar()?j.ta:j.t}</p><p style="font-size:12px;color:var(--t2);margin-top:2px">${co.n}</p></div>
+          <div style="display:flex;gap:4px;align-items:center">
+            ${applied?`<span class="badge" style="background:var(--okl);color:#059669;font-size:10px">${t('done')} ✓</span>`:''}
+            <span class="src-badge" style="background:${sc.c}15;color:${sc.c}">${sc.l}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
+          <span class="badge" style="background:var(--sf);color:var(--t2)">${svgIcon.mapPin} ${j.loc}</span>
+          <span class="badge" style="background:var(--gdl);color:#92400E">${j.pay}</span>
+          ${j.sk.slice(0,2).map(s=>`<span style="font-size:10px;color:var(--tl);background:var(--tll);padding:2px 8px;border-radius:6px;font-weight:500">${s}</span>`).join('')}
+          ${j.sk.length>2?`<span style="font-size:10px;color:var(--t3)">+${j.sk.length-2}</span>`:''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openJob(id) { S.selJob = JOBS.find(j=>j.id===id); S.matchScore=null; S.cvText=''; go('detail'); }
+
+// ── Job Detail ──
+function buildDetail() {
+  if (!S.selJob) { go('home'); return ''; }
+  const j = S.selJob;
+  const co = COS.find(c=>c.id===j.cid);
+  const applied = S.apps.some(a=>a.jid===j.id);
+  const done = isProfileDone();
+  const sc = SRC_CFG[j.src];
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:100px;background:#fff;min-height:100vh">
+    <div class="topbar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${backArrow()}</button>
+      <span style="font-weight:600;font-size:14px">${ar()?'تفاصيل التدريب':'Internship Details'}</span>
+      <div style="width:20px"></div>
+    </div>
+    <div style="padding:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:52px;height:52px;border-radius:14px;background:${co.c}12;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${co.l}</div>
+        <div style="flex:1"><h2 style="font-size:19px;font-weight:800">${ar()?j.ta:j.t}</h2><p style="font-size:13px;color:var(--t2)">${co.n}</p></div>
+        <span class="src-badge" style="background:${sc.c}15;color:${sc.c};font-size:10px;padding:4px 8px">${sc.l}</span>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px">
+        <span class="badge" style="background:var(--tll);color:var(--td)">${svgIcon.mapPin} ${j.loc}</span>
+        <span class="badge" style="background:var(--gdl);color:#92400E">${j.pay}</span>
+        <span class="badge" style="background:var(--sf);color:var(--t2)">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          ${ar()?'3 أشهر':'3 months'}
+        </span>
+        <span class="badge" style="background:var(--sf);color:var(--t2)">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          ${j.ap} ${ar()?'متقدم':'applied'}
+        </span>
+      </div>
+      <!-- AI Match -->
+      <div style="background:linear-gradient(135deg,#EDE9FE,#F3E8FF);border:1px solid #DDD6FE;border-radius:14px;padding:16px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${S.matchScore?'10px':'0'}">
+          <div style="display:flex;align-items:center;gap:6px">${svgIcon.sparkles}<span style="font-size:13px;font-weight:700;color:#5B21B6">${t('match')}</span></div>
+          ${!S.matchScore && !S.matchLoading ? `<button class="btn btn-sm" onclick="getMatchScore()" style="background:#7C3AED;color:#fff;border:none;gap:4px">${svgIcon.sparkles} ${ar()?'احسب':'Calculate'}</button>` : ''}
+          ${S.matchLoading ? `<div style="display:flex;align-items:center;gap:8px;color:#7C3AED;font-size:12px"><div class="loader" style="border-top-color:#7C3AED"></div>${t('generating')}</div>` : ''}
+        </div>
+        ${S.matchScore ? `<div class="anim-up">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:50%;background:conic-gradient(#7C3AED ${S.matchScore.score*3.6}deg,#EDE9FE ${S.matchScore.score*3.6}deg);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <div style="width:40px;height:40px;border-radius:50%;background:#F3E8FF;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#5B21B6">${S.matchScore.score}%</div>
+            </div>
+            <div>${(S.matchScore.reasons||[]).map(r=>`<p style="font-size:11px;color:#6D28D9;line-height:1.5">✓ ${r}</p>`).join('')}</div>
+          </div>
+          ${(S.matchScore.tips||[]).length?`<div style="border-top:1px solid #DDD6FE;padding-top:8px;margin-top:8px">${S.matchScore.tips.map(tp=>`<p style="font-size:11px;color:#6D28D9">💡 ${tp}</p>`).join('')}</div>`:''}
+        </div>` : ''}
+      </div>
+      <!-- About -->
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">${t('about')}</h3>
+      <p style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:20px">${ar()?j.dar:j.d}</p>
+      <!-- Requirements -->
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">${ar()?'المتطلبات':'Requirements'}</h3>
+      <div style="margin-bottom:20px">
+        ${(ar()?j.rqa:j.rq).map(r=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px"><span style="color:var(--tl);flex-shrink:0;margin-top:2px">${svgIcon.check}</span><p style="font-size:13px;color:var(--t2);line-height:1.5">${r}</p></div>`).join('')}
+      </div>
+      <!-- Skills -->
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">${t('skills')}</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+        ${j.sk.map(s=>`<span style="padding:6px 14px;border-radius:20px;background:var(--tll);color:var(--td);font-size:12px;font-weight:500">${s}</span>`).join('')}
+      </div>
+      <!-- Docs -->
+      <div style="background:var(--sf);border-radius:14px;padding:14px;margin-bottom:16px">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:8px">${t('docs')}</h4>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${DOCS_DEF.filter(d=>d.req).map(d=>{const up=S.user.docs[d.k];return`<span class="badge" style="background:${up?'var(--okl)':'#FEF2F2'};color:${up?'#059669':'#DC2626'}">${up?svgIcon.circleCheck:svgIcon.alert} ${ar()?d.labelAr:d.label}</span>`;}).join('')}
+        </div>
+        ${!done?`<p style="font-size:11px;color:var(--cr);margin-top:8px">${ar()?'← أكمل ملفك للتقديم':'Complete your profile to apply →'}</p>`:''}
+      </div>
+      <!-- Cover Letter -->
+      <div style="background:var(--sf);border-radius:14px;padding:14px;border:1px solid var(--bd)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px;color:var(--tl)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span style="font-size:13px;font-weight:700">${t('cover')}</span>
+          </div>
+          ${S.cvLoading ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)"><div class="loader"></div>${t('generating')}</div>` :
+            `<button class="btn btn-sm btn-primary" onclick="genCoverLetter()" style="font-size:11px">${svgIcon.sparkles} ${t('genCover')}</button>`}
+        </div>
+        ${S.cvText ? `<div class="anim-up" style="margin-top:12px;background:#fff;border-radius:10px;padding:12px;border:1px solid var(--bd)">
+          <p id="cv-text-inner" style="font-size:12px;color:var(--t2);line-height:1.7;white-space:pre-wrap">${S.cvText}</p>
+          <button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('cv-text-inner').textContent)" style="margin-top:8px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--t2);font-family:inherit">${svgIcon.copy} ${ar()?'نسخ':'Copy'}</button>
+        </div>` : ''}
+      </div>
+    </div>
+    <!-- CTA -->
+    <div style="position:fixed;bottom:0;${ar()?'right':'left'}:50%;transform:translateX(${ar()?'50%':'-50%'});width:100%;max-width:430px;padding:14px 20px max(14px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--bd)">
+      ${applied
+        ? `<button class="btn" style="background:var(--ok);color:#fff" disabled><span style="color:#fff">${svgIcon.check}</span> ${t('sent')}</button>`
+        : `<button class="btn btn-primary" onclick="applyToJob(${j.id})" ${!done?'disabled style="opacity:.5"':''}>${svgIcon.send} ${done?t('apply'):t('noDoc')}</button>`}
+    </div>
+  </div>`;
+}
+
+async function getMatchScore() {
+  S.matchLoading = true; render();
+  const j = S.selJob; const co = COS.find(c=>c.id===j.cid);
+  const res = await callClaude(
+    `Rate match 0-100. Return ONLY JSON: {"score":N,"reasons":["r1","r2","r3"],"tips":["t1","t2"]}. Student: ${S.user.name||'Student'}, ${S.user.major||'Business'}, GPA:${S.user.gpa||'3.0'}, ${S.user.loc}. Job: ${j.t} at ${co.n}, ${j.loc}, Skills: ${j.sk.join(', ')}. ${ar()?'reasons and tips in Arabic.':''}`,
+    'Return ONLY valid JSON. No markdown. No explanation.'
+  );
+  try { S.matchScore = JSON.parse(res.replace(/```json|```/g,'').trim()); }
+  catch { S.matchScore = {score:74,reasons:[ar()?'تخصص مناسب':'Relevant major',ar()?'موقع قريب':'Good location',ar()?'مهارات متوافقة':'Skills alignment'],tips:[ar()?'طوّر مهاراتك التقنية':'Build technical skills']}; }
+  S.matchLoading = false; render();
+}
+
+async function genCoverLetter() {
+  S.cvLoading = true; render();
+  const j = S.selJob; const co = COS.find(c=>c.id===j.cid);
+  const res = await callClaude(
+    `Write a 100-word professional cover letter for ${j.t} at ${co.n} in Egypt. Student: ${S.user.name||'Student'}, studying ${S.user.major||'Business'} at ${S.user.uni||'Egyptian university'}, GPA: ${S.user.gpa||'3.0'}. ${ar()?'Write in Arabic.':'Write in English.'}`,
+    `Write concise professional cover letters. ${ar()?'In Arabic.':''}`
+  );
+  S.cvText = res; S.cvLoading = false; render();
+}
+
+function applyToJob(id) {
+  const j = JOBS.find(j=>j.id===id);
+  if (!j || S.apps.find(a=>a.jid===id)) return;
+  const co = COS.find(c=>c.id===j.cid);
+  S.apps.push({id:Date.now(),jid:id,title:ar()?j.ta:j.t,co:co.n,st:'applied',dt:new Date().toLocaleDateString('en-GB'),logo:co.l});
+  save(); render();
+}
+
+function isProfileDone() {
+  const req = DOCS_DEF.filter(d=>d.req).map(d=>d.k);
+  return S.user.name && S.user.uni && S.user.major && req.every(k=>S.user.docs[k]);
+}
+
+// ── Tracker ──
+function buildTracker() {
+  const stCfg = {applied:{l:ar()?'تم التقديم':'Applied',c:'#3B82F6',b:'#EFF6FF'},reviewing:{l:ar()?'قيد المراجعة':'Under Review',c:'var(--gd)',b:'var(--gdl)'},interview:{l:ar()?'مقابلة':'Interview',c:'var(--tl)',b:'var(--tll)'},offer:{l:ar()?'عرض وظيفي':'Offer!',c:'var(--ok)',b:'var(--okl)'},rejected:{l:ar()?'مرفوض':'Not Selected',c:'var(--cr)',b:'var(--crl)'}};
+  return `<div dir="${ar()?'rtl':'ltr'}">
+    <div class="topbar">
+      <h2 style="font-size:18px;font-weight:700">${t('myApps')}</h2>
+      <span class="badge" style="background:var(--tll);color:var(--td)">${S.apps.length}</span>
+    </div>
+    <div style="padding:16px">
+      ${S.apps.length===0
+        ? `<div style="text-align:center;padding:60px 20px">
+            <div style="width:64px;height:64px;border-radius:20px;background:var(--sf);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--bd2)">${svgIcon.file}</div>
+            <h3 style="font-size:16px;font-weight:600;margin-bottom:6px">${t('noApps')}</h3>
+            <button class="btn btn-primary" onclick="go('home')" style="max-width:200px;margin:12px auto 0">${t('findJ')}</button>
+          </div>`
+        : S.apps.map((a,x) => {
+            const st = stCfg[a.st] || stCfg.applied;
+            const steps = ['applied','reviewing','interview','offer'];
+            return `<div class="card anim-up" style="margin-bottom:10px;animation-delay:${x*.06}s">
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="width:42px;height:42px;border-radius:12px;background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:20px">${a.logo}</div>
+                <div style="flex:1"><p style="font-size:14px;font-weight:600">${a.title}</p><p style="font-size:12px;color:var(--t3)">${a.co} · ${a.dt}</p></div>
+                <span class="badge" style="background:${st.b};color:${st.c}">${st.l}</span>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:10px">
+                ${steps.map((_,i)=>`<div style="flex:1;height:3px;border-radius:2px;background:${steps.indexOf(a.st)>=i?st.c:'var(--bd)'}"></div>`).join('')}
+              </div>
+            </div>`;
+          }).join('')
+      }
+    </div>
+  </div>`;
+}
+
+// ── Simulation Hub ──
+function buildSim() {
+  return `<div dir="${ar()?'rtl':'ltr'}">
+    <div class="topbar">
+      <h2 style="font-size:18px;font-weight:700">${t('simHub')}</h2>
+      ${S.simXP>0?`<span class="badge" style="background:var(--gdl);color:#92400E">${svgIcon.flame} ${S.simXP} ${t('xp')}</span>`:''}
+    </div>
+    <div style="padding:16px">
+      ${S.simXP>0 ? `<div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,var(--nv),var(--td));color:#fff;border:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:600">${t('yourProg')}</span>
+          <span style="font-size:13px;font-weight:700">${S.simXP} XP</span>
+        </div>
+        <div style="display:flex;gap:20px">
+          <div><p style="font-size:22px;font-weight:800">${S.simDone.length}</p><p style="font-size:10px;opacity:.6">${t('completed')}</p></div>
+          <div><p style="font-size:22px;font-weight:800">${S.simBadges.length}</p><p style="font-size:10px;opacity:.6">${t('badges')}</p></div>
+        </div>
+        ${S.simBadges.length>0?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${S.simBadges.map(b=>`<span style="background:rgba(255,255,255,.15);border-radius:8px;padding:3px 10px;font-size:10px;font-weight:600">${svgIcon.trophy} ${b.label}</span>`).join('')}</div>`:''}
+      </div>` : ''}
+
+      <div style="background:linear-gradient(135deg,#EDE9FE,#F3E8FF);border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid #DDD6FE">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <svg width="20" height="20" fill="none" stroke="#7C3AED" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <h3 style="font-size:16px;font-weight:700;color:#5B21B6">${t('simHub')}</h3>
+        </div>
+        <p style="font-size:13px;color:#6D28D9;line-height:1.6">${t('simSub')}</p>
+      </div>
+
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px">${t('chooseTrack')}</h3>
+      ${SIM_TRACKS.map((track,i) => {
+        const tasksDone = track.tasks.filter(tk=>S.simDone.includes(tk.id)).length;
+        return `<div class="track-card anim-up" style="animation-delay:${i*.08}s;background:linear-gradient(145deg,${track.color}08,${track.color}03);border-color:${track.color}25" onclick="openTrack('${track.id}')">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:48px;height:48px;border-radius:14px;background:${track.color}15;display:flex;align-items:center;justify-content:center;color:${track.color}">${track.icon}</div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px">
+                <h4 style="font-size:15px;font-weight:700">${ar()?track.labelAr:track.label}</h4>
+                ${tasksDone>0?`<span class="badge" style="background:${track.color}15;color:${track.color};font-size:10px">${tasksDone}/${track.tasks.length}</span>`:''}
+              </div>
+              <p style="font-size:12px;color:var(--t2);line-height:1.5;margin-top:2px">${ar()?track.descAr:track.desc}</p>
+            </div>
+            <span style="color:${track.color}">${svgIcon.chevronRight}</span>
+          </div>
+          ${tasksDone>0?`<div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="background:${track.color};width:${(tasksDone/track.tasks.length)*100}%"></div></div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function openTrack(id) { S.simTrack = SIM_TRACKS.find(t=>t.id===id); go('simTasks'); }
+
+// ── Sim Task List ──
+function buildSimTasks() {
+  if (!S.simTrack) { go('sim'); return ''; }
+  const track = S.simTrack;
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:20px">
+    <div class="topbar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${backArrow()}</button>
+      <span style="font-weight:600;font-size:15px">${ar()?track.labelAr:track.label}</span>
+      <div style="width:20px"></div>
+    </div>
+    <div style="padding:16px">
+      ${track.tasks.map((task,i) => {
+        const isDone = S.simDone.includes(task.id);
+        return `<div class="card clickable anim-up" style="margin-bottom:12px;animation-delay:${i*.08}s;opacity:${isDone?.8:1};border-color:${isDone?'var(--ok)':'var(--bd)'}" onclick="${!isDone?`startSimTask('${track.id}','${task.id}')`:''}" >
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:44px;height:44px;border-radius:12px;background:${isDone?'var(--okl)':`${track.color}12`};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:${isDone?'var(--ok)':track.color}">${isDone?svgIcon.check2:track.icon}</div>
+            <div style="flex:1">
+              <p style="font-size:14px;font-weight:700">${ar()?task.titleAr:task.title}</p>
+              <div style="display:flex;gap:8px;margin-top:5px">
+                <span class="badge" style="background:var(--gdl);color:#92400E">${svgIcon.flame} ${task.xp} XP</span>
+                <span class="badge" style="background:var(--sf);color:var(--t2)">
+                  <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  ${task.time}
+                </span>
+              </div>
+              ${isDone?`<p style="font-size:11px;color:var(--ok);font-weight:600;margin-top:5px">✓ ${ar()?task.badgeAr:task.badge}</p>`:`<p style="font-size:11px;color:var(--t3);margin-top:5px">${task.steps.length} ${ar()?'خطوات':'steps'}</p>`}
+            </div>
+            ${!isDone?`<span style="color:var(--t2)">${svgIcon.chevronRight}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function startSimTask(trackId, taskId) {
+  S.simTrack = SIM_TRACKS.find(t=>t.id===trackId);
+  S.simTask = S.simTrack.tasks.find(t=>t.id===taskId);
+  S.simStep = 0; S.simAnswers = {}; S.simMulti = {}; S.showHint = false; S.simFeedback = null;
+  go('simTask');
+}
+
+// ── Sim Task Execution ──
+function buildSimTask() {
+  if (!S.simTask) { go('sim'); return ''; }
+  const task = S.simTask;
+  const track = S.simTrack;
+  const step = task.steps[S.simStep];
+  const isLast = S.simStep === task.steps.length - 1;
+  const ans = S.simAnswers[S.simStep];
+  const hasAns = step.type==='text' ? (ans||'').trim().length>10 : (S.simMulti[S.simStep]||[]).length>0;
+
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:100px;background:#fff;min-height:100vh">
+    <div class="topbar" style="gap:8px">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${backArrow()}</button>
+      <div style="flex:1;min-width:0">
+        <p style="font-size:11px;color:var(--t2);margin-bottom:2px">${ar()?task.titleAr:task.title}</p>
+        <div style="display:flex;gap:3px">
+          ${task.steps.map((_,i)=>`<div style="flex:1;height:3px;border-radius:2px;background:${i<=S.simStep?track.color:'var(--bd)'};transition:.3s"></div>`).join('')}
+        </div>
+      </div>
+      <span style="font-size:12px;color:${track.color};font-weight:600;white-space:nowrap">${S.simStep+1}/${task.steps.length}</span>
+    </div>
+
+    ${S.simStep===0 ? `<div style="margin:14px 20px 0;background:linear-gradient(135deg,var(--nv),#1E3A5F);border-radius:14px;padding:16px;color:#fff">
+      <p style="font-size:10px;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${ar()?'السيناريو':'SCENARIO'}</p>
+      <p style="font-size:13px;line-height:1.7;opacity:.92">${ar()?task.scenarioAr:task.scenario}</p>
+    </div>` : ''}
+
+    <div style="padding:${S.simStep===0?'16px':'20px'} 20px 0">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="step-num" style="background:${track.color}15;color:${track.color}">${S.simStep+1}</div>
+        <h3 style="font-size:16px;font-weight:700">${ar()?step.tAr:step.t}</h3>
+      </div>
+
+      <!-- Guide toggle -->
+      <button onclick="S.showHint=!S.showHint;render()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:12px;color:var(--gd);font-weight:600;font-size:13px;font-family:inherit;padding:0">
+        ${svgIcon.bulb} ${S.showHint?t('hideGuide'):t('guide')} ${S.showHint?svgIcon.chevronUp:svgIcon.chevronDown}
+      </button>
+
+      ${S.showHint ? `<div class="hint-box anim-up" style="margin-bottom:14px">
+        <p style="font-size:12px;color:#92400E;line-height:1.7">${ar()?step.hintAr:step.hint}</p>
+      </div>` : ''}
+
+      <!-- Input area -->
+      ${step.type==='text' ? `<textarea class="input-field" rows="5" placeholder="${ar()&&step.phAr?step.phAr:(step.ph||'')}" oninput="S.simAnswers[${S.simStep}]=this.value" style="margin-top:4px">${S.simAnswers[S.simStep]||''}</textarea>`
+        : `<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            ${step.options.map(opt => {
+              const sel = (S.simMulti[S.simStep]||[]).includes(opt);
+              return `<button class="sim-option ${sel?'selected':''}" style="color:${sel?track.color:'var(--t2)'};border-color:${sel?track.color:'var(--bd)'};background:${sel?`${track.color}08`:'#fff'}" onclick="toggleSimMulti(${S.simStep},'${opt.replace(/'/g,"\\'")}')">
+                <span style="width:20px;height:20px;border-radius:50%;border:2px solid ${sel?track.color:'var(--bd)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  ${sel?`<span style="color:${track.color}">${svgIcon.check}</span>`:''}
+                </span>
+                ${opt}
+              </button>`;
+            }).join('')}
+          </div>`
+      }
+    </div>
+
+    <div style="position:fixed;bottom:0;${ar()?'right':'left'}:50%;transform:translateX(${ar()?'50%':'-50%'});width:100%;max-width:430px;padding:14px 20px max(14px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--bd)">
+      <button class="btn btn-primary" style="background:${isLast?track.color:'var(--tl)'};opacity:${hasAns?1:.45}" ${!hasAns?'disabled':''} onclick="nextSimStep()">
+        ${isLast?`${svgIcon.trophy} ${t('submit')}`:`${t('next')} ${ar()?svgIcon.arrowLeft:svgIcon.arrowRight}`}
+      </button>
+    </div>
+  </div>`;
+}
+
+function toggleSimMulti(step, opt) {
+  if (!S.simMulti[step]) S.simMulti[step] = [];
+  const idx = S.simMulti[step].indexOf(opt);
+  if (idx>=0) S.simMulti[step].splice(idx,1); else S.simMulti[step].push(opt);
+  S.simAnswers[step] = S.simMulti[step];
+  render();
+}
+
+function nextSimStep() {
+  if (S.simStep < S.simTask.steps.length-1) {
+    S.simStep++; S.showHint=false; render();
+  } else {
+    // Complete task
+    const tid = S.simTask.id;
+    if (!S.simDone.includes(tid)) {
+      S.simDone.push(tid);
+      S.simXP += S.simTask.xp;
+      S.simBadges.push({id:tid,label:ar()?S.simTask.badgeAr:S.simTask.badge,track:S.simTrack.id});
+      save();
+    }
+    go('simDone');
+  }
+}
+
+// ── Sim Done ──
+function buildSimDone() {
+  if (!S.simTask) { go('sim'); return ''; }
+  const task = S.simTask;
+  const track = S.simTrack;
+  return `<div dir="${ar()?'rtl':'ltr'}" style="min-height:100vh;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center">
+    <div style="animation:celebrate .6s ease-out">
+      <div style="width:80px;height:80px;border-radius:50%;background:${track.color}15;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:${track.color}"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div>
+      <h2 style="font-size:26px;font-weight:800;margin-bottom:6px">${t('congrats')}</h2>
+      <p style="font-size:15px;color:var(--t2);margin-bottom:24px">${t('taskDone')}</p>
+      <div style="display:flex;gap:16px;justify-content:center;margin-bottom:28px">
+        <div style="background:var(--gdl);border-radius:14px;padding:14px 22px">
+          <p style="font-size:22px;font-weight:800;color:#92400E">+${task.xp}</p>
+          <p style="font-size:11px;color:#B45309">${t('xpEarned')}</p>
+        </div>
+        <div style="background:${track.color}10;border-radius:14px;padding:14px 22px">
+          <p style="font-size:14px;font-weight:700;color:${track.color}">${ar()?task.badgeAr:task.badge}</p>
+          <p style="font-size:11px;color:${track.color}">${t('badgeEarned')}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Feedback -->
+    <div style="width:100%;text-align:${ar()?'right':'left'};margin-bottom:24px">
+      ${S.simFbLoading ? `<div style="display:flex;align-items:center;gap:8px;color:${track.color};font-size:13px"><div class="loader" style="border-top-color:${track.color}"></div>${t('generating')}</div>`
+        : !S.simFeedback ? `<button class="btn btn-secondary" style="border-color:${track.color};color:${track.color}" onclick="getSimFeedback()">${svgIcon.sparkles} ${t('getAIFeedback')}</button>`
+        : `<div class="anim-up" style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:16px">
+            <p style="font-size:13px;font-weight:700;margin-bottom:8px;color:${track.color}">${t('feedback')}</p>
+            <p style="font-size:12px;color:var(--t2);line-height:1.7;white-space:pre-wrap">${S.simFeedback}</p>
+          </div>`
+      }
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+      <button class="btn btn-primary" style="background:${track.color}" onclick="S.simTask=null;S.simFeedback=null;go('simTasks')">${t('another')}</button>
+      <button class="btn btn-secondary" onclick="S.simTask=null;S.simTrack=null;S.simFeedback=null;go('sim')">${t('backHub')}</button>
+    </div>
+  </div>`;
+}
+
+async function getSimFeedback() {
+  S.simFbLoading = true; render();
+  const answers = Object.entries(S.simAnswers).map(([k,v])=>`Step ${parseInt(k)+1}: ${Array.isArray(v)?v.join(', '):v}`).join('\n');
+  const res = await callClaude(
+    `Review this student's business simulation work. Task: ${S.simTask.title}. Scenario: ${S.simTask.scenario}\n\nStudent work:\n${answers}\n\nProvide: 1) Score /10, 2) What they did well (2 things), 3) What to improve (2 things), 4) One expert tip. Be encouraging and specific. ${ar()?'In Arabic.':''}`,
+    `Business simulation evaluator for Egyptian students. Be constructive and motivating. ${ar()?'Respond in Arabic.':''}`
+  );
+  S.simFeedback = res; S.simFbLoading = false; render();
+}
+
+// ── AI Assistant ──
+function buildAI() {
+  const suggestions = ar()
+    ? ['كيف أحضر لمقابلة عمل؟','أفضل المهارات المطلوبة في مصر','كيف أكتب سيرة ذاتية مميزة','نصائح للتدريب الأول']
+    : ['How to prepare for interviews in Egypt?','Top skills for Egypt\'s job market 2025','How to write a standout CV as a student','Tips for my first internship'];
+
+  return `<div dir="${ar()?'rtl':'ltr'}" style="display:flex;flex-direction:column;height:100vh;height:100dvh">
+    <div class="topbar">
+      <h2 style="font-size:18px;font-weight:700">${t('aiChat')}</h2>
+      <span class="badge" style="background:var(--pul);color:var(--pu)">${svgIcon.sparkles} Gemini AI</span>
+    </div>
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+      ${S.chat.length===0 ? `<div style="text-align:center;padding:30px 16px" class="anim-fade">
+        <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--pu)">${svgIcon.msg}</div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">${t('aiChat')}</h3>
+        <p style="font-size:12px;color:var(--t3);margin-bottom:20px;line-height:1.6">${ar()?'مدعوم بذكاء Gemini من Google':'Powered by Gemini AI from Google'}</p>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          ${suggestions.map(s=>`<button onclick="setAIInput(this)" data-val="${s}" style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--t2);cursor:pointer;text-align:${ar()?'right':'left'};font-family:inherit;line-height:1.4">${s}</button>`).join('')}
+        </div>
+      </div>` : S.chat.map(m=>`<div class="${m.r==='u'?'msg-user':'msg-ai'} anim-up">${m.t}</div>`).join('')}
+      ${S.aiLoading ? `<div class="msg-ai" style="display:flex;align-items:center;gap:8px"><div class="loader"></div> <span class="dots"><span>•</span><span>•</span><span>•</span></span></div>` : ''}
+    </div>
+    <div style="padding:10px 14px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:#fff;display:flex;gap:8px">
+      <input class="input-field" id="ai-input" placeholder="${t('askPh')}" value="${S.aiInput||''}" oninput="S.aiInput=this.value" onkeydown="if(event.key==='Enter')sendAIMessage()" style="flex:1;padding:11px 14px;font-size:13px">
+      <button onclick="sendAIMessage()" style="width:44px;height:44px;border-radius:12px;background:${S.aiInput?.trim()?'var(--tl)':'var(--sf)'};border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:${S.aiInput?.trim()?'#fff':'var(--t3)'}">
+        ${svgIcon.send}
+      </button>
+    </div>
+  </div>`;
+}
+
+function setAIInput(btn) { S.aiInput = btn.dataset.val; render(); setTimeout(()=>{ const inp=el('ai-input'); if(inp){inp.focus();inp.value=S.aiInput;} },100); }
+
+async function sendAIMessage() {
+  const msg = (S.aiInput||'').trim();
+  if (!msg || S.aiLoading) return;
+  S.aiInput = ''; S.aiLoading = true;
+  S.chat.push({r:'u',t:msg}); render();
+  const ctx = S.user.name ? `Student: ${S.user.name}, ${S.user.uni||''}, ${S.user.major||''}, GPA: ${S.user.gpa||''}` : '';
+  const res = await callClaude(`${ctx}\n\n${msg}`, `You are Sho8lana's AI career assistant for Egyptian students and fresh graduates. Give specific, practical advice about Egypt's job market. ${ar()?'Always respond in Arabic.':'Respond in English.'} Keep responses under 120 words.`);
+  S.chat.push({r:'a',t:res}); S.aiLoading = false; render();
+  setTimeout(()=>{ const msgs=el('chat-messages'); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100);
+}
+
+// ── Profile ──
+function buildProfile() {
+  const u = S.user;
+  const initial = u.name ? u.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : '?';
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:20px">
+    <div class="topbar">
+      <h2 style="font-size:18px;font-weight:700">${t('myProf')}</h2>
+      <button onclick="go('onboard')" class="chip active" style="font-size:11px;padding:5px 12px">${t('edit')}</button>
+    </div>
+    <div style="padding:16px">
+      <div class="card" style="text-align:center;padding:24px;margin-bottom:12px">
+        <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--tl),var(--td));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;color:#fff;font-weight:700">${initial}</div>
+        <h3 style="font-size:18px;font-weight:700">${u.name||'—'}</h3>
+        <p style="font-size:13px;color:var(--t2);margin-top:3px">${u.uni||'—'} · ${u.major||'—'}</p>
+        ${u.email?`<p style="font-size:12px;color:var(--t3);margin-top:3px">${u.email}</p>`:''}
+        <div style="display:flex;justify-content:center;gap:20px;margin-top:16px">
+          <div><p style="font-size:18px;font-weight:700;color:var(--tl)">${S.apps.length}</p><p style="font-size:10px;color:var(--t3)">${ar()?'طلبات':'Applied'}</p></div>
+          <div style="width:1px;background:var(--bd)"></div>
+          <div><p style="font-size:18px;font-weight:700;color:#8B5CF6">${S.simXP}</p><p style="font-size:10px;color:var(--t3)">XP</p></div>
+          <div style="width:1px;background:var(--bd)"></div>
+          <div><p style="font-size:18px;font-weight:700;color:var(--gd)">${S.simBadges.length}</p><p style="font-size:10px;color:var(--t3)">${t('badges')}</p></div>
+        </div>
+      </div>
+
+      ${S.simBadges.length>0 ? `<h4 style="font-size:14px;font-weight:700;margin:16px 0 10px">${t('badges')}</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        ${S.simBadges.map(b=>{const tr=SIM_TRACKS.find(t=>t.id===b.track);return`<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:8px;flex:0"><span style="color:${tr?.color||'var(--gd)'}">${svgIcon.trophy}</span><span style="font-size:12px;font-weight:600">${b.label}</span></div>`;}).join('')}
+      </div>` : ''}
+
+      <h4 style="font-size:14px;font-weight:700;margin:16px 0 10px">${t('docVault')}</h4>
+      ${DOCS_DEF.map(doc=>{
+        const up = u.docs[doc.k];
+        return `<div class="doc-slot ${up?'done':''}" onclick="toggleDoc('${doc.k}')" style="margin-bottom:7px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${up?'var(--okl)':'var(--sf)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            ${up?`<span style="color:var(--ok)">${svgIcon.check2}</span>`:`<span style="color:var(--t3)">${svgIcon.file}</span>`}
+          </div>
+          <div style="flex:1">
+            <p style="font-size:13px;font-weight:600;color:${up?'var(--ok)':'var(--t1)'}">${ar()?doc.labelAr:doc.label}</p>
+            <p style="font-size:11px;color:${up?'#059669':'var(--t3)'}">${up?t('uploaded'):t('upload')}</p>
+          </div>
+          ${!up?`<span style="color:var(--t3)">${svgIcon.upload}</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ── API Feeds Status ──
+function buildFeeds() {
+  const apis = [
+    {name:'LinkedIn Jobs API',status:'connected',count:847,info:'OAuth 2.0 · REST · 100 req/min'},
+    {name:'Wuzzuf Egypt API',status:'connected',count:312,info:'Partnership API · Webhook sync'},
+    {name:'Company ATS Direct',status:'connected',count:156,info:'REST/GraphQL · Real-time push'},
+    {name:'Google Maps Platform',status:'connected',count:null,info:'Places · Geocoding · Distance'},
+    {name:'Gemini AI (Google)',status:'connected',count:null,info:'gemini-2.0-flash · generativelanguage API'},
+    {name:'Paymob Payments',status:'syncing',count:null,info:'2.75% + EGP 3 · Fawry/Visa'},
+    {name:'Firebase Notifications',status:'connected',count:null,info:'FCM · Push alerts · Reminders'},
+    {name:'Cloudinary CDN',status:'connected',count:null,info:'Doc storage · Image hosting'},
+  ];
+  const stColor = s => s==='connected'?'var(--ok)':s==='syncing'?'var(--gd)':'var(--cr)';
+  return `<div dir="${ar()?'rtl':'ltr'}" style="padding-bottom:20px">
+    <div class="topbar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${backArrow()}</button>
+      <h2 style="font-size:16px;font-weight:700">${ar()?'اتصالات API':'API Connections'}</h2>
+      <div style="width:20px"></div>
+    </div>
+    <div style="padding:16px">
+      <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,var(--nv),#1E3A5F);color:#fff;border:none;padding:20px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="color:#60A5FA">${svgIcon.layers}</span><h3 style="font-size:15px;font-weight:700">${ar()?'بيانات حية في الوقت الفعلي':'Real-Time Live Data'}</h3></div>
+        <p style="font-size:12px;opacity:.7;line-height:1.6;margin-bottom:14px">${ar()?'شغلانة تجمع بيانات من مصادر متعددة عبر APIs لعرض أحدث الفرص.':'Sho8lana aggregates data from multiple sources via APIs to show the latest opportunities.'}</p>
+        <div style="display:flex;gap:20px">
+          ${[{n:'1,315',l:ar()?'إجمالي':'Total'},{n:'8',l:'APIs'},{n:'99.2%',l:ar()?'وقت التشغيل':'Uptime'}].map(s=>`<div><p style="font-size:20px;font-weight:800">${s.n}</p><p style="font-size:10px;opacity:.6">${s.l}</p></div>`).join('')}
+        </div>
+      </div>
+      ${apis.map((api,i)=>`<div class="card anim-up" style="margin-bottom:10px;animation-delay:${i*.05}s">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:12px;background:var(--sf);display:flex;align-items:center;justify-content:center;color:var(--t2)">${svgIcon.wifi}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:6px">
+              <p style="font-size:13px;font-weight:600">${api.name}</p>
+              <div style="width:8px;height:8px;border-radius:50%;background:${stColor(api.status)}${api.status==='syncing'?';animation:pulse 1s infinite':''}"></div>
+            </div>
+            <p style="font-size:10px;color:var(--t3);font-family:monospace;margin-top:2px">${api.info}${api.count?' · '+api.count+' listings':''}</p>
+          </div>
+          <span class="badge" style="background:${api.status==='connected'?'var(--okl)':'var(--gdl)'};color:${stColor(api.status)};font-size:10px">${ar()?api.status==='connected'?'متصل':api.status==='syncing'?'مزامنة':'غير متصل':api.status}</span>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── Bottom Nav ──
+function buildNav() {
+  const tabs = [
+    {id:'home',icon:svgIcon.home,l:t('home')},
+    {id:'tracker',icon:svgIcon.file,l:t('appNav')},
+    {id:'sim',icon:svgIcon.play,l:t('sim')},
+    {id:'ai',icon:svgIcon.msg,l:t('ai')},
+    {id:'profile',icon:svgIcon.user,l:t('prof')},
+  ];
+  const cur = S.currentTab || S.screen;
+  return `<div class="bottom-nav">
+    ${tabs.map(tab=>`
+      <button class="nav-item ${cur===tab.id?'active':''}" onclick="navTo('${tab.id}')">
+        ${tab.icon}
+        <span>${tab.l}</span>
+        ${tab.id==='tracker'&&S.apps.length>0?`<div class="nav-badge" style="background:var(--cr)">${S.apps.length}</div>`:''}
+        ${tab.id==='sim'&&S.simBadges.length>0?`<div class="nav-badge" style="background:var(--gd)">${S.simBadges.length}</div>`:''}
+      </button>
+    `).join('')}
+  </div>`;
+}
+
+function navTo(tab) {
+  S.currentTab = tab; S.history = []; S.screen = tab; render();
+  const scr = el('screen-'+tab); if(scr){scr.classList.add('anim-enter');setTimeout(()=>scr.classList.remove('anim-enter'),400);}
+}
+
+// ── Event binding ──
+function bindEvents() {
+  // PWA install prompt
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); window._pwaPrompt = e;
+  });
+}
+
+// ── Init ──
+window.S = S;
+window.go = go;
+window.goBack = goBack;
+window.navTo = navTo;
+window.setLang = setLang;
+window.toggleDoc = toggleDoc;
+window.onboardNext = onboardNext;
+window.openJob = openJob;
+window.applyToJob = applyToJob;
+window.getMatchScore = getMatchScore;
+window.genCoverLetter = genCoverLetter;
+window.openTrack = openTrack;
+window.startSimTask = startSimTask;
+window.toggleSimMulti = toggleSimMulti;
+window.nextSimStep = nextSimStep;
+window.getSimFeedback = getSimFeedback;
+window.sendAIMessage = sendAIMessage;
+window.setAIInput = setAIInput;
+
+render();
+</script>
+</body>
+</html>
