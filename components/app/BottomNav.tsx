@@ -1,17 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Home, FileText, PlayCircle, MessageCircle, User } from 'lucide-react'
+import { Home, Trophy, PlayCircle, MessageCircle, User } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import type { Screen } from '@/lib/types'
 
 const TABS: { id: Screen; icon: React.ElementType; labelEn: string; labelAr: string }[] = [
-  { id: 'home',    icon: Home,          labelEn: 'Home',    labelAr: 'الرئيسية' },
-  { id: 'tracker', icon: FileText,       labelEn: 'Applied', labelAr: 'الطلبات'  },
-  { id: 'sim',     icon: PlayCircle,     labelEn: 'Practice',labelAr: 'تدريب'    },
-  { id: 'ai',      icon: MessageCircle,  labelEn: 'AI',      labelAr: 'ذكاء'     },
-  { id: 'profile', icon: User,           labelEn: 'Profile', labelAr: 'الملف'    },
+  { id: 'home',        icon: Home,          labelEn: 'Home',   labelAr: 'الرئيسية' },
+  { id: 'leaderboard', icon: Trophy,        labelEn: 'Ranks',  labelAr: 'الترتيب'  },
+  { id: 'sim',         icon: PlayCircle,    labelEn: 'Practice',labelAr: 'تدريب'   },
+  { id: 'ai',          icon: MessageCircle, labelEn: 'AI',     labelAr: 'ذكاء'     },
+  { id: 'profile',     icon: User,          labelEn: 'Profile',labelAr: 'الملف'    },
 ]
 
 export function BottomNav() {
@@ -26,8 +26,7 @@ export function BottomNav() {
           const active = cur === tab.id
           const Icon = tab.icon
           const badge =
-            tab.id === 'tracker' ? state.applications.length :
-            tab.id === 'sim'     ? state.simBadges.length     : 0
+            tab.id === 'sim' ? state.simBadges.length : 0
 
           return (
             <button

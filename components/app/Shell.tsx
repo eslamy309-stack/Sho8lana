@@ -8,6 +8,8 @@ import { WelcomeScreen }       from './screens/WelcomeScreen'
 import { OnboardScreen }       from './screens/OnboardScreen'
 import { LoginScreen }         from './screens/LoginScreen'
 import { HomeScreen }          from './screens/HomeScreen'
+import { LeaderboardScreen }   from './screens/LeaderboardScreen'
+import { PerformanceScreen }   from './screens/PerformanceScreen'
 import { JobDetailScreen }     from './screens/JobDetailScreen'
 import { TrackerScreen }       from './screens/TrackerScreen'
 import { SimHubScreen }        from './screens/SimHubScreen'
@@ -20,7 +22,7 @@ import { FeedsScreen }         from './screens/FeedsScreen'
 import { MapScreen }           from './screens/MapScreen'
 import { CompanyPortalScreen } from './screens/CompanyPortalScreen'
 
-const NAV_SCREENS = ['home', 'tracker', 'sim', 'ai', 'profile'] as const
+const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
 const pageVariants = {
   enter:  { opacity: 0, x: 40 },
@@ -40,6 +42,8 @@ function ScreenRouter() {
     home:          <HomeScreen />,
     detail:        <JobDetailScreen />,
     tracker:       <TrackerScreen />,
+    leaderboard:   <LeaderboardScreen />,
+    performance:   <PerformanceScreen />,
     sim:           <SimHubScreen />,
     simTasks:      <SimTasksScreen />,
     simTask:       <SimTaskScreen />,
