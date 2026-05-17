@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Rocket, ChevronDown, Zap, Brain, BarChart2, ArrowRight, X } from 'lucide-react'
+import { Rocket, ChevronDown, Zap, Brain, BarChart2, ArrowRight, X, Loader2 } from 'lucide-react'
 
 import { Spotlight, SvgSpotlight } from '@/components/ui/spotlight'
 import { ActionSearchBar } from '@/components/ui/action-search-bar'
@@ -181,7 +181,22 @@ function FeatureCard({ icon: Icon, title, body, color }: {
 
 /* ── Main page ── */
 export default function LandingPage() {
-  const [appOpen, setAppOpen] = useState(false)
+  const [appOpen, setAppOpen]     = useState(false)
+  const [launching, setLaunching] = useState(false)
+  const launchTimer               = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const openApp = useCallback(() => {
+    if (appOpen || launching) return
+    setLaunching(true)
+    launchTimer.current = setTimeout(() => {
+      setLaunching(false)
+      setAppOpen(true)
+    }, 420)
+  }, [appOpen, launching])
+
+  function closeApp() {
+    setAppOpen(false)
+  }
 
   function scrollToFeatures() {
     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
@@ -202,8 +217,8 @@ export default function LandingPage() {
             <span className="font-serif text-lg text-white">Sho8lana</span>
             <span className="font-arabic text-sm text-neutral-400 hidden sm:block">شغلانة</span>
           </div>
-          <Button variant="ghost-dark" size="sm" onClick={() => setAppOpen(true)}>
-            Open App
+          <Button variant="ghost-dark" size="sm" onClick={openApp} disabled={launching || appOpen}>
+            {launching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Open App'}
           </Button>
         </nav>
 
@@ -243,8 +258,10 @@ export default function LandingPage() {
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={() => setAppOpen(true)} size="lg" className="gap-2">
-                <Rocket className="w-4 h-4" /> Get Started
+              <Button onClick={openApp} size="lg" className="gap-2 min-w-[148px]" disabled={launching || appOpen}>
+                {launching
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Launching…</>
+                  : <><Rocket className="w-4 h-4" /> Get Started</>}
               </Button>
               <Button variant="ghost-dark" size="lg" onClick={scrollToFeatures} className="gap-2">
                 Browse internships <ArrowRight className="w-4 h-4" />
@@ -388,8 +405,10 @@ export default function LandingPage() {
             Free for all Egyptian university students. No experience required.
           </motion.p>
           <motion.div variants={fadeUp}>
-            <Button size="xl" onClick={() => setAppOpen(true)} className="gap-2 mx-auto">
-              <Rocket className="w-5 h-5" /> Launch Sho8lana
+            <Button size="xl" onClick={openApp} className="gap-2 mx-auto min-w-[180px]" disabled={launching || appOpen}>
+              {launching
+                ? <><Loader2 className="w-5 h-5 animate-spin" /> Launching…</>
+                : <><Rocket className="w-5 h-5" /> Launch Sho8lana</>}
             </Button>
           </motion.div>
         </motion.div>
@@ -406,7 +425,7 @@ export default function LandingPage() {
           >
             <motion.div
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-              onClick={() => setAppOpen(false)}
+              onClick={closeApp}
             />
             <motion.div
               className="relative z-10 w-full max-w-app h-dvh md:h-[min(900px,90vh)] md:rounded-3xl
@@ -417,7 +436,7 @@ export default function LandingPage() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
               <button
-                onClick={() => setAppOpen(false)}
+                onClick={closeApp}
                 className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm
                            flex items-center justify-center text-white/70 hover:text-white
                            hover:bg-black/60 transition-colors duration-150"

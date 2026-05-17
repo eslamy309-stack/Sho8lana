@@ -2,9 +2,12 @@ export type Lang = 'en' | 'ar'
 
 export type Screen =
   | 'lang' | 'welcome' | 'onboard' | 'login'
+  | 'forgotPassword' | 'otpVerify' | 'resetPassword'
   | 'home' | 'detail' | 'tracker'
   | 'sim' | 'simTasks' | 'simTask' | 'simDone'
   | 'ai' | 'profile' | 'feeds' | 'map' | 'companyPortal'
+  | 'leaderboard' | 'performance'
+  | 'integrationPortal' | 'simulationRuntime' | 'devPortal'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 
@@ -200,6 +203,53 @@ export interface PortalApplicant {
   appliedAt: string
   status: AppStatus
   documents: string[]
+}
+
+// ── Leaderboard & Performance ─────────────────────────────────────────────────
+
+export type TierLevel = 'bronze' | 'silver' | 'gold' | 'platinum'
+export type LeaderboardPeriod = 'weekly' | 'monthly' | 'alltime'
+
+export interface LeaderboardEntry {
+  id: string
+  name: string
+  initials: string
+  university: string
+  major: string
+  track: string
+  rank: number
+  prevRank: number
+  totalXP: number
+  weeklyXP: number
+  monthlyXP: number
+  tier: TierLevel
+  level: number
+  completedSims: number
+  kpiScore: number      // 0–100 composite KPI
+  badges: string[]      // emoji badges
+  skills: string[]
+  streak: number
+  isCurrentUser?: boolean
+}
+
+export type KpiStatus = 'green' | 'yellow' | 'red'
+export type KpiCategory =
+  | 'performance'
+  | 'productivity'
+  | 'leadership'
+  | 'readiness'
+  | 'cognitive'
+
+export interface KpiMetric {
+  id: string
+  label: string
+  labelAr: string
+  value: number         // 0–100
+  trend: number         // positive = improved, negative = declined
+  color: string
+  description: string
+  category: KpiCategory
+  status: KpiStatus
 }
 
 // Live jobs from external APIs

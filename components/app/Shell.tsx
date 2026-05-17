@@ -7,7 +7,11 @@ import { LangScreen }          from './screens/LangScreen'
 import { WelcomeScreen }       from './screens/WelcomeScreen'
 import { OnboardScreen }       from './screens/OnboardScreen'
 import { LoginScreen }         from './screens/LoginScreen'
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen'
+import { OTPVerifyScreen }      from './screens/OTPVerifyScreen'
 import { HomeScreen }          from './screens/HomeScreen'
+import { LeaderboardScreen }   from './screens/LeaderboardScreen'
+import { PerformanceScreen }   from './screens/PerformanceScreen'
 import { JobDetailScreen }     from './screens/JobDetailScreen'
 import { TrackerScreen }       from './screens/TrackerScreen'
 import { SimHubScreen }        from './screens/SimHubScreen'
@@ -18,9 +22,12 @@ import { AIScreen }            from './screens/AIScreen'
 import { ProfileScreen }       from './screens/ProfileScreen'
 import { FeedsScreen }         from './screens/FeedsScreen'
 import { MapScreen }           from './screens/MapScreen'
-import { CompanyPortalScreen } from './screens/CompanyPortalScreen'
+import { CompanyPortalScreen }     from './screens/CompanyPortalScreen'
+import { IntegrationPortalScreen } from './screens/IntegrationPortalScreen'
+import { SimulationRuntimeScreen } from './screens/SimulationRuntimeScreen'
+import { DevPortalScreen }         from './screens/DevPortalScreen'
 
-const NAV_SCREENS = ['home', 'tracker', 'sim', 'ai', 'profile'] as const
+const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
 const pageVariants = {
   enter:  { opacity: 0, x: 40 },
@@ -33,13 +40,17 @@ function ScreenRouter() {
   const showNav = (NAV_SCREENS as readonly string[]).includes(state.screen)
 
   const screens: Record<string, React.ReactNode> = {
-    lang:          <LangScreen />,
-    welcome:       <WelcomeScreen />,
-    onboard:       <OnboardScreen />,
-    login:         <LoginScreen />,
+    lang:           <LangScreen />,
+    welcome:        <WelcomeScreen />,
+    onboard:        <OnboardScreen />,
+    login:          <LoginScreen />,
+    forgotPassword: <ForgotPasswordScreen />,
+    otpVerify:      <OTPVerifyScreen />,
     home:          <HomeScreen />,
     detail:        <JobDetailScreen />,
     tracker:       <TrackerScreen />,
+    leaderboard:   <LeaderboardScreen />,
+    performance:   <PerformanceScreen />,
     sim:           <SimHubScreen />,
     simTasks:      <SimTasksScreen />,
     simTask:       <SimTaskScreen />,
@@ -48,7 +59,10 @@ function ScreenRouter() {
     ai:            <AIScreen />,
     profile:       <ProfileScreen />,
     map:           <MapScreen />,
-    companyPortal: <CompanyPortalScreen />,
+    companyPortal:     <CompanyPortalScreen />,
+    integrationPortal: <IntegrationPortalScreen />,
+    simulationRuntime: <SimulationRuntimeScreen />,
+    devPortal:         <DevPortalScreen />,
   }
 
   return (
