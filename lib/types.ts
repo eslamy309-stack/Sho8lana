@@ -7,6 +7,7 @@ export type Screen =
   | 'sim' | 'simTasks' | 'simTask' | 'simDone'
   | 'ai' | 'profile' | 'feeds' | 'map' | 'companyPortal'
   | 'leaderboard' | 'performance'
+  | 'integrationPortal' | 'simulationRuntime' | 'devPortal'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 

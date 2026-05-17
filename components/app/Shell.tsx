@@ -22,7 +22,10 @@ import { AIScreen }            from './screens/AIScreen'
 import { ProfileScreen }       from './screens/ProfileScreen'
 import { FeedsScreen }         from './screens/FeedsScreen'
 import { MapScreen }           from './screens/MapScreen'
-import { CompanyPortalScreen } from './screens/CompanyPortalScreen'
+import { CompanyPortalScreen }     from './screens/CompanyPortalScreen'
+import { IntegrationPortalScreen } from './screens/IntegrationPortalScreen'
+import { SimulationRuntimeScreen } from './screens/SimulationRuntimeScreen'
+import { DevPortalScreen }         from './screens/DevPortalScreen'
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
@@ -56,7 +59,10 @@ function ScreenRouter() {
     ai:            <AIScreen />,
     profile:       <ProfileScreen />,
     map:           <MapScreen />,
-    companyPortal: <CompanyPortalScreen />,
+    companyPortal:     <CompanyPortalScreen />,
+    integrationPortal: <IntegrationPortalScreen />,
+    simulationRuntime: <SimulationRuntimeScreen />,
+    devPortal:         <DevPortalScreen />,
   }
 
   return (
