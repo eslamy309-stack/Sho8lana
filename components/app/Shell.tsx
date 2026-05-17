@@ -7,6 +7,8 @@ import { LangScreen }          from './screens/LangScreen'
 import { WelcomeScreen }       from './screens/WelcomeScreen'
 import { OnboardScreen }       from './screens/OnboardScreen'
 import { LoginScreen }         from './screens/LoginScreen'
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen'
+import { OTPVerifyScreen }      from './screens/OTPVerifyScreen'
 import { HomeScreen }          from './screens/HomeScreen'
 import { LeaderboardScreen }   from './screens/LeaderboardScreen'
 import { PerformanceScreen }   from './screens/PerformanceScreen'
@@ -35,10 +37,12 @@ function ScreenRouter() {
   const showNav = (NAV_SCREENS as readonly string[]).includes(state.screen)
 
   const screens: Record<string, React.ReactNode> = {
-    lang:          <LangScreen />,
-    welcome:       <WelcomeScreen />,
-    onboard:       <OnboardScreen />,
-    login:         <LoginScreen />,
+    lang:           <LangScreen />,
+    welcome:        <WelcomeScreen />,
+    onboard:        <OnboardScreen />,
+    login:          <LoginScreen />,
+    forgotPassword: <ForgotPasswordScreen />,
+    otpVerify:      <OTPVerifyScreen />,
     home:          <HomeScreen />,
     detail:        <JobDetailScreen />,
     tracker:       <TrackerScreen />,

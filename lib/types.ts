@@ -2,6 +2,7 @@ export type Lang = 'en' | 'ar'
 
 export type Screen =
   | 'lang' | 'welcome' | 'onboard' | 'login'
+  | 'forgotPassword' | 'otpVerify' | 'resetPassword'
   | 'home' | 'detail' | 'tracker'
   | 'sim' | 'simTasks' | 'simTask' | 'simDone'
   | 'ai' | 'profile' | 'feeds' | 'map' | 'companyPortal'
@@ -230,6 +231,14 @@ export interface LeaderboardEntry {
   isCurrentUser?: boolean
 }
 
+export type KpiStatus = 'green' | 'yellow' | 'red'
+export type KpiCategory =
+  | 'performance'
+  | 'productivity'
+  | 'leadership'
+  | 'readiness'
+  | 'cognitive'
+
 export interface KpiMetric {
   id: string
   label: string
@@ -238,6 +247,8 @@ export interface KpiMetric {
   trend: number         // positive = improved, negative = declined
   color: string
   description: string
+  category: KpiCategory
+  status: KpiStatus
 }
 
 // Live jobs from external APIs
