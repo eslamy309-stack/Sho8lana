@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Rocket, ChevronDown, Zap, Brain, BarChart2, ArrowRight, X, Loader2 } from 'lucide-react'
 
@@ -184,6 +184,23 @@ export default function LandingPage() {
   const [appOpen, setAppOpen]     = useState(false)
   const [launching, setLaunching] = useState(false)
   const launchTimer               = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Auto-open overlay after OAuth redirect ──────────────────────────────
+  useEffect(() => {
+    const search = window.location.search
+    const hash   = window.location.hash
+    const isOAuthCallback =
+      search.includes('auth=1') ||
+      search.includes('code=')  ||
+      hash.includes('access_token=') ||
+      hash.includes('error=')
+
+    if (isOAuthCallback) {
+      // Clean the URL immediately so a refresh doesn't retrigger
+      window.history.replaceState({}, document.title, window.location.pathname)
+      setAppOpen(true)
+    }
+  }, [])
 
   const openApp = useCallback(() => {
     if (appOpen || launching) return

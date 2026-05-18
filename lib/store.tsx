@@ -352,27 +352,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const uid = session.user.id
+        const uid   = session.user.id
         const email = session.user.email ?? ''
 
         // Load profile from Supabase
         const profile = await sbLoadProfile(uid)
         dispatch({ type: 'SET_USER', user: { supabaseId: uid, email, ...(profile ?? {}) } })
 
-        // Load documents from Supabase and refresh signed URLs
+        // Refresh document signed URLs
         const docs = await sbLoadDocuments(uid)
         for (const doc of docs) {
           const url = await sbGetDocumentUrl(uid, doc.key, doc.name)
           dispatch({ type: 'SET_DOCUMENT_FILE', file: { ...doc, url: url ?? undefined } })
-          dispatch({ type: 'SET_USER', user: { documents: { ...state.user.documents, [doc.key]: true } } })
         }
 
-        // Skip onboard if profile already complete
-        if (profile?.name) {
+        // Navigate based on auth event:
+        // SIGNED_IN  → fresh login (email or OAuth) — always route
+        // INITIAL_SESSION → silent restore on page load — only route if profile complete
+        if (event === 'SIGNED_IN') {
+          dispatch({ type: 'GO', screen: profile?.name ? 'home' : 'onboard' })
+        } else if (event === 'INITIAL_SESSION' && profile?.name) {
           dispatch({ type: 'GO', screen: 'home' })
         }
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         dispatch({ type: 'SET_USER', user: { supabaseId: undefined } })
+        dispatch({ type: 'GO', screen: 'login' })
       }
     })
     return () => subscription.unsubscribe()
