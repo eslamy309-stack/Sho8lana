@@ -366,12 +366,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           dispatch({ type: 'SET_DOCUMENT_FILE', file: { ...doc, url: url ?? undefined } })
         }
 
-        // Navigate based on auth event:
-        // SIGNED_IN  → fresh login (email or OAuth) — always route
-        // INITIAL_SESSION → silent restore on page load — only route if profile complete
-        if (event === 'SIGNED_IN') {
-          dispatch({ type: 'GO', screen: profile?.name ? 'home' : 'onboard' })
-        } else if (event === 'INITIAL_SESSION' && profile?.name) {
+        // ── Auto-populate profile from OAuth metadata ────────────────────
+        const meta     = session.user.user_metadata ?? {}
+        const provider = (session.user.app_metadata?.provider as string) ?? 'email'
+        const autoName   = (meta.full_name ?? meta.name ?? meta.user_name ?? '') as string
+        const autoAvatar = (meta.avatar_url ?? meta.picture ?? '') as string
+        const autoGithub = provider === 'github'
+          ? ((meta.user_name ?? meta.preferred_username ?? '') as string)
+          : ''
+
+        if (event === 'SIGNED_IN' && !profile?.name && autoName) {
+          // New OAuth user — write auto-profile immediately
+          const oauthProfile = {
+            name: autoName, email,
+            avatarUrl: autoAvatar,
+            githubUsername: autoGithub,
+            authProvider: provider,
+          }
+          await sbSaveProfile(uid, oauthProfile)
+          dispatch({ type: 'SET_USER', user: oauthProfile })
+          dispatch({ type: 'GO', screen: 'onboard' })
+        } else if (event === 'SIGNED_IN') {
+          // Returning user or email sign-in
+          if (autoAvatar && !profile?.avatarUrl) {
+            dispatch({ type: 'SET_USER', user: { avatarUrl: autoAvatar, authProvider: provider } })
+          }
+          dispatch({ type: 'GO', screen: profile?.onboardingCompleted ? 'home' : 'onboard' })
+        } else if (event === 'INITIAL_SESSION' && profile?.onboardingCompleted) {
           dispatch({ type: 'GO', screen: 'home' })
         }
       } else if (event === 'SIGNED_OUT') {

@@ -132,7 +132,11 @@ export interface UserProfile {
   bio?: string
   linkedinUrl?: string
   portfolioUrl?: string
-  supabaseId?: string  // Supabase auth user id
+  supabaseId?: string      // Supabase auth user id
+  avatarUrl?: string       // OAuth provider avatar
+  githubUsername?: string  // GitHub login handle
+  authProvider?: string    // 'google' | 'github' | 'email'
+  onboardingCompleted?: boolean
 }
 
 export interface Application {

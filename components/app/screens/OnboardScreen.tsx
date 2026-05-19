@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { useDocumentUpload } from '@/lib/useDocumentUpload'
-import { sbSignUp, supabase } from '@/lib/supabase'
+import { sbSignUp, sbSaveProfile, supabase } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { DOCUMENTS, GOVERNORATES } from '@/lib/data'
@@ -85,6 +85,9 @@ export function OnboardScreen() {
   const { lang, user, onboardStep } = state
   const ar = lang === 'ar'
 
+  // OAuth users already have name+email from provider metadata
+  const isOAuthUser = !!user.authProvider && user.authProvider !== 'email'
+
   // ── Step 0 state ────────────────────────────────────────────────────────────
   const [password, setPassword]       = useState('')
   const [step0Errors, setStep0Errors] = useState<Record<string, string>>({})
@@ -135,6 +138,23 @@ export function OnboardScreen() {
   // ── Navigation ──────────────────────────────────────────────────────────────
   async function goNext() {
     if (onboardStep === 0) {
+      if (isOAuthUser) {
+        // OAuth users skip signup — just validate academic fields
+        const errs: Record<string, string> = {}
+        if (!user.university.trim()) errs.university = ar ? 'الجامعة مطلوبة' : 'University is required'
+        if (!user.major.trim())      errs.major      = ar ? 'التخصص مطلوب'  : 'Major is required'
+        if (Object.keys(errs).length) { setStep0Errors(errs); return }
+
+        // Save academic info to Supabase
+        if (user.supabaseId) {
+          setAuthLoading(true)
+          await sbSaveProfile(user.supabaseId, user)
+          setAuthLoading(false)
+        }
+        dispatch({ type: 'SET_ONBOARD_STEP', step: 1 })
+        return
+      }
+
       if (!validateStep0()) return
       setAuthLoading(true)
       try {
@@ -150,13 +170,17 @@ export function OnboardScreen() {
           setAuthLoading(false)
           return
         }
-        // Allow proceeding without account if Supabase fails (offline / config issue)
       } finally {
         setAuthLoading(false)
       }
       dispatch({ type: 'SET_ONBOARD_STEP', step: 1 })
     } else {
       if (!allRequiredOk) return
+      // Mark onboarding complete
+      if (user.supabaseId) {
+        await sbSaveProfile(user.supabaseId, { ...user, onboardingCompleted: true })
+      }
+      dispatch({ type: 'SET_USER', user: { onboardingCompleted: true } })
       dispatch({ type: 'SET_ONBOARD_STEP', step: 0 })
       dispatch({ type: 'GO', screen: 'home' })
     }
@@ -217,39 +241,84 @@ export function OnboardScreen() {
             className="flex flex-col gap-4 px-5 py-4"
           >
             <motion.div variants={up} custom={0} initial="hidden" animate="visible">
+              {isOAuthUser && user.avatarUrl ? (
+                <div className="flex items-center gap-3 mb-2">
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="w-12 h-12 rounded-full border-2 border-brand-200"
+                  />
+                  <div>
+                    <p className="font-bold text-neutral-900">{user.name}</p>
+                    <p className="text-xs text-neutral-500">{user.email}</p>
+                  </div>
+                </div>
+              ) : null}
               <h2 className="text-2xl font-bold text-neutral-900">
-                {ar ? 'إنشاء حساب' : 'Create your account'}
+                {ar ? 'أكمل ملفك الشخصي' : isOAuthUser ? 'Complete your profile' : 'Create your account'}
               </h2>
               <p className="text-sm text-neutral-500 mt-1">
-                {ar ? 'انضم مجاناً وابدأ رحلتك المهنية' : 'Join free and start your career journey'}
+                {ar
+                  ? 'أضف معلوماتك الأكاديمية للبدء'
+                  : isOAuthUser
+                  ? 'Just your academic details — everything else is already set'
+                  : 'Join free and start your career journey'}
               </p>
             </motion.div>
 
-            {/* ── Social sign-up ── */}
-            <motion.div variants={up} custom={1} initial="hidden" animate="visible" className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <OAuthButton icon={<GoogleIcon />} label="Google" provider="google" busy={oauthBusy} onPress={handleOAuth} />
-                <OAuthButton icon={<AppleIcon />}  label="Apple"  provider="apple"  busy={oauthBusy} onPress={handleOAuth} />
-                <OAuthButton icon={<GitHubIcon />} label="GitHub" provider="github" busy={oauthBusy} onPress={handleOAuth} />
-              </div>
-              {oauthError && (
-                <p className="flex items-center gap-1.5 text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  {oauthError}
-                </p>
-              )}
-            </motion.div>
+            {/* Social sign-up (email users only) */}
+            {!isOAuthUser && (
+              <>
+                <motion.div variants={up} custom={1} initial="hidden" animate="visible" className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <OAuthButton icon={<GoogleIcon />} label="Google" provider="google" busy={oauthBusy} onPress={handleOAuth} />
+                    <OAuthButton icon={<GitHubIcon />} label="GitHub" provider="github" busy={oauthBusy} onPress={handleOAuth} />
+                  </div>
+                  {oauthError && (
+                    <p className="flex items-center gap-1.5 text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {oauthError}
+                    </p>
+                  )}
+                </motion.div>
+                <motion.div variants={up} custom={2} initial="hidden" animate="visible" className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-neutral-200" />
+                  <span className="text-[11px] text-neutral-400 font-semibold uppercase tracking-wider">
+                    {ar ? 'أو بالبريد الإلكتروني' : 'or sign up with email'}
+                  </span>
+                  <div className="flex-1 h-px bg-neutral-200" />
+                </motion.div>
+              </>
+            )}
 
-            {/* Divider */}
-            <motion.div variants={up} custom={2} initial="hidden" animate="visible" className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-neutral-200" />
-              <span className="text-[11px] text-neutral-400 font-semibold uppercase tracking-wider">
-                {ar ? 'أو بالبريد الإلكتروني' : 'or sign up with email'}
-              </span>
-              <div className="flex-1 h-px bg-neutral-200" />
-            </motion.div>
+            {/* For OAuth users: only show academic fields */}
+            {isOAuthUser ? (
+              <>
+                {[
+                  { label: ar ? 'الجامعة *' : 'University *', key: 'university', ph: ar ? 'مثال: الجامعة الألمانية' : 'e.g. German International University' },
+                  { label: ar ? 'التخصص *' : 'Major *', key: 'major', ph: ar ? 'مثال: إدارة الأعمال' : 'e.g. Business Administration' },
+                  { label: ar ? 'رقم الهاتف' : 'Phone', key: 'phone', ph: '+20 1XX XXX XXXX' },
+                ].map((f, i) => (
+                  <motion.div key={f.key} variants={up} custom={i + 1} initial="hidden" animate="visible">
+                    <label className="text-xs font-semibold text-neutral-500 block mb-1.5">{f.label}</label>
+                    <Input
+                      placeholder={f.ph}
+                      value={(user as unknown as Record<string, string>)[f.key] || ''}
+                      onChange={e => setField(f.key, e.target.value)}
+                      className={step0Errors[f.key] ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : ''}
+                    />
+                    {step0Errors[f.key] && (
+                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />{step0Errors[f.key]}
+                      </p>
+                    )}
+                  </motion.div>
+                ))}
+              </>
+            ) : null}
 
-            {[
+            {/* Full form for email users */}
+            {!isOAuthUser && [
               { label: ar ? 'الاسم الكامل' : 'Full Name *', key: 'name', ph: ar ? 'مثال: أحمد علي' : 'e.g. Ahmed Ali' },
               { label: ar ? 'البريد الإلكتروني *' : 'Email *', key: 'email', ph: 'you@university.edu.eg', type: 'email' },
               { label: ar ? 'رقم الهاتف' : 'Phone', key: 'phone', ph: '+20 1XX XXX XXXX' },
@@ -274,34 +343,36 @@ export function OnboardScreen() {
               </motion.div>
             ))}
 
-            {/* Password */}
-            <motion.div variants={up} custom={6} initial="hidden" animate="visible">
-              <label className="text-xs font-semibold text-neutral-500 block mb-1.5">
-                {ar ? 'كلمة المرور *' : 'Password *'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => {
-                    setPassword(e.target.value)
-                    if (step0Errors.password) setStep0Errors(prev => { const n = { ...prev }; delete n.password; return n })
-                  }}
-                  className={cn('pl-9', step0Errors.password ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : '')}
-                />
-              </div>
-              {step0Errors.password && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {step0Errors.password}
+            {/* Password — email users only */}
+            {!isOAuthUser && (
+              <motion.div variants={up} custom={6} initial="hidden" animate="visible">
+                <label className="text-xs font-semibold text-neutral-500 block mb-1.5">
+                  {ar ? 'كلمة المرور *' : 'Password *'}
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => {
+                      setPassword(e.target.value)
+                      if (step0Errors.password) setStep0Errors(prev => { const n = { ...prev }; delete n.password; return n })
+                    }}
+                    className={cn('pl-9', step0Errors.password ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : '')}
+                  />
+                </div>
+                {step0Errors.password && (
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {step0Errors.password}
+                  </p>
+                )}
+                <p className="text-xs text-neutral-400 mt-1">
+                  {ar ? 'ستستخدمه لتسجيل الدخول لاحقاً' : "You'll use this to sign in next time"}
                 </p>
-              )}
-              <p className="text-xs text-neutral-400 mt-1">
-                {ar ? 'ستستخدمه لتسجيل الدخول لاحقاً' : 'You\'ll use this to sign in next time'}
-              </p>
-            </motion.div>
+              </motion.div>
+            )}
 
             <motion.div variants={up} custom={6} initial="hidden" animate="visible" className="flex gap-3">
               <div className="flex-1">

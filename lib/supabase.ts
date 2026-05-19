@@ -48,6 +48,10 @@ export async function sbSaveProfile(userId: string, profile: Partial<UserProfile
     bio: profile.bio ?? null,
     linkedin_url: profile.linkedinUrl ?? null,
     portfolio_url: profile.portfolioUrl ?? null,
+    avatar_url: profile.avatarUrl ?? null,
+    github_username: profile.githubUsername ?? null,
+    auth_provider: profile.authProvider ?? null,
+    onboarding_completed: profile.onboardingCompleted ?? false,
     updated_at: new Date().toISOString(),
   })
   if (error) console.error('sbSaveProfile error:', error.message)
@@ -71,6 +75,10 @@ export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile
     bio: data.bio ?? undefined,
     linkedinUrl: data.linkedin_url ?? undefined,
     portfolioUrl: data.portfolio_url ?? undefined,
+    avatarUrl: data.avatar_url ?? undefined,
+    githubUsername: data.github_username ?? undefined,
+    authProvider: data.auth_provider ?? undefined,
+    onboardingCompleted: data.onboarding_completed ?? false,
   }
 }
 
