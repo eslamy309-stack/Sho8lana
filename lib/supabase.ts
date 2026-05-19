@@ -33,6 +33,49 @@ export async function sbGetSession() {
   return data.session
 }
 
+// ── MFA ───────────────────────────────────────────────────────────────────────
+
+export async function sbMfaEnroll() {
+  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
+  if (error) throw error
+  return data   // { id, type, totp: { qr_code, secret, uri } }
+}
+
+export async function sbMfaChallengeAndVerify(factorId: string, code: string) {
+  const { data, error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code })
+  if (error) throw error
+  return data
+}
+
+export async function sbMfaChallenge(factorId: string) {
+  const { data, error } = await supabase.auth.mfa.challenge({ factorId })
+  if (error) throw error
+  return data   // { id: challengeId }
+}
+
+export async function sbMfaVerify(factorId: string, challengeId: string, code: string) {
+  const { data, error } = await supabase.auth.mfa.verify({ factorId, challengeId, code })
+  if (error) throw error
+  return data
+}
+
+export async function sbMfaListFactors() {
+  const { data, error } = await supabase.auth.mfa.listFactors()
+  if (error) throw error
+  return data.totp   // TotpFactor[]
+}
+
+export async function sbMfaUnenroll(factorId: string) {
+  const { error } = await supabase.auth.mfa.unenroll({ factorId })
+  if (error) throw error
+}
+
+export async function sbMfaGetAAL() {
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (error) throw error
+  return data   // { currentLevel, nextLevel }
+}
+
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 export async function sbSaveProfile(userId: string, profile: Partial<UserProfile>) {

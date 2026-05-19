@@ -26,6 +26,8 @@ import { CompanyPortalScreen }     from './screens/CompanyPortalScreen'
 import { IntegrationPortalScreen } from './screens/IntegrationPortalScreen'
 import { SimulationRuntimeScreen } from './screens/SimulationRuntimeScreen'
 import { DevPortalScreen }         from './screens/DevPortalScreen'
+import { MfaSetupScreen }          from './screens/MfaSetupScreen'
+import { MfaVerifyScreen }         from './screens/MfaVerifyScreen'
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
@@ -63,6 +65,8 @@ function ScreenRouter() {
     integrationPortal: <IntegrationPortalScreen />,
     simulationRuntime: <SimulationRuntimeScreen />,
     devPortal:         <DevPortalScreen />,
+    mfaSetup:          <MfaSetupScreen />,
+    mfaVerify:         <MfaVerifyScreen />,
   }
 
   return (
