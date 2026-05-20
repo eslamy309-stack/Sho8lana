@@ -8,6 +8,7 @@ export type Screen =
   | 'ai' | 'profile' | 'feeds' | 'map' | 'companyPortal'
   | 'leaderboard' | 'performance'
   | 'integrationPortal' | 'simulationRuntime' | 'devPortal'
+  | 'mfaSetup' | 'mfaVerify'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 
@@ -137,6 +138,7 @@ export interface UserProfile {
   githubUsername?: string  // GitHub login handle
   authProvider?: string    // 'google' | 'github' | 'email'
   onboardingCompleted?: boolean
+  mfaEnabled?: boolean
 }
 
 export interface Application {

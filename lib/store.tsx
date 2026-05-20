@@ -5,7 +5,7 @@ import type {
   Lang, Screen, UserProfile, Application, ChatMessage, Badge,
   MatchScore, SimTrack, SimTask, LiveJob, DocumentFile,
 } from './types'
-import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl } from './supabase'
+import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl, sbMfaGetAAL, sbMfaListFactors } from './supabase'
 
 interface AppState {
   lang: Lang
@@ -43,6 +43,7 @@ interface AppState {
   liveJobsLoading: boolean
   savedJobs: number[]
   documentFiles: Record<string, DocumentFile>
+  mfaFactorId: string | null
 }
 
 type Action =
@@ -83,6 +84,7 @@ type Action =
   | { type: 'SET_DOCUMENT_FILE'; file: DocumentFile }
   | { type: 'REMOVE_DOCUMENT_FILE'; key: string }
   | { type: 'SET_DOC_URL'; key: string; url: string }
+  | { type: 'SET_MFA_FACTOR'; factorId: string | null }
 
 const defaultUser: UserProfile = {
   name: '', university: '', major: '', gpa: '',
@@ -135,6 +137,7 @@ function getInitialState(): AppState {
     liveJobsLoading: false,
     savedJobs: loadFromStorage<number[]>('sho8_saved', []),
     documentFiles: loadFromStorage<Record<string, DocumentFile>>('sho8_doc_meta', {}),
+    mfaFactorId: null,
   }
 }
 
@@ -312,6 +315,9 @@ function reducer(state: AppState, action: Action): AppState {
       }
     }
 
+    case 'SET_MFA_FACTOR':
+      return { ...state, mfaFactorId: action.factorId }
+
     default:
       return state
   }
@@ -375,6 +381,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ? ((meta.user_name ?? meta.preferred_username ?? '') as string)
           : ''
 
+        // ── Check MFA assurance level ─────────────────────────────────────
+        const aal = await sbMfaGetAAL().catch(() => null)
+        const factors = await sbMfaListFactors().catch(() => [])
+        const hasMfa  = factors.length > 0
+        const needsMfaVerify = aal?.nextLevel === 'aal2' && aal?.currentLevel !== 'aal2'
+        const mfaFactorId = hasMfa ? factors[0].id : null
+        if (mfaFactorId) dispatch({ type: 'SET_MFA_FACTOR', factorId: mfaFactorId })
+
         if (event === 'SIGNED_IN' && !profile?.name && autoName) {
           // New OAuth user — write auto-profile immediately
           const oauthProfile = {
@@ -385,15 +399,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
           await sbSaveProfile(uid, oauthProfile)
           dispatch({ type: 'SET_USER', user: oauthProfile })
-          dispatch({ type: 'GO', screen: 'onboard' })
+          // New user → set up MFA first, then onboard
+          dispatch({ type: 'GO', screen: 'mfaSetup' })
         } else if (event === 'SIGNED_IN') {
-          // Returning user or email sign-in
           if (autoAvatar && !profile?.avatarUrl) {
             dispatch({ type: 'SET_USER', user: { avatarUrl: autoAvatar, authProvider: provider } })
           }
-          dispatch({ type: 'GO', screen: profile?.onboardingCompleted ? 'home' : 'onboard' })
-        } else if (event === 'INITIAL_SESSION' && profile?.onboardingCompleted) {
-          dispatch({ type: 'GO', screen: 'home' })
+          if (needsMfaVerify) {
+            // Has MFA enrolled but not yet verified this session
+            dispatch({ type: 'GO', screen: 'mfaVerify' })
+          } else if (!hasMfa) {
+            // No MFA set up yet — prompt setup
+            dispatch({ type: 'GO', screen: 'mfaSetup' })
+          } else {
+            // Fully authenticated
+            dispatch({ type: 'GO', screen: profile?.onboardingCompleted ? 'home' : 'onboard' })
+          }
+        } else if (event === 'INITIAL_SESSION') {
+          if (needsMfaVerify) {
+            dispatch({ type: 'GO', screen: 'mfaVerify' })
+          } else if (profile?.onboardingCompleted) {
+            dispatch({ type: 'GO', screen: 'home' })
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         dispatch({ type: 'SET_USER', user: { supabaseId: undefined } })
