@@ -11,36 +11,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing prompt.' }, { status: 400 })
   }
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        {
-          role: 'system',
-          content: system || 'You are a career advisor for Egyptian college students. Be concise and encouraging.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: 800,
-      temperature: 0.7,
-    }),
-  })
+  let res: Response
+  let data: Record<string, unknown>
 
-  const data = await res.json()
+  try {
+    res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: system || 'You are a career advisor for Egyptian college students. Be concise and encouraging.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 800,
+        temperature: 0.7,
+      }),
+    })
+    data = await res.json()
+  } catch (e: unknown) {
+    return NextResponse.json(
+      { error: `Network error reaching Groq: ${e instanceof Error ? e.message : 'unknown'}` },
+      { status: 502 }
+    )
+  }
 
   if (!res.ok) {
+    // Return full Groq error details so client can show them
+    const groqErr = (data as { error?: { message?: string; type?: string } }).error
     return NextResponse.json(
-      { error: data.error?.message ?? `Groq error ${res.status}` },
+      { error: groqErr?.message ?? `Groq error ${res.status}`, type: groqErr?.type, status: res.status },
       { status: res.status }
     )
   }
 
   return NextResponse.json({
-    content: data.choices?.[0]?.message?.content?.trim() ?? '',
+    content: (data as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content?.trim() ?? '',
   })
 }

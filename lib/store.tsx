@@ -450,8 +450,7 @@ export async function callGemini(prompt: string, system?: string): Promise<strin
     const data = await res.json()
     if (!res.ok) {
       if (res.status === 429) return '⏳ Too many requests — please wait a moment and try again.'
-      if (res.status === 500) return '⚙️ AI service is not configured. Please contact support.'
-      return `AI error: ${data.error ?? 'Unknown error'}`
+      return `AI error ${res.status}: ${data.error ?? 'Unknown error'}`
     }
     return data.content || 'No response received. Please try again.'
   } catch (e: unknown) {
