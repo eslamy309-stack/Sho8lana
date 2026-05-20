@@ -93,7 +93,7 @@ export function LoginScreen() {
     try {
       const { error: e } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}?auth=1` },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       })
       if (e) {
         setError(
