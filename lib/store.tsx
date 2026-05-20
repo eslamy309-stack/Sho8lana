@@ -441,38 +441,19 @@ export function useApp() {
 }
 
 export async function callGemini(prompt: string, system?: string): Promise<string> {
-  const key = process.env.NEXT_PUBLIC_GROQ_KEY
-  if (!key) {
-    return '⚠️ AI features need a Groq API key. Add NEXT_PUBLIC_GROQ_KEY to your .env.local file, then restart the dev server.'
-  }
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const res = await fetch('/api/ai', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: system || 'You are a career advisor for Egyptian college students. Be concise and encouraging.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, system }),
     })
     const data = await res.json()
     if (!res.ok) {
-      const status = res.status
-      if (status === 429) return '⏳ Too many requests — please wait a moment and try again.'
-      if (status === 401) return '🔑 Groq API key is invalid. Check your key at console.groq.com/keys'
-      return `AI error ${status}: ${data.error?.message ?? 'Unknown error'}`
+      if (res.status === 429) return '⏳ Too many requests — please wait a moment and try again.'
+      if (res.status === 500) return '⚙️ AI service is not configured. Please contact support.'
+      return `AI error: ${data.error ?? 'Unknown error'}`
     }
-    return data.choices?.[0]?.message?.content?.trim() || 'No response received. Please try again.'
+    return data.content || 'No response received. Please try again.'
   } catch (e: unknown) {
     return `🌐 Connection error: ${e instanceof Error ? e.message : 'Check your internet connection and try again.'}`
   }
