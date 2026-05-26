@@ -9,6 +9,7 @@ export type Screen =
   | 'leaderboard' | 'performance'
   | 'integrationPortal' | 'simulationRuntime' | 'devPortal'
   | 'mfaSetup' | 'mfaVerify'
+  | 'hrDashboard' | 'talentMarketplace' | 'candidateIntelligence' | 'recruitmentPipeline'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 
