@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
-)
+function getAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+  )
+}
 
 export async function POST(req: NextRequest) {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+
+  const stripe = new Stripe(key)
   const body = await req.text()
   const sig  = req.headers.get('stripe-signature') ?? ''
 
@@ -20,14 +25,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const db = getAdmin()
+
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
       const { companyId, plan } = session.metadata ?? {}
       if (companyId) {
-        await supabaseAdmin.from('companies').update({
-          subscription_plan: plan,
-          subscription_status: 'active',
-          stripe_customer_id: session.customer as string,
+        await db.from('companies').update({
+          subscription_plan:      plan,
+          subscription_status:    'active',
+          stripe_customer_id:     session.customer as string,
           subscription_updated_at: new Date().toISOString(),
         }).eq('id', companyId)
       }
@@ -35,8 +42,8 @@ export async function POST(req: NextRequest) {
 
     if (event.type === 'customer.subscription.deleted') {
       const sub = event.data.object as Stripe.Subscription
-      await supabaseAdmin.from('companies').update({
-        subscription_plan: 'free',
+      await db.from('companies').update({
+        subscription_plan:   'free',
         subscription_status: 'cancelled',
       }).eq('stripe_customer_id', sub.customer as string)
     }
