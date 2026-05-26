@@ -32,6 +32,7 @@ import { HRDashboardScreen }            from './screens/HRDashboardScreen'
 import { TalentMarketplaceScreen }      from './screens/TalentMarketplaceScreen'
 import { CandidateIntelligenceScreen }  from './screens/CandidateIntelligenceScreen'
 import { RecruitmentPipelineScreen }    from './screens/RecruitmentPipelineScreen'
+import { CompanyOnboardingScreen }      from './screens/CompanyOnboardingScreen'
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
@@ -75,6 +76,7 @@ function ScreenRouter() {
     talentMarketplace:      <TalentMarketplaceScreen />,
     candidateIntelligence:  <CandidateIntelligenceScreen />,
     recruitmentPipeline:    <RecruitmentPipelineScreen />,
+    companyOnboarding:      <CompanyOnboardingScreen />,
   }
 
   return (

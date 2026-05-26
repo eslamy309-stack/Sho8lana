@@ -10,6 +10,7 @@ export type Screen =
   | 'integrationPortal' | 'simulationRuntime' | 'devPortal'
   | 'mfaSetup' | 'mfaVerify'
   | 'hrDashboard' | 'talentMarketplace' | 'candidateIntelligence' | 'recruitmentPipeline'
+  | 'companyOnboarding'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 

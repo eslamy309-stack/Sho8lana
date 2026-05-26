@@ -105,7 +105,12 @@ function getInitialState(): AppState {
   let startScreen: Screen = 'lang'
   if (typeof window !== 'undefined') {
     const hint = sessionStorage.getItem('sho8_role_hint')
-    if (hint === 'employer') { startScreen = 'hrDashboard'; sessionStorage.removeItem('sho8_role_hint') }
+    if (hint === 'employer') {
+      // New employers go to onboarding wizard; returning ones go straight to dashboard
+      const hasProfile = localStorage.getItem('sho8_company_profile')
+      startScreen = hasProfile ? 'hrDashboard' : 'companyOnboarding'
+      sessionStorage.removeItem('sho8_role_hint')
+    }
     else if (hint === 'student') { startScreen = 'login'; sessionStorage.removeItem('sho8_role_hint') }
   }
   return {
