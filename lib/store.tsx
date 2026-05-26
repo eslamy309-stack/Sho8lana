@@ -101,9 +101,16 @@ function loadFromStorage<T>(key: string, fallback: T): T {
 }
 
 function getInitialState(): AppState {
+  // Role hint set by landing page to route employer vs student
+  let startScreen: Screen = 'lang'
+  if (typeof window !== 'undefined') {
+    const hint = sessionStorage.getItem('sho8_role_hint')
+    if (hint === 'employer') { startScreen = 'hrDashboard'; sessionStorage.removeItem('sho8_role_hint') }
+    else if (hint === 'student') { startScreen = 'login'; sessionStorage.removeItem('sho8_role_hint') }
+  }
   return {
     lang: 'en',
-    screen: 'lang',
+    screen: startScreen,
     history: [],
     currentTab: 'home',
     user: loadFromStorage('sho8_user', defaultUser),
