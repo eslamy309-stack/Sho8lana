@@ -251,11 +251,13 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => openApp('student')} disabled={!!launching||appOpen}
-            className="text-sm text-neutral-400 hover:text-white transition-colors px-3 py-2 hidden sm:block">Sign in</button>
+            className="text-sm font-medium text-neutral-300 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-white/5">
+            {launching==='student' ? <Loader2 className="w-3.5 h-3.5 animate-spin inline" /> : 'Student Sign In'}
+          </button>
           <button onClick={() => openApp('employer')} disabled={!!launching||appOpen}
             className="text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
             {launching==='employer' ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Opening…</>
-              : <>For Companies <ChevronRight className="w-3.5 h-3.5" /></>}
+              : <><span className="hidden sm:inline">For </span>Companies <ChevronRight className="w-3.5 h-3.5" /></>}
           </button>
         </div>
       </nav>
