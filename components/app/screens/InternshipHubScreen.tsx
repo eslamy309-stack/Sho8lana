@@ -49,52 +49,9 @@ interface MockApplication {
   status: AppStatus
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
+const INTERNSHIPS: Internship[] = []
 
-const INTERNSHIPS: Internship[] = [
-  {
-    id: 1, logo: '📱', company: 'Vodafone Egypt', title: 'Marketing Intern',
-    location: 'Cairo', salaryMin: 4000, salaryMax: 6000, match: 91,
-    skills: ['Digital Marketing', 'Analytics'], deadline: 'Jun 15, 2026',
-    category: 'Marketing',
-  },
-  {
-    id: 2, logo: '🏦', company: 'CIB Bank', title: 'Finance Analyst Intern',
-    location: 'Cairo', salaryMin: 5000, salaryMax: 7000, match: 85,
-    skills: ['Excel', 'Financial Modeling'], deadline: 'Jun 20, 2026',
-    category: 'Finance',
-  },
-  {
-    id: 3, logo: '🧴', company: 'P&G', title: 'Brand Management Intern',
-    location: 'Cairo', salaryMin: 4500, salaryMax: 6500, match: 79,
-    skills: ['Branding', 'Market Research'], deadline: 'Jun 25, 2026',
-    category: 'Marketing',
-  },
-  {
-    id: 4, logo: '📈', company: 'McKinsey Cairo', title: 'Business Analyst Intern',
-    location: 'Cairo', salaryMin: 8000, salaryMax: 12000, match: 88,
-    skills: ['Strategy', 'Data Analysis'], deadline: 'Jun 10, 2026',
-    category: 'Consulting',
-  },
-  {
-    id: 5, logo: '💻', company: 'Microsoft Egypt', title: 'Software Intern',
-    location: 'Cairo', salaryMin: 6000, salaryMax: 9000, match: 73,
-    skills: ['Python', 'Cloud'], deadline: 'Jul 1, 2026',
-    category: 'Tech',
-  },
-  {
-    id: 6, logo: '🧃', company: 'Unilever Egypt', title: 'Supply Chain Intern',
-    location: 'Cairo', salaryMin: 4000, salaryMax: 5500, match: 82,
-    skills: ['Logistics', 'ERP'], deadline: 'Jun 30, 2026',
-    category: 'Operations',
-  },
-]
-
-const MOCK_APPLICATIONS: MockApplication[] = [
-  { id: 1, company: 'McKinsey Cairo', logo: '📈', role: 'Business Analyst Intern', appliedDate: 'May 20, 2026', status: 'interview' },
-  { id: 2, company: 'CIB Bank',       logo: '🏦', role: 'Finance Analyst Intern',  appliedDate: 'May 15, 2026', status: 'reviewing' },
-  { id: 3, company: 'P&G',            logo: '🧴', role: 'Brand Management Intern', appliedDate: 'May 10, 2026', status: 'applied'   },
-]
+const MOCK_APPLICATIONS: MockApplication[] = []
 
 const PIPELINE_STAGES: AppStatus[] = ['applied', 'reviewing', 'interview', 'offer']
 
@@ -423,9 +380,14 @@ export function InternshipHubScreen() {
                   ))}
                 </AnimatePresence>
                 {filtered.length === 0 && (
-                  <div className="text-center py-12" style={{ color: '#64748B' }}>
-                    <p className="text-2xl mb-2">🔍</p>
-                    <p className="text-sm">No internships match your search</p>
+                  <div className="text-center py-16" style={{ color: '#64748B' }}>
+                    <p className="text-3xl mb-3">💼</p>
+                    <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>
+                      {INTERNSHIPS.length === 0 ? 'No internships yet' : 'No internships match your search'}
+                    </p>
+                    <p className="text-xs mt-1">
+                      {INTERNSHIPS.length === 0 ? 'Check back soon — companies are joining!' : 'Try a different search or filter'}
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -445,6 +407,13 @@ export function InternshipHubScreen() {
                 {MOCK_APPLICATIONS.map(app => (
                   <ApplicationCard key={app.id} app={app} />
                 ))}
+                {MOCK_APPLICATIONS.length === 0 && (
+                  <div className="text-center py-16" style={{ color: '#64748B' }}>
+                    <p className="text-3xl mb-3">📋</p>
+                    <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>No applications yet</p>
+                    <p className="text-xs mt-1">Apply to internships to track them here</p>
+                  </div>
+                )}
               </motion.div>
             </motion.div>
           )}
