@@ -197,11 +197,118 @@ function RoleCard({ role, icon:Icon, accent, headline, tagline, bullets, cta, on
   )
 }
 
+/* ════════════ OWNER SWITCHER ════════════ */
+function OwnerSwitcher({ onStudent, onCompany }: { onStudent:()=>void; onCompany:()=>void }) {
+  const [locked,   setLocked]   = useState(true)
+  const [pwInput,  setPwInput]  = useState('')
+  const [err,      setErr]      = useState('')
+  const [checking, setChecking] = useState(false)
+  const [showPw,   setShowPw]   = useState(false)
+
+  // Verify token on mount
+  useEffect(() => {
+    const token = sessionStorage.getItem('sho8_owner_token')
+    if (!token) return
+    fetch(`/api/owner/auth?token=${token}`)
+      .then(r => r.json())
+      .then(d => { if (d.valid) setLocked(false) })
+      .catch(() => {})
+  }, [])
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setChecking(true); setErr('')
+    try {
+      const res = await fetch('/api/owner/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwInput }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setErr(data.error ?? 'Incorrect password.'); setChecking(false); return }
+      sessionStorage.setItem('sho8_owner_token', data.token)
+      setPwInput(''); setLocked(false)
+    } catch {
+      setErr('Connection error.')
+    }
+    setChecking(false)
+  }
+
+  function lock() {
+    sessionStorage.removeItem('sho8_owner_token')
+    setLocked(true); setPwInput(''); setErr('')
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5, duration:0.4 }}
+      className="fixed bottom-6 right-6 z-50"
+    >
+      <AnimatePresence mode="wait">
+        {locked ? (
+          <motion.form key="gate" onSubmit={submit} initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.9 }}
+            className="flex flex-col gap-2 p-4 rounded-2xl border border-white/10 shadow-2xl"
+            style={{ background:'rgba(10,15,30,0.97)', backdropFilter:'blur(20px)', minWidth:220 }}>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Owner Access</p>
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={pwInput}
+                onChange={e => setPwInput(e.target.value)}
+                placeholder="Password"
+                autoFocus
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-indigo-500 pr-9"
+              />
+              <button type="button" onClick={() => setShowPw(v=>!v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400">
+                {showPw
+                  ? <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                  : <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                }
+              </button>
+            </div>
+            {err && <p className="text-xs text-red-400">{err}</p>}
+            <button type="submit" disabled={checking||!pwInput}
+              className="py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold disabled:opacity-40 transition-colors">
+              {checking ? 'Verifying…' : 'Unlock'}
+            </button>
+          </motion.form>
+        ) : (
+          <motion.div key="panel" initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.9 }}
+            className="flex flex-col gap-2 p-4 rounded-2xl border border-white/10 shadow-2xl"
+            style={{ background:'rgba(10,15,30,0.97)', backdropFilter:'blur(20px)', minWidth:200 }}>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Owner Panel</p>
+              <button onClick={lock} title="Lock" className="text-neutral-600 hover:text-red-400 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </button>
+            </div>
+            {[
+              { label:'Student View',  emoji:'👤', action: onStudent },
+              { label:'Company View',  emoji:'🏢', action: onCompany },
+              { label:'Admin Portal',  emoji:'⚙️', action: () => window.location.href='/admin' },
+            ].map(({ label, emoji, action }) => (
+              <button key={label} onClick={action}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/15 text-left transition-all group">
+                <span className="text-base">{emoji}</span>
+                <span className="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">{label}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 /* ════════════ MAIN PAGE ════════════ */
 export default function LandingPage() {
   const [appOpen,  setAppOpen]  = useState(false)
   const [launching, setLaunch]  = useState<string|null>(null)
   const [featureTab, setTab]    = useState<'company'|'student'>('company')
+  const [ownerVisible, setOwnerVisible] = useState(false)
+  const logoClicks = useRef(0)
+  const logoTimer  = useRef<ReturnType<typeof setTimeout>|null>(null)
   const timer = useRef<ReturnType<typeof setTimeout>|null>(null)
 
   useEffect(() => {
@@ -211,6 +318,18 @@ export default function LandingPage() {
       setAppOpen(true)
     }
   }, [])
+
+  // Secret trigger: click the logo 5 times quickly
+  function handleLogoClick() {
+    logoClicks.current += 1
+    if (logoTimer.current) clearTimeout(logoTimer.current)
+    if (logoClicks.current >= 5) {
+      logoClicks.current = 0
+      setOwnerVisible(true)
+      return
+    }
+    logoTimer.current = setTimeout(() => { logoClicks.current = 0 }, 2000)
+  }
 
   const openApp = useCallback((role:'employer'|'student') => {
     if (appOpen||launching) return
@@ -240,9 +359,19 @@ export default function LandingPage() {
     <>
       <Bg />
 
+      {/* Owner switcher — only visible after secret trigger */}
+      <AnimatePresence>
+        {ownerVisible && (
+          <OwnerSwitcher
+            onStudent={() => openApp('student')}
+            onCompany={() => openApp('employer')}
+          />
+        )}
+      </AnimatePresence>
+
       {/* NAV */}
       <nav className="relative z-20 flex items-center justify-between px-6 md:px-14 pt-7 max-w-[1320px] mx-auto w-full">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5" onClick={handleLogoClick} style={{ cursor:'default' }}>
           <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
             <Zap className="w-4 h-4 text-white" />
           </div>
