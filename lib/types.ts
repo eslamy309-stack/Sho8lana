@@ -143,6 +143,8 @@ export interface UserProfile {
   authProvider?: string    // 'google' | 'github' | 'email'
   onboardingCompleted?: boolean
   mfaEnabled?: boolean
+  kpiScore?: number       // 0–100 composite score from simulations
+  skills?: string[]       // verified skills earned via simulations
 }
 
 export interface Application {

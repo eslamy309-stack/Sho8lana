@@ -115,87 +115,7 @@ interface Ticket {
   message: string
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const MOCK_STUDENTS: Student[] = [
-  { id: '1', name: 'Nour El-Din Hassan', email: 'nour@aucegypt.edu', university: 'AUC', major: 'Business Administration', talentScore: 89, subscription: 'Pro', status: 'Active', joined: '2024-09-15', lastLogin: '2026-06-01', applicationsCount: 12, simCompletions: 5, kpis: { leadership: 92, analytical: 85, communication: 88, cognitive: 90 } },
-  { id: '2', name: 'Salma Mahmoud', email: 'salma@cairo.edu', university: 'Cairo University', major: 'Computer Science', talentScore: 76, subscription: 'Free', status: 'Active', joined: '2024-10-03', lastLogin: '2026-05-29', applicationsCount: 7, simCompletions: 3, kpis: { leadership: 74, analytical: 82, communication: 71, cognitive: 78 } },
-  { id: '3', name: 'Ahmed Farouk', email: 'ahmed.f@alexu.edu', university: 'Alexandria University', major: 'Marketing', talentScore: 63, subscription: 'Free', status: 'Suspended', joined: '2024-11-20', lastLogin: '2026-04-10', applicationsCount: 3, simCompletions: 1, kpis: { leadership: 65, analytical: 60, communication: 68, cognitive: 59 } },
-  { id: '4', name: 'Mariam Youssef', email: 'mariam@guc.edu.eg', university: 'GUC', major: 'Engineering', talentScore: 94, subscription: 'Pro', status: 'Active', joined: '2024-08-01', lastLogin: '2026-06-01', applicationsCount: 18, simCompletions: 8, kpis: { leadership: 96, analytical: 94, communication: 92, cognitive: 95 } },
-  { id: '5', name: 'Omar Khaled', email: 'omar.k@aast.edu', university: 'AAST', major: 'Finance', talentScore: 55, subscription: 'Free', status: 'Banned', joined: '2025-01-12', lastLogin: '2026-02-28', applicationsCount: 1, simCompletions: 0, kpis: { leadership: 52, analytical: 58, communication: 54, cognitive: 56 } },
-  { id: '6', name: 'Hana Ibrahim', email: 'hana@aucegypt.edu', university: 'AUC', major: 'Psychology', talentScore: 81, subscription: 'Pro', status: 'Active', joined: '2024-09-22', lastLogin: '2026-05-31', applicationsCount: 9, simCompletions: 4, kpis: { leadership: 84, analytical: 78, communication: 86, cognitive: 76 } },
-  { id: '7', name: 'Youssef Tamer', email: 'youssef@must.edu', university: 'MUST', major: 'Data Science', talentScore: 71, subscription: 'Free', status: 'Active', joined: '2025-02-14', lastLogin: '2026-05-30', applicationsCount: 5, simCompletions: 2, kpis: { leadership: 68, analytical: 79, communication: 66, cognitive: 72 } },
-  { id: '8', name: 'Dina Raouf', email: 'dina@bue.edu.eg', university: 'BUE', major: 'Architecture', talentScore: 87, subscription: 'Pro', status: 'Active', joined: '2024-07-18', lastLogin: '2026-06-01', applicationsCount: 14, simCompletions: 6, kpis: { leadership: 88, analytical: 83, communication: 90, cognitive: 87 } },
-]
-
-const MOCK_COMPANIES: Company[] = [
-  { id: '1', name: 'Vodafone Egypt', industry: 'Telecom', plan: 'Enterprise', status: 'Active', recruiters: 12, simulations: 5, joined: '2024-06-01' },
-  { id: '2', name: 'Banque Misr', industry: 'Banking', plan: 'Pro', status: 'Active', recruiters: 6, simulations: 3, joined: '2024-07-15' },
-  { id: '3', name: 'Startup Egypt', industry: 'Technology', plan: 'Starter', status: 'Pending Approval', recruiters: 2, simulations: 1, joined: '2026-05-29' },
-  { id: '4', name: 'Orange Egypt', industry: 'Telecom', plan: 'Enterprise', status: 'Active', recruiters: 9, simulations: 4, joined: '2024-09-10' },
-  { id: '5', name: 'TechVentures Co', industry: 'Technology', plan: 'Starter', status: 'Pending Approval', recruiters: 1, simulations: 0, joined: '2026-06-01' },
-  { id: '6', name: 'EgyptAir', industry: 'Aviation', plan: 'Pro', status: 'Suspended', recruiters: 4, simulations: 2, joined: '2024-11-01' },
-]
-
-const MOCK_SIMULATIONS: Simulation[] = [
-  { id: '1', title: 'Customer Experience Strategy', company: 'Vodafone Egypt', category: 'Marketing', submitted: '2026-05-28', status: 'Pending Review', description: 'Participants will design a 90-day CX improvement plan for a telecom company facing churn issues.', duration: '3 hours' },
-  { id: '2', title: 'Financial Risk Assessment', company: 'Banque Misr', category: 'Finance', submitted: '2026-05-25', status: 'Approved', description: 'Analyze a portfolio of SME loans and identify credit risk factors.', duration: '4 hours' },
-  { id: '3', title: 'Product Launch Roadmap', company: 'Orange Egypt', category: 'Product', submitted: '2026-05-20', status: 'Rejected', description: 'Build a GTM strategy for a new mobile broadband product.', duration: '2.5 hours', rejectionReason: 'Questions were too vague and lacked measurable outcomes. Please revise and resubmit.' },
-  { id: '4', title: 'HR Talent Acquisition Pipeline', company: 'Startup Egypt', category: 'Human Resources', submitted: '2026-06-01', status: 'Pending Review', description: 'Design an end-to-end recruitment process for a fast-growing tech startup.', duration: '2 hours' },
-]
-
-const MOCK_PAYMENTS: Payment[] = [
-  { id: '1', name: 'Mariam Youssef', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Active', nextBilling: '2026-07-01', started: '2026-06-01', type: 'student' },
-  { id: '2', name: 'Nour El-Din Hassan', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Active', nextBilling: '2026-07-01', started: '2026-05-01', type: 'student' },
-  { id: '3', name: 'Hana Ibrahim', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Active', nextBilling: '2026-07-01', started: '2026-04-01', type: 'student' },
-  { id: '4', name: 'Dina Raouf', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Active', nextBilling: '2026-07-01', started: '2026-03-18', type: 'student' },
-  { id: '5', name: 'Youssef Tamer', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Cancelled', nextBilling: '—', started: '2026-02-14', type: 'student' },
-  { id: '6', name: 'Omar Khaled', plan: 'Pro Monthly', amount: 'EGP 150/mo', status: 'Cancelled', nextBilling: '—', started: '2025-01-12', type: 'student' },
-  { id: '7', name: 'Vodafone Egypt', plan: 'Enterprise Annual', amount: 'EGP 10,000/yr', status: 'Active', nextBilling: '2027-06-01', started: '2026-06-01', type: 'company', recruiters: 12 },
-  { id: '8', name: 'Banque Misr', plan: 'Pro Monthly', amount: 'EGP 1,000/mo', status: 'Active', nextBilling: '2026-07-01', started: '2026-05-15', type: 'company', recruiters: 6 },
-  { id: '9', name: 'Orange Egypt', plan: 'Enterprise Annual', amount: 'EGP 10,000/yr', status: 'Active', nextBilling: '2027-09-10', started: '2026-09-10', type: 'company', recruiters: 9 },
-  { id: '10', name: 'Startup Egypt', plan: 'Starter Monthly', amount: 'EGP 300/mo', status: 'Active', nextBilling: '2026-06-29', started: '2026-05-29', type: 'company', recruiters: 2 },
-  { id: '11', name: 'EgyptAir', plan: 'Pro Monthly', amount: 'EGP 1,000/mo', status: 'Cancelled', nextBilling: '—', started: '2025-11-01', type: 'company', recruiters: 4 },
-]
-
-const MOCK_AUDIT: AuditEntry[] = [
-  { id: '1', timestamp: '2026-06-01 14:32:11', actor: 'Admin', action: 'company_approval', description: 'Approved company: Vodafone Egypt', ip: '197.48.x.x' },
-  { id: '2', timestamp: '2026-06-01 13:15:04', actor: 'System', action: 'security_event', description: '5 failed login attempts for user: unknown@test.com', ip: '41.33.x.x' },
-  { id: '3', timestamp: '2026-06-01 12:00:00', actor: 'Mariam Youssef', action: 'subscription_change', description: 'Upgraded from Free to Pro Monthly', ip: '156.210.x.x' },
-  { id: '4', timestamp: '2026-06-01 11:45:22', actor: 'Admin', action: 'simulation_upload', description: 'Approved simulation: Financial Risk Assessment by Banque Misr', ip: '197.48.x.x' },
-  { id: '5', timestamp: '2026-06-01 11:02:50', actor: 'Startup Egypt', action: 'simulation_upload', description: 'Submitted new simulation: HR Talent Acquisition Pipeline', ip: '197.53.x.x' },
-  { id: '6', timestamp: '2026-06-01 10:30:01', actor: 'Admin', action: 'user_update', description: 'Suspended student: Ahmed Farouk (spam activity)', ip: '197.48.x.x' },
-  { id: '7', timestamp: '2026-06-01 09:58:33', actor: 'Nour El-Din Hassan', action: 'login', description: 'Successful login from new device', ip: '102.47.x.x' },
-  { id: '8', timestamp: '2026-05-31 23:10:45', actor: 'System', action: 'admin_action', description: 'Daily metrics snapshot taken', ip: 'internal' },
-  { id: '9', timestamp: '2026-05-31 20:05:12', actor: 'Dina Raouf', action: 'login', description: 'Standard login', ip: '41.34.x.x' },
-  { id: '10', timestamp: '2026-05-31 18:22:07', actor: 'Admin', action: 'company_approval', description: 'Rejected simulation: Product Launch Roadmap by Orange Egypt', ip: '197.48.x.x' },
-  { id: '11', timestamp: '2026-05-31 16:45:00', actor: 'Hana Ibrahim', action: 'subscription_change', description: 'Renewed Pro Monthly subscription', ip: '156.215.x.x' },
-  { id: '12', timestamp: '2026-05-31 14:30:18', actor: 'System', action: 'security_event', description: 'Rate limit triggered for IP: 41.33.x.x', ip: '41.33.x.x' },
-  { id: '13', timestamp: '2026-05-30 09:00:00', actor: 'TechVentures Co', action: 'login', description: 'Company account created and first login', ip: '196.219.x.x' },
-  { id: '14', timestamp: '2026-05-29 15:12:33', actor: 'Admin', action: 'admin_action', description: 'Updated platform fee configuration', ip: '197.48.x.x' },
-  { id: '15', timestamp: '2026-05-28 11:00:00', actor: 'Vodafone Egypt', action: 'simulation_upload', description: 'Submitted simulation: Customer Experience Strategy', ip: '196.158.x.x' },
-]
-
-const MOCK_TICKETS: Ticket[] = [
-  { id: '#001', subject: 'Cannot access simulation results', fromName: 'Nour El-Din Hassan', fromEmail: 'nour@aucegypt.edu', category: 'Bug', priority: 'High', status: 'Open', created: '2026-06-01 08:30', message: 'Hi, I completed the Vodafone simulation 2 days ago but I still cannot see my results or score. The page shows a loading spinner indefinitely. Please fix this urgently as I need to share my score with companies.' },
-  { id: '#002', subject: 'Billing question about Pro plan', fromName: 'Salma Mahmoud', fromEmail: 'salma@cairo.edu', category: 'Billing', priority: 'Medium', status: 'In Progress', created: '2026-05-31 14:22', message: 'I was charged twice for my Pro subscription this month. Please refund the duplicate charge. Transaction IDs: TXN-4421 and TXN-4422.' },
-  { id: '#003', subject: 'How to update university info?', fromName: 'Youssef Tamer', fromEmail: 'youssef@must.edu', category: 'Question', priority: 'Low', status: 'Open', created: '2026-05-31 09:15', message: 'I transferred from MUST to Cairo University but cannot find where to update my university in the profile settings. Can you help?' },
-  { id: '#004', subject: 'Account locked after password reset', fromName: 'Ahmed Farouk', fromEmail: 'ahmed.f@alexu.edu', category: 'Account', priority: 'High', status: 'Open', created: '2026-05-30 16:00', message: 'I reset my password but now I cannot log in at all. I tried 5 times and it says my account is locked. I need access urgently.' },
-  { id: '#005', subject: 'Company dashboard missing features', fromName: 'Startup Egypt HR', fromEmail: 'hr@startupegypt.com', category: 'Bug', priority: 'Medium', status: 'Resolved', created: '2026-05-28 10:30', message: 'The analytics charts in the company dashboard are not loading. We see blank panels where the charts should be.' },
-]
-
-const MOCK_ACTIVITY = [
-  { time: '2 min ago', type: 'student', desc: 'New student registered: Layla Adel from Cairo University' },
-  { time: '8 min ago', type: 'application', desc: 'Ahmed Sami applied to Vodafone Egypt – Data Analyst internship' },
-  { time: '15 min ago', type: 'payment', desc: 'Pro subscription activated: Reem Hassan' },
-  { time: '23 min ago', type: 'simulation', desc: 'Simulation submitted for review: HR Pipeline by Startup Egypt' },
-  { time: '31 min ago', type: 'company', desc: 'New company registered: TechVentures Co' },
-  { time: '45 min ago', type: 'security', desc: 'Failed login attempts threshold reached for unknown@test.com' },
-  { time: '1 hr ago', type: 'application', desc: 'Mariam Youssef accepted for interview at Orange Egypt' },
-  { time: '1.5 hrs ago', type: 'student', desc: 'New student registered: Kareem Mostafa from GUC' },
-  { time: '2 hrs ago', type: 'payment', desc: 'Company plan renewed: Banque Misr – Pro Monthly' },
-  { time: '3 hrs ago', type: 'application', desc: 'Dina Raouf completed simulation: Financial Risk Assessment' },
-]
+// (All mock data removed — views load from Supabase at runtime)
 
 // ─── Helper Components ─────────────────────────────────────────────────────────
 
@@ -499,54 +419,69 @@ function SimApprovalModal({ sim, onClose, onApprove, onReject }: { sim: Simulati
 // ─── Views ────────────────────────────────────────────────────────────────────
 
 function OverviewView() {
+  const [counts, setCounts] = useState({ students: 0, companies: 0, activeCompanies: 0, applications: 0, simulations: 0, pendingCompanies: 0 })
+  const [recentActivity, setRecentActivity] = useState<{ id: string; type: string; body: string; created_at: string }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const [
+        { count: students },
+        { count: companies },
+        { count: activeCompanies },
+        { count: pendingCompanies },
+        { count: applications },
+        { count: simulations },
+        { data: activity },
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+        supabase.from('companies').select('*', { count: 'exact', head: true }),
+        supabase.from('companies').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('companies').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('applications').select('*', { count: 'exact', head: true }),
+        supabase.from('simulations').select('*', { count: 'exact', head: true }),
+        supabase.from('admin_notifications').select('id,type,body,created_at').order('created_at', { ascending: false }).limit(10),
+      ])
+      setCounts({ students: students ?? 0, companies: companies ?? 0, activeCompanies: activeCompanies ?? 0, applications: applications ?? 0, simulations: simulations ?? 0, pendingCompanies: pendingCompanies ?? 0 })
+      setRecentActivity(activity ?? [])
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const clsMap: Record<string, string> = { student_registered: 'bg-indigo-500/10 text-indigo-400', company_registered: 'bg-amber-500/10 text-amber-400', application: 'bg-blue-500/10 text-blue-400', subscription: 'bg-emerald-500/10 text-emerald-400', sim_submitted: 'bg-purple-500/10 text-purple-400', company_status_change: 'bg-orange-500/10 text-orange-400' }
+  const emojiMap: Record<string, string> = { student_registered: '👤', company_registered: '🏢', application: '📋', subscription: '💳', sim_submitted: '🎯', company_status_change: '🏢' }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-white text-xl font-bold mb-1">Platform Overview</h2>
-        <p className="text-neutral-500 text-sm">Real-time metrics across the Sho8lana platform</p>
+        <p className="text-neutral-500 text-sm">Live metrics from the Sho8lana platform</p>
       </div>
 
       <div>
         <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Students</p>
         <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Total Students" value="52,847" trend="up" />
-          <MetricCard label="Active Today" value="1,203" sub="2.3% of total" />
-          <MetricCard label="New This Week" value="847" trend="up" />
+          <MetricCard label="Total Students" value={loading ? '—' : counts.students.toLocaleString()} trend="up" />
+          <MetricCard label="Total Applications" value={loading ? '—' : counts.applications.toLocaleString()} />
+          <MetricCard label="Total Simulations" value={loading ? '—' : counts.simulations.toString()} />
         </div>
       </div>
 
       <div>
         <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Companies</p>
         <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Total Companies" value="234" trend="up" />
-          <MetricCard label="Active Companies" value="89" sub="38% of total" />
-          <MetricCard label="Recruiters Online" value="23" />
-        </div>
-      </div>
-
-      <div>
-        <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Applications</p>
-        <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Total Applications" value="18,429" trend="up" />
-          <MetricCard label="Interviews Scheduled" value="342" />
-          <MetricCard label="Hired" value="1,847" trend="up" />
-        </div>
-      </div>
-
-      <div>
-        <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Simulations</p>
-        <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Total Simulations" value="12" />
-          <MetricCard label="Completion Rate" value="73%" trend="up" />
-          <MetricCard label="Avg Talent Score" value="71" />
+          <MetricCard label="Total Companies" value={loading ? '—' : counts.companies.toString()} trend="up" />
+          <MetricCard label="Active Companies" value={loading ? '—' : counts.activeCompanies.toString()} sub={counts.companies ? `${Math.round(counts.activeCompanies / counts.companies * 100)}% of total` : undefined} />
+          <MetricCard label="Pending Approval" value={loading ? '—' : counts.pendingCompanies.toString()} trend={counts.pendingCompanies > 0 ? 'up' : 'neutral'} />
         </div>
       </div>
 
       <div>
         <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Revenue</p>
         <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="MRR" value="EGP 48,300" trend="up" />
-          <MetricCard label="ARR" value="EGP 579,600" />
+          <MetricCard label="MRR" value="EGP 0" />
+          <MetricCard label="ARR" value="EGP 0" />
           <MetricCard label="Active Subscriptions" value="161" trend="up" />
         </div>
       </div>
@@ -554,19 +489,18 @@ function OverviewView() {
       <div className="bg-[#0D1526] rounded-xl border border-white/5 p-5">
         <h3 className="text-white font-semibold mb-4">Recent Activity</h3>
         <div className="space-y-3">
-          {MOCK_ACTIVITY.map((item, i) => {
-            const clsMap: Record<string, string> = { student: 'bg-indigo-500/10 text-indigo-400', application: 'bg-blue-500/10 text-blue-400', payment: 'bg-emerald-500/10 text-emerald-400', simulation: 'bg-purple-500/10 text-purple-400', company: 'bg-amber-500/10 text-amber-400', security: 'bg-red-500/10 text-red-400' }
-            const emojiMap: Record<string, string> = { student: '👤', application: '📋', payment: '💳', simulation: '🎯', company: '🏢', security: '🔒' }
-            return (
-              <div key={i} className="flex items-start gap-3">
-                <span className={`text-sm px-1.5 py-0.5 rounded ${clsMap[item.type]}`}>{emojiMap[item.type]}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-neutral-300 text-sm">{item.desc}</p>
-                </div>
-                <span className="text-neutral-600 text-xs flex-shrink-0">{item.time}</span>
+          {recentActivity.length === 0 && !loading && (
+            <p className="text-neutral-600 text-sm text-center py-4">No activity yet — platform is fresh!</p>
+          )}
+          {recentActivity.map(item => (
+            <div key={item.id} className="flex items-start gap-3">
+              <span className={`text-sm px-1.5 py-0.5 rounded ${clsMap[item.type] ?? 'bg-neutral-500/10 text-neutral-400'}`}>{emojiMap[item.type] ?? '📌'}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-neutral-300 text-sm">{item.body}</p>
               </div>
-            )
-          })}
+              <span className="text-neutral-600 text-xs flex-shrink-0">{new Date(item.created_at).toLocaleTimeString()}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -574,11 +508,38 @@ function OverviewView() {
 }
 
 function StudentsView() {
-  const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS)
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [subFilter, setSubFilter] = useState('All')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+
+  useEffect(() => {
+    supabase.from('profiles')
+      .select('id,name,email,university,major,kpi_score,role,created_at')
+      .eq('role', 'student')
+      .order('created_at', { ascending: false })
+      .limit(200)
+      .then(({ data }) => {
+        setStudents((data ?? []).map((p: Record<string, unknown>) => ({
+          id: p.id as string,
+          name: (p.name as string) ?? 'Unknown',
+          email: (p.email as string) ?? '',
+          university: (p.university as string) ?? '—',
+          major: (p.major as string) ?? '—',
+          talentScore: (p.kpi_score as number) ?? 0,
+          subscription: 'Free' as const,
+          status: 'Active' as const,
+          joined: new Date(p.created_at as string).toLocaleDateString(),
+          lastLogin: '—',
+          applicationsCount: 0,
+          simCompletions: 0,
+          kpis: { leadership: 0, analytical: 0, communication: 0, cognitive: 0 },
+        })))
+        setLoading(false)
+      })
+  }, [])
 
   const filtered = students.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.email.toLowerCase().includes(search.toLowerCase()) || s.university.toLowerCase().includes(search.toLowerCase())
@@ -587,7 +548,8 @@ function StudentsView() {
     return matchSearch && matchStatus && matchSub
   })
 
-  const updateStatus = (id: string, status: Student['status']) => {
+  const updateStatus = async (id: string, status: Student['status']) => {
+    await supabase.from('profiles').update({ role: status === 'Banned' ? 'banned' : 'student' }).eq('id', id)
     setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s))
   }
 
@@ -672,10 +634,36 @@ function StudentsView() {
 }
 
 function CompaniesView() {
-  const [companies, setCompanies] = useState<Company[]>(MOCK_COMPANIES)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [loading, setLoading] = useState(true)
   const pending = companies.filter(c => c.status === 'Pending Approval')
 
-  const updateStatus = (id: string, status: Company['status']) => {
+  useEffect(() => {
+    supabase.from('companies')
+      .select('id,name,industry,subscription_plan,status,created_at')
+      .order('created_at', { ascending: false })
+      .limit(200)
+      .then(({ data }) => {
+        setCompanies((data ?? []).map((c: Record<string, unknown>) => ({
+          id: c.id as string,
+          name: (c.name as string) ?? 'Unknown',
+          industry: (c.industry as string) ?? '—',
+          plan: ((c.subscription_plan as string) === 'enterprise' ? 'Enterprise' : (c.subscription_plan as string) === 'pro' ? 'Pro' : 'Starter') as Company['plan'],
+          status: ((c.status as string) === 'active' ? 'Active' : (c.status as string) === 'suspended' ? 'Suspended' : 'Pending Approval') as Company['status'],
+          recruiters: 0,
+          simulations: 0,
+          joined: new Date(c.created_at as string).toLocaleDateString(),
+        })))
+        setLoading(false)
+      })
+  }, [])
+
+  const updateStatus = async (id: string, status: Company['status']) => {
+    const dbStatus = status === 'Active' ? 'active' : status === 'Suspended' ? 'suspended' : 'pending'
+    await supabase.from('companies').update({
+      status: dbStatus,
+      ...(dbStatus === 'active' ? { approved_at: new Date().toISOString(), approved_by: 'admin' } : {}),
+    }).eq('id', id)
     setCompanies(prev => prev.map(c => c.id === id ? { ...c, status } : c))
   }
 
@@ -744,15 +732,39 @@ function CompaniesView() {
 }
 
 function SimulationsView() {
-  const [sims, setSims] = useState<Simulation[]>(MOCK_SIMULATIONS)
+  const [sims, setSims] = useState<Simulation[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedSim, setSelectedSim] = useState<Simulation | null>(null)
 
-  const approve = (id: string) => {
+  useEffect(() => {
+    supabase.from('simulation_submissions')
+      .select('id,title,company_name,category,created_at,status,description,duration_mins,rejection_reason')
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data }) => {
+        setSims((data ?? []).map((s: Record<string, unknown>) => ({
+          id: String(s.id),
+          title: (s.title as string) ?? 'Untitled',
+          company: (s.company_name as string) ?? '—',
+          category: (s.category as string) ?? '—',
+          submitted: new Date(s.created_at as string).toLocaleDateString(),
+          status: ((s.status as string) === 'approved' ? 'Approved' : (s.status as string) === 'rejected' ? 'Rejected' : 'Pending Review') as Simulation['status'],
+          description: (s.description as string) ?? '',
+          duration: `${s.duration_mins as number ?? 30} mins`,
+          rejectionReason: (s.rejection_reason as string) ?? undefined,
+        })))
+        setLoading(false)
+      })
+  }, [])
+
+  const approve = async (id: string) => {
+    await supabase.from('simulation_submissions').update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'admin' }).eq('id', id)
     setSims(prev => prev.map(s => s.id === id ? { ...s, status: 'Approved' as const } : s))
     setSelectedSim(null)
   }
 
-  const reject = (id: string, reason: string) => {
+  const reject = async (id: string, reason: string) => {
+    await supabase.from('simulation_submissions').update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: 'admin', rejection_reason: reason }).eq('id', id)
     setSims(prev => prev.map(s => s.id === id ? { ...s, status: 'Rejected' as const, rejectionReason: reason } : s))
     setSelectedSim(null)
   }
@@ -819,10 +831,10 @@ function SimulationsView() {
 
 function PaymentsView() {
   const [tab, setTab] = useState<'student' | 'company'>('student')
-  const studentPayments = MOCK_PAYMENTS.filter(p => p.type === 'student')
-  const companyPayments = MOCK_PAYMENTS.filter(p => p.type === 'company')
-  const activeStudent = studentPayments.filter(p => p.status === 'Active').length
-  const activeCompany = companyPayments.filter(p => p.status === 'Active').length
+  const studentPayments: Payment[] = []
+  const companyPayments: Payment[] = []
+  const activeStudent = 0
+  const activeCompany = 0
 
   return (
     <div className="space-y-5">
@@ -885,24 +897,31 @@ function PaymentsView() {
 }
 
 function AuditLogView() {
-  const [entries, setEntries] = useState<AuditEntry[]>(MOCK_AUDIT)
+  const [entries, setEntries] = useState<AuditEntry[]>([])
   const [search, setSearch] = useState('')
-  const [dateFilter, setDateFilter] = useState('All')
   const [typeFilter, setTypeFilter] = useState('All')
   const [refreshing, setRefreshing] = useState(false)
 
   const refresh = useCallback(async () => {
     setRefreshing(true)
-    try {
-      const { data } = await supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(50)
-      if (data && data.length > 0) setEntries(data as AuditEntry[])
-    } catch {
-      // fallback to mock
-    }
+    const { data } = await supabase
+      .from('audit_logs')
+      .select('id,created_at,actor_email,action,description,ip_address')
+      .order('created_at', { ascending: false })
+      .limit(100)
+    setEntries((data ?? []).map((e: Record<string, unknown>) => ({
+      id: String(e.id),
+      timestamp: new Date(e.created_at as string).toLocaleString(),
+      actor: (e.actor_email as string) ?? 'System',
+      action: (e.action as AuditEntry['action']),
+      description: (e.description as string) ?? '',
+      ip: (e.ip_address as string) ?? '—',
+    })))
     setRefreshing(false)
   }, [])
 
   useEffect(() => {
+    refresh()
     const interval = setInterval(refresh, 30000)
     return () => clearInterval(interval)
   }, [refresh])
@@ -971,14 +990,41 @@ function AuditLogView() {
 }
 
 function SupportView() {
-  const [tickets, setTickets] = useState<Ticket[]>(MOCK_TICKETS)
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
   const [reply, setReply] = useState('')
+
+  useEffect(() => {
+    supabase.from('support_tickets')
+      .select('id,ticket_ref,subject,user_name,user_email,category,priority,status,created_at,body')
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data }) => {
+        setTickets((data ?? []).map((t: Record<string, unknown>) => ({
+          id: (t.ticket_ref as string) ?? String(t.id),
+          subject: (t.subject as string) ?? '—',
+          fromName: (t.user_name as string) ?? '—',
+          fromEmail: (t.user_email as string) ?? '—',
+          category: ((t.category as string)?.[0]?.toUpperCase() + (t.category as string)?.slice(1)) as Ticket['category'],
+          priority: ((t.priority as string)?.[0]?.toUpperCase() + (t.priority as string)?.slice(1)) as Ticket['priority'],
+          status: ((t.status as string) === 'open' ? 'Open' : (t.status as string) === 'in_progress' ? 'In Progress' : 'Resolved') as Ticket['status'],
+          created: new Date(t.created_at as string).toLocaleString(),
+          message: (t.body as string) ?? '',
+        })))
+        setLoading(false)
+      })
+  }, [])
 
   const open = tickets.filter(t => t.status === 'Open').length
   const inProgress = tickets.filter(t => t.status === 'In Progress').length
 
-  const updateTicket = (id: string, changes: Partial<Ticket>) => {
+  const updateTicket = async (id: string, changes: Partial<Ticket>) => {
+    const dbStatus = changes.status === 'Open' ? 'open' : changes.status === 'In Progress' ? 'in_progress' : changes.status === 'Resolved' ? 'resolved' : undefined
+    if (dbStatus) {
+      const ticketRef = id.startsWith('TKT-') ? id : undefined
+      await supabase.from('support_tickets').update({ status: dbStatus }).eq(ticketRef ? 'ticket_ref' : 'id', id)
+    }
     setTickets(prev => prev.map(t => t.id === id ? { ...t, ...changes } : t))
     if (selectedTicket?.id === id) setSelectedTicket(prev => prev ? { ...prev, ...changes } : null)
   }
@@ -1205,19 +1251,13 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'health', label: 'Platform Health', icon: Activity },
 ]
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: '1', type: 'company', message: 'New company registered: TechVentures Co', timestamp: new Date(Date.now() - 2 * 60000), read: false },
-  { id: '2', type: 'student', message: '👤 New student registered: Layla Adel from Cairo University', timestamp: new Date(Date.now() - 8 * 60000), read: false },
-  { id: '3', type: 'payment', message: '💳 Subscription purchased: Mariam Youssef – Pro Monthly', timestamp: new Date(Date.now() - 15 * 60000), read: false },
-  { id: '4', type: 'security', message: '🔒 Suspicious activity: 5+ failed logins for unknown@test.com', timestamp: new Date(Date.now() - 25 * 60000), read: true },
-  { id: '5', type: 'simulation', message: '🎯 Simulation submitted: HR Talent Acquisition Pipeline by Startup Egypt', timestamp: new Date(Date.now() - 40 * 60000), read: true },
-]
+// Notifications loaded from admin_notifications table on mount
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null)
   const [activeNav, setActiveNav] = useState('overview')
   const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const realtimeRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   // Auth check on mount
@@ -1253,6 +1293,24 @@ export default function AdminPage() {
       checkSession()
     }
   }, [])
+
+  // Load recent notifications from DB on auth
+  useEffect(() => {
+    if (!authed) return
+    supabase.from('admin_notifications')
+      .select('id,type,title,body,read,created_at')
+      .order('created_at', { ascending: false })
+      .limit(30)
+      .then(({ data }) => {
+        setNotifications((data ?? []).map((n: Record<string, unknown>) => ({
+          id: String(n.id),
+          type: (n.type as string)?.includes('student') ? 'student' : (n.type as string)?.includes('company') ? 'company' : (n.type as string)?.includes('sim') ? 'simulation' : (n.type as string)?.includes('sub') ? 'payment' : 'security',
+          message: `${(n.title as string) ?? ''}: ${(n.body as string) ?? ''}`,
+          timestamp: new Date(n.created_at as string),
+          read: Boolean(n.read),
+        })))
+      })
+  }, [authed])
 
   // Supabase Realtime subscriptions
   useEffect(() => {

@@ -22,7 +22,7 @@ const up = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const TALENT_SCORE = 87
+// talentScore is derived from state.user.kpiScore at runtime
 
 function scoreColor(score: number): string {
   if (score >= 90) return '#10B981'
@@ -38,40 +38,12 @@ function scoreLabel(score: number): string {
   return 'Needs Work'
 }
 
-const KPI_BARS = [
-  { label: 'Leadership',     value: 85, color: '#6366F1' },
-  { label: 'Analytical',     value: 78, color: '#10B981' },
-  { label: 'Communication',  value: 92, color: '#06B6D4' },
-  { label: 'Cognitive',      value: 71, color: '#F59E0B' },
-]
-
-const SKILLS = [
-  'Marketing Strategy', 'Data Analysis', 'Financial Modeling',
-  'Project Management', 'Excel', 'Python',
-]
-
-const SIM_HISTORY = [
-  { track: 'Marketing Strategy', score: 91, date: 'Apr 12, 2026', badge: '🏆' },
-  { track: 'Finance Fundamentals', score: 84, date: 'Mar 28, 2026', badge: '📊' },
-  { track: 'Leadership & Management', score: 88, date: 'Feb 15, 2026', badge: '🎯' },
-]
-
-const ACHIEVEMENTS = [
-  { emoji: '🏆', label: 'Top Performer' },
-  { emoji: '🔥', label: '7-Day Streak' },
-  { emoji: '🎯', label: 'Sim Master' },
-  { emoji: '⚡', label: 'Fast Learner' },
-  { emoji: '🌟', label: 'Gold Tier' },
-]
-
-const EXPERIENCE = [
-  { role: 'Marketing Coordinator (Intern)', company: 'Vodafone Egypt', period: 'Jun–Aug 2025' },
-  { role: 'Research Assistant', company: 'AUC Business School', period: 'Sep 2024–Present' },
-]
-
-const CERTS = [
-  { name: 'Google Digital Marketing', issuer: 'Google', date: 'Jan 2026' },
-  { name: 'Excel for Business', issuer: 'Macquarie University (Coursera)', date: 'Nov 2025' },
+// KPI bars, skills, and history are populated from real user data at runtime
+const KPI_BARS_DEFAULT = [
+  { label: 'Leadership',     value: 0, color: '#6366F1' },
+  { label: 'Analytical',     value: 0, color: '#10B981' },
+  { label: 'Communication',  value: 0, color: '#06B6D4' },
+  { label: 'Cognitive',      value: 0, color: '#F59E0B' },
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -103,11 +75,12 @@ export function TalentProfileScreen() {
   const [githubInput, setGithubInput] = useState(user.githubUsername || '')
   const [portfolioInput, setPortfolioInput] = useState(user.portfolioUrl || '')
 
+  const talentScore = user.kpiScore ?? 0
   const initials = user.name
     ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
     : 'ST'
 
-  const color = scoreColor(TALENT_SCORE)
+  const color = scoreColor(talentScore)
 
   function handleShare() {
     navigator.clipboard?.writeText(`https://sho8lana.app/talent/${user.name || 'me'}`)
@@ -220,20 +193,20 @@ export function TalentProfileScreen() {
             <div>
               <p className="text-xs font-medium" style={{ color: `${color}cc` }}>Talent Score</p>
               <div className="flex items-end gap-1.5 mt-0.5">
-                <span className="text-4xl font-black" style={{ color }}>{TALENT_SCORE}</span>
+                <span className="text-4xl font-black" style={{ color }}>{talentScore}</span>
                 <span className="text-sm font-semibold mb-1.5" style={{ color: `${color}99` }}>/100</span>
               </div>
               <span
                 className="inline-block px-2 py-0.5 rounded-full text-xs font-bold mt-1"
                 style={{ background: `${color}22`, color }}
               >
-                {scoreLabel(TALENT_SCORE)}
+                {scoreLabel(talentScore)}
               </span>
             </div>
             <div className="text-right">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{ background: `conic-gradient(${color} ${TALENT_SCORE * 3.6}deg, rgba(255,255,255,0.05) 0deg)` }}
+                style={{ background: `conic-gradient(${color} ${talentScore * 3.6}deg, rgba(255,255,255,0.05) 0deg)` }}
               >
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -284,7 +257,7 @@ export function TalentProfileScreen() {
         >
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>KPI Scores</h3>
           <div className="space-y-4">
-            {KPI_BARS.map((kpi, i) => (
+            {KPI_BARS_DEFAULT.map((kpi, i) => (
               <div key={kpi.label}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium" style={{ color: '#94A3B8' }}>{kpi.label}</span>
@@ -307,7 +280,7 @@ export function TalentProfileScreen() {
             <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Verified Skills</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {SKILLS.map(skill => (
+            {(user.skills ?? []).length > 0 ? (user.skills ?? []).map((skill: string) => (
               <span
                 key={skill}
                 className="px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -315,7 +288,9 @@ export function TalentProfileScreen() {
               >
                 {skill}
               </span>
-            ))}
+            )) : (
+              <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete simulations to earn verified skills</p>
+            )}
           </div>
         </motion.div>
 
@@ -327,27 +302,7 @@ export function TalentProfileScreen() {
         >
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Simulation History</h3>
           <div className="space-y-3">
-            {SIM_HISTORY.map((sim, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-3 px-4 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{sim.badge}</span>
-                  <div>
-                    <p className="text-xs font-semibold" style={{ color: '#F1F5F9' }}>{sim.track}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{sim.date}</p>
-                  </div>
-                </div>
-                <span
-                  className="text-sm font-black"
-                  style={{ color: scoreColor(sim.score) }}
-                >
-                  {sim.score}
-                </span>
-              </div>
-            ))}
+            <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete your first simulation to see history here</p>
           </div>
         </motion.div>
 
@@ -361,19 +316,7 @@ export function TalentProfileScreen() {
             <Award className="w-4 h-4" style={{ color: '#F59E0B' }} />
             <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Achievements</h3>
           </div>
-          <div className="grid grid-cols-5 gap-2">
-            {ACHIEVEMENTS.map((a, i) => (
-              <motion.div
-                key={i}
-                whileTap={{ scale: 0.92 }}
-                className="flex flex-col items-center gap-1.5 py-3 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                <span className="text-2xl">{a.emoji}</span>
-                <span className="text-center leading-tight" style={{ color: '#94A3B8', fontSize: '0.6rem' }}>{a.label}</span>
-              </motion.div>
-            ))}
-          </div>
+          <p className="text-xs py-2" style={{ color: '#64748B' }}>Earn achievements by completing simulations</p>
         </motion.div>
 
         {/* ── GitHub & Portfolio ── */}
@@ -451,25 +394,7 @@ export function TalentProfileScreen() {
             </button>
           </div>
           <div className="space-y-3">
-            {EXPERIENCE.map((exp, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 py-3 px-4 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
-              >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base"
-                  style={{ background: 'rgba(99,102,241,0.15)' }}
-                >
-                  🏢
-                </div>
-                <div>
-                  <p className="text-xs font-semibold" style={{ color: '#F1F5F9' }}>{exp.role}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>{exp.company}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{exp.period}</p>
-                </div>
-              </div>
-            ))}
+            <p className="text-xs py-2" style={{ color: '#64748B' }}>Add your internships and work experience</p>
           </div>
         </motion.div>
 
@@ -481,20 +406,7 @@ export function TalentProfileScreen() {
         >
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Certifications</h3>
           <div className="space-y-3">
-            {CERTS.map((cert, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 py-3 px-4 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
-              >
-                <span className="text-xl">🎓</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{ color: '#F1F5F9' }}>{cert.name}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>{cert.issuer} · {cert.date}</p>
-                </div>
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: '#10B981' }} />
-              </div>
-            ))}
+            <p className="text-xs py-2" style={{ color: '#64748B' }}>Add certifications to strengthen your profile</p>
           </div>
         </motion.div>
       </motion.div>

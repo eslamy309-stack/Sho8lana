@@ -34,9 +34,10 @@ async function auth(req: NextRequest, companyId: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { companyId: string } },
+  { params }: { params: Promise<{ companyId: string }> },
 ) {
-  try { await auth(req, params.companyId) }
+  const { companyId } = await params
+  try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
 
   const { searchParams } = req.nextUrl
@@ -46,7 +47,7 @@ export async function GET(
   let query = supabase
     .from('simulation_endpoints')
     .select('*')
-    .eq('company_id', params.companyId)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (category) query = query.eq('category', category)
@@ -60,9 +61,10 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { companyId: string } },
+  { params }: { params: Promise<{ companyId: string }> },
 ) {
-  try { await auth(req, params.companyId) }
+  const { companyId } = await params
+  try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
 
   let body: SimulationEndpointCreate
@@ -84,7 +86,7 @@ export async function POST(
     .from('simulation_endpoints')
     .insert([{
       simulation_id:           body.simulationId,
-      company_id:              params.companyId,
+      company_id:              companyId,
       name:                    body.name,
       name_ar:                 body.nameAr,
       description:             body.description,
@@ -115,9 +117,10 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { companyId: string } },
+  { params }: { params: Promise<{ companyId: string }> },
 ) {
-  try { await auth(req, params.companyId) }
+  const { companyId } = await params
+  try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
 
   const simId = req.nextUrl.searchParams.get('simulationId')
@@ -126,7 +129,7 @@ export async function DELETE(
   const { error } = await supabase
     .from('simulation_endpoints')
     .update({ is_active: false })
-    .eq('company_id', params.companyId)
+    .eq('company_id', companyId)
     .eq('simulation_id', simId)
 
   if (error) return gatewayError(500, 'DB_ERROR', error.message)

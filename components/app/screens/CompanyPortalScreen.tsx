@@ -17,21 +17,9 @@ const up = {
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] } }),
 }
 
-// Sample data for the portal demo
-const SAMPLE_POSTINGS = [
-  { id: 'p1', title: 'Marketing Intern',       applicants: 47, views: 312, deadline: '2026-06-30', status: 'active',  type: 'internship' },
-  { id: 'p2', title: 'Financial Analyst Intern', applicants: 32, views: 218, deadline: '2026-06-15', status: 'active',  type: 'internship' },
-  { id: 'p3', title: 'Junior Software Engineer', applicants: 89, views: 544, deadline: '2026-05-31', status: 'active',  type: 'full-time'  },
-  { id: 'p4', title: 'Data Analyst',             applicants: 55, views: 190, deadline: '2026-05-20', status: 'closed',  type: 'full-time'  },
-]
+const SAMPLE_POSTINGS: { id: string; title: string; applicants: number; views: number; deadline: string; status: string; type: string }[] = []
 
-const SAMPLE_APPLICANTS = [
-  { id: 'a1', name: 'Sara Ahmed',      university: 'GUC', major: 'Marketing', gpa: '3.8', jobTitle: 'Marketing Intern',    status: 'reviewing' as AppStatus, appliedAt: '2d ago', docs: ['CV', 'Transcript', 'National ID'] },
-  { id: 'a2', name: 'Omar Hassan',     university: 'AUC', major: 'Finance',   gpa: '3.6', jobTitle: 'Financial Analyst Intern', status: 'applied' as AppStatus,  appliedAt: '1d ago', docs: ['CV', 'Transcript', 'National ID', 'Cover Letter'] },
-  { id: 'a3', name: 'Nour Khalil',     university: 'BUE', major: 'CS',        gpa: '3.9', jobTitle: 'Junior Software Engineer', status: 'interview' as AppStatus, appliedAt: '3d ago', docs: ['CV', 'Transcript', 'National ID', 'Portfolio'] },
-  { id: 'a4', name: 'Amr El-Sayed',   university: 'Cairo', major: 'Business', gpa: '3.4', jobTitle: 'Marketing Intern',   status: 'applied' as AppStatus,   appliedAt: '5h ago', docs: ['CV', 'Transcript', 'National ID'] },
-  { id: 'a5', name: 'Mona Ibrahim',   university: 'GUC', major: 'Finance',    gpa: '3.7', jobTitle: 'Financial Analyst Intern', status: 'offer' as AppStatus,  appliedAt: '4d ago', docs: ['CV', 'Transcript', 'National ID', 'Certificates'] },
-]
+const SAMPLE_APPLICANTS: { id: string; name: string; university: string; major: string; gpa: string; jobTitle: string; status: AppStatus; appliedAt: string; docs: string[] }[] = []
 
 const STATUS_CONFIG: Record<AppStatus, { label: string; labelAr: string; color: string; bg: string; icon: React.ElementType }> = {
   applied:   { label: 'Applied',    labelAr: 'تقدّم',          color: '#6B7280', bg: '#F3F4F6', icon: FileText   },
@@ -133,8 +121,8 @@ export function CompanyPortalScreen() {
               {[
                 { label: ar ? 'متقدمون' : 'Total Applicants',  value: totalApplicants, icon: Users,       color: '#0D9488' },
                 { label: ar ? 'وظائف نشطة' : 'Active Postings', value: activePostings,  icon: Briefcase,   color: '#7C3AED' },
-                { label: ar ? 'مشاهدات' : 'Profile Views',     value: '1,240',          icon: TrendingUp,  color: '#F59E0B' },
-                { label: ar ? 'عروض مُرسَلة' : 'Offers Sent',  value: 1,               icon: Star,        color: '#10B981' },
+                { label: ar ? 'مشاهدات' : 'Profile Views',     value: 0,   icon: TrendingUp,  color: '#F59E0B' },
+                { label: ar ? 'عروض مُرسَلة' : 'Offers Sent',  value: 0,   icon: Star,        color: '#10B981' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <motion.div
                   key={label}
@@ -191,6 +179,9 @@ export function CompanyPortalScreen() {
               <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
                 {ar ? 'آخر المتقدمين' : 'Recent applicants'}
               </p>
+              {SAMPLE_APPLICANTS.length === 0 && (
+                <p className="text-xs text-neutral-400 py-4 text-center">{ar ? 'لا يوجد متقدمون بعد' : 'No applicants yet — post a job to get started'}</p>
+              )}
               {SAMPLE_APPLICANTS.slice(0, 3).map((a, i) => {
                 const cfg = STATUS_CONFIG[a.status]
                 const Icon = cfg.icon
@@ -214,12 +205,14 @@ export function CompanyPortalScreen() {
                   </motion.div>
                 )
               })}
-              <button
-                onClick={() => setTab('applicants')}
-                className="text-xs text-brand-600 font-semibold hover:underline"
-              >
-                {ar ? 'عرض الكل' : 'View all applicants →'}
-              </button>
+              {SAMPLE_APPLICANTS.length > 0 && (
+                <button
+                  onClick={() => setTab('applicants')}
+                  className="text-xs text-brand-600 font-semibold hover:underline"
+                >
+                  {ar ? 'عرض الكل' : 'View all applicants →'}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -227,6 +220,22 @@ export function CompanyPortalScreen() {
         {/* ── Postings ── */}
         {tab === 'postings' && (
           <div className="p-4 space-y-3">
+            {SAMPLE_POSTINGS.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mb-4">
+                  <Briefcase className="w-7 h-7 text-brand-400" />
+                </div>
+                <p className="text-sm font-semibold text-neutral-700">{ar ? 'لا توجد وظائف بعد' : 'No job postings yet'}</p>
+                <p className="text-xs text-neutral-400 mt-1">{ar ? 'انشر وظيفتك الأولى لتجذب المواهب' : 'Post your first job to attract top talent'}</p>
+                <button
+                  onClick={() => setTab('post-job')}
+                  className="mt-4 px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {ar ? 'أضف وظيفة' : 'Post a Job'}
+                </button>
+              </div>
+            )}
             {SAMPLE_POSTINGS.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -294,6 +303,15 @@ export function CompanyPortalScreen() {
               ))}
             </div>
 
+            {filteredApplicants.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mb-4">
+                  <Users className="w-7 h-7 text-neutral-400" />
+                </div>
+                <p className="text-sm font-semibold text-neutral-700">{ar ? 'لا يوجد متقدمون' : 'No applicants yet'}</p>
+                <p className="text-xs text-neutral-400 mt-1">{ar ? 'ستظهر الطلبات هنا بعد نشر وظيفة' : 'Applications will appear here once you post a job'}</p>
+              </div>
+            )}
             {filteredApplicants.map((a, i) => {
               const cfg = STATUS_CONFIG[a.status]
               const Icon = cfg.icon
