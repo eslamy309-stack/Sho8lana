@@ -2,8 +2,7 @@
 
 import { motion } from 'framer-motion'
 import {
-  ChevronLeft, TrendingUp, Lightbulb, Activity, AlertTriangle,
-  CheckCircle2, BarChart2,
+  ChevronLeft, TrendingUp, Lightbulb, BarChart2,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 
@@ -19,40 +18,7 @@ const up = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-const TALENT_SCORE = 87
-const VISIBILITY_SCORE = 73
-
-const TIMELINE_EVENTS = [
-  { date: '2 weeks ago',  icon: '🎯', event: 'Marketing Simulation completed', impact: '+12 KPI points',  positive: true  },
-  { date: '3 weeks ago',  icon: '🥇', event: 'Reached Gold Tier',              impact: 'Visibility +20%', positive: true  },
-  { date: '1 month ago',  icon: '📊', event: 'Ranked #12 nationally',          impact: '+8 recruiter views', positive: true },
-  { date: '6 weeks ago',  icon: '💹', event: 'Finance Simulation completed',   impact: '+8 KPI points',   positive: true  },
-  { date: '2 months ago', icon: '✅', event: 'Profile completed',              impact: 'Visibility unlocked', positive: true },
-]
-
-const SKILL_GAPS = [
-  { skill: 'Python',             yours: 45, market: 85, gap: 'High'   as const },
-  { skill: 'Excel',              yours: 78, market: 80, gap: 'Low'    as const },
-  { skill: 'Financial Modeling', yours: 62, market: 75, gap: 'Medium' as const },
-  { skill: 'Data Visualization', yours: 38, market: 70, gap: 'High'   as const },
-]
-
-const MONTHLY_GROWTH = [
-  { month: 'Jan', value: 54 },
-  { month: 'Feb', value: 61 },
-  { month: 'Mar', value: 68 },
-  { month: 'Apr', value: 74 },
-  { month: 'May', value: 80 },
-  { month: 'Jun', value: 87 },
-]
-
-const VISIBILITY_BARS = [
-  { label: 'Profile Complete',     value: 85, color: '#10B981' },
-  { label: 'Simulation Activity',  value: 70, color: '#6366F1' },
-  { label: 'Leaderboard Rank',     value: 65, color: '#F59E0B' },
-]
+// ── Static recommendations (generic advice, not mock data) ───────────────────
 
 const RECOMMENDATIONS = [
   {
@@ -74,16 +40,6 @@ const RECOMMENDATIONS = [
     color: '#F59E0B',
   },
 ]
-
-// ── Gap color helpers ─────────────────────────────────────────────────────────
-
-type GapLevel = 'High' | 'Medium' | 'Low'
-
-const GAP_META: Record<GapLevel, { color: string; bg: string; icon: React.ReactNode }> = {
-  High:   { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   icon: <AlertTriangle className="w-3.5 h-3.5" /> },
-  Medium: { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  icon: <Activity className="w-3.5 h-3.5" />      },
-  Low:    { color: '#10B981', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircle2 className="w-3.5 h-3.5" />  },
-}
 
 // ── Animated bar ──────────────────────────────────────────────────────────────
 
@@ -117,9 +73,9 @@ function AnimatedBar({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function CareerAnalyticsScreen() {
-  const { dispatch } = useApp()
-
-  const maxBar = Math.max(...MONTHLY_GROWTH.map(m => m.value))
+  const { state, dispatch } = useApp()
+  const talentScore = state.user.kpiScore ?? 0
+  const visibilityScore = 0
 
   return (
     <div
@@ -168,18 +124,22 @@ export function CareerAnalyticsScreen() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {TALENT_SCORE}
+                  {talentScore}
                 </motion.span>
                 <span className="text-xl font-bold mb-2" style={{ color: 'rgba(16,185,129,0.5)' }}>/100</span>
               </div>
-              <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>Top 8% of students in Marketing track</p>
-              <div
-                className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-xs font-semibold"
-                style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981' }}
-              >
-                <TrendingUp className="w-3 h-3" />
-                +5 points this month
-              </div>
+              <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>
+                {talentScore === 0 ? 'Complete simulations to build your score' : 'Based on your simulation performance'}
+              </p>
+              {talentScore > 0 && (
+                <div
+                  className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-xs font-semibold"
+                  style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981' }}
+                >
+                  <TrendingUp className="w-3 h-3" />
+                  Score from simulations
+                </div>
+              )}
             </div>
 
             {/* Circular progress display */}
@@ -194,7 +154,7 @@ export function CareerAnalyticsScreen() {
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 40}`}
                   initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                  animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - TALENT_SCORE / 100) }}
+                  animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - talentScore / 100) }}
                   transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 />
               </svg>
@@ -215,7 +175,7 @@ export function CareerAnalyticsScreen() {
             <div>
               <p className="text-xs font-medium" style={{ color: '#64748B' }}>Recruiter Visibility</p>
               <div className="flex items-end gap-1 mt-1">
-                <span className="text-3xl font-black" style={{ color: '#6366F1' }}>{VISIBILITY_SCORE}</span>
+                <span className="text-3xl font-black" style={{ color: '#6366F1' }}>{visibilityScore}</span>
                 <span className="text-sm font-bold mb-1" style={{ color: 'rgba(99,102,241,0.5)' }}>/100</span>
               </div>
             </div>
@@ -228,7 +188,11 @@ export function CareerAnalyticsScreen() {
           </div>
 
           <div className="space-y-3">
-            {VISIBILITY_BARS.map((bar, i) => (
+            {[
+              { label: 'Profile Complete',    value: 0, color: '#10B981' },
+              { label: 'Simulation Activity', value: 0, color: '#6366F1' },
+              { label: 'Leaderboard Rank',    value: 0, color: '#F59E0B' },
+            ].map((bar, i) => (
               <div key={bar.label}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium" style={{ color: '#94A3B8' }}>{bar.label}</span>
@@ -237,6 +201,7 @@ export function CareerAnalyticsScreen() {
                 <AnimatedBar value={bar.value} color={bar.color} delay={i * 0.1 + 0.3} />
               </div>
             ))}
+            <p className="text-xs pt-1" style={{ color: '#64748B' }}>Complete your profile and simulations to boost visibility</p>
           </div>
         </motion.div>
 
@@ -247,38 +212,7 @@ export function CareerAnalyticsScreen() {
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Performance Timeline</h3>
-          <div className="space-y-0">
-            {TIMELINE_EVENTS.map((event, i) => (
-              <div key={i} className="flex gap-3">
-                {/* Timeline line */}
-                <div className="flex flex-col items-center">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  >
-                    {event.icon}
-                  </div>
-                  {i < TIMELINE_EVENTS.length - 1 && (
-                    <div className="w-px flex-1 my-1" style={{ background: 'rgba(255,255,255,0.06)', minHeight: '1.5rem' }} />
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="pb-4 flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-semibold leading-snug" style={{ color: '#F1F5F9' }}>{event.event}</p>
-                    <span className="text-xs flex-shrink-0" style={{ color: '#475569' }}>{event.date}</span>
-                  </div>
-                  <span
-                    className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(16,185,129,0.12)', color: '#10B981' }}
-                  >
-                    {event.impact}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete simulations to track your progress over time</p>
         </motion.div>
 
         {/* ── 4. Skill Gap Analysis ── */}
@@ -288,41 +222,7 @@ export function CareerAnalyticsScreen() {
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Skill Gap Analysis</h3>
-          <div className="space-y-4">
-            {SKILL_GAPS.map((item, i) => {
-              const meta = GAP_META[item.gap]
-              return (
-                <div key={item.skill}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold" style={{ color: '#F1F5F9' }}>{item.skill}</span>
-                    <span
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: meta.bg, color: meta.color }}
-                    >
-                      {meta.icon}
-                      {item.gap} Gap
-                    </span>
-                  </div>
-                  {/* Your level */}
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs w-16 flex-shrink-0" style={{ color: '#64748B' }}>You</span>
-                    <div className="flex-1">
-                      <AnimatedBar value={item.yours} color="#6366F1" delay={i * 0.08 + 0.2} />
-                    </div>
-                    <span className="text-xs w-6 text-right flex-shrink-0 font-semibold" style={{ color: '#6366F1' }}>{item.yours}</span>
-                  </div>
-                  {/* Market demand */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs w-16 flex-shrink-0" style={{ color: '#64748B' }}>Market</span>
-                    <div className="flex-1">
-                      <AnimatedBar value={item.market} color={meta.color} delay={i * 0.08 + 0.35} />
-                    </div>
-                    <span className="text-xs w-6 text-right flex-shrink-0 font-semibold" style={{ color: meta.color }}>{item.market}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete simulations to see how your skills compare to market demand</p>
         </motion.div>
 
         {/* ── 5. Monthly Growth Chart ── */}
@@ -335,37 +235,7 @@ export function CareerAnalyticsScreen() {
             <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Monthly Growth</h3>
             <span className="text-xs font-medium" style={{ color: '#64748B' }}>KPI Score · Last 6 months</span>
           </div>
-
-          <div className="flex items-end gap-2 h-28">
-            {MONTHLY_GROWTH.map((item, i) => {
-              const heightPct = (item.value / maxBar) * 100
-              const isLast = i === MONTHLY_GROWTH.length - 1
-              return (
-                <div key={item.month} className="flex-1 flex flex-col items-center gap-1.5">
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: isLast ? '#10B981' : '#64748B' }}
-                  >
-                    {item.value}
-                  </span>
-                  <div className="w-full rounded-t-lg overflow-hidden flex items-end" style={{ height: '80px' }}>
-                    <motion.div
-                      className="w-full rounded-t-lg"
-                      style={{
-                        background: isLast
-                          ? 'linear-gradient(180deg, #10B981, #059669)'
-                          : 'rgba(99,102,241,0.4)',
-                      }}
-                      initial={{ height: 0 }}
-                      animate={{ height: `${heightPct}%` }}
-                      transition={{ duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                  </div>
-                  <span className="text-xs" style={{ color: '#475569' }}>{item.month}</span>
-                </div>
-              )
-            })}
-          </div>
+          <p className="text-xs py-2" style={{ color: '#64748B' }}>Your KPI growth chart will appear here after your first simulation</p>
         </motion.div>
 
         {/* ── 6. AI Recommendations ── */}
