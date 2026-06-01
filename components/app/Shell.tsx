@@ -36,6 +36,7 @@ import { CompanyOnboardingScreen }      from './screens/CompanyOnboardingScreen'
 import { TalentProfileScreen }          from './screens/TalentProfileScreen'
 import { InternshipHubScreen }          from './screens/InternshipHubScreen'
 import { CareerAnalyticsScreen }        from './screens/CareerAnalyticsScreen'
+import { SimulationUploadHubScreen }    from './screens/SimulationUploadHubScreen'
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
@@ -83,6 +84,7 @@ function ScreenRouter() {
     talentProfile:          <TalentProfileScreen />,
     internshipHub:          <InternshipHubScreen />,
     careerAnalytics:        <CareerAnalyticsScreen />,
+    simulationUploadHub:    <SimulationUploadHubScreen />,
   }
 
   return (

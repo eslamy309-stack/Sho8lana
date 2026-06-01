@@ -12,6 +12,7 @@ export type Screen =
   | 'hrDashboard' | 'talentMarketplace' | 'candidateIntelligence' | 'recruitmentPipeline'
   | 'companyOnboarding'
   | 'talentProfile' | 'internshipHub' | 'careerAnalytics'
+  | 'simulationUploadHub'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 

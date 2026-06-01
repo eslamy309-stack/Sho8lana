@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, ChevronRight, Building2, Plus, Users, Briefcase,
   CheckCircle2, Clock, XCircle, Star, TrendingUp, Eye, FileText,
-  Send, BarChart2,
+  Send, BarChart2, FlaskConical,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { Button } from '@/components/ui/button'
@@ -151,6 +151,22 @@ export function CompanyPortalScreen() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Add Simulation CTA */}
+            <motion.button
+              variants={up} initial="hidden" animate="visible"
+              onClick={() => dispatch({ type: 'GO', screen: 'simulationUploadHub' as never })}
+              className="w-full flex items-center gap-3 p-4 bg-white rounded-2xl border border-violet-100 hover:border-violet-300 hover:shadow-sm transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-600 transition-colors">
+                <FlaskConical className="w-5 h-5 text-violet-600 group-hover:text-white transition-colors" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-neutral-900">{ar ? 'أضف محاكاة' : 'Add a Simulation'}</p>
+                <p className="text-xs text-neutral-500">{ar ? 'ارفع ملفات، أو استخدم البنّاء، أو أضف رابط خارجي — أقل من ١٠ دقائق' : 'Upload files, use the builder, or add an external link — under 10 min'}</p>
+              </div>
+              <Plus className="w-4 h-4 text-violet-400 group-hover:text-violet-600 transition-colors flex-shrink-0" />
+            </motion.button>
 
             {/* Why join Sho8lana banner */}
             <div className="rounded-2xl p-4 bg-gradient-to-br from-brand-600 to-brand-700 text-white">

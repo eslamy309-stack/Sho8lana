@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Users, Briefcase, TrendingUp, Award, Search,
+  Users, FlaskConical, TrendingUp, Award, Search,
   BarChart2, GitBranch, Plus, Bell, ChevronRight,
   CheckCircle, Clock, Star, Zap, ArrowUpRight, Brain,
 } from 'lucide-react'
@@ -168,7 +168,7 @@ export function HRDashboardScreen() {
               { icon: Search,    label: 'Search',      screen: 'talentMarketplace',   color: '#6366F1' },
               { icon: GitBranch, label: 'Pipeline',    screen: 'recruitmentPipeline', color: '#F59E0B' },
               { icon: BarChart2, label: 'Analytics',   screen: 'hrAnalytics',         color: '#10B981' },
-              { icon: Briefcase, label: 'Post Intern', screen: 'companyPortal',        color: '#EF4444' },
+              { icon: FlaskConical, label: 'Add Sim',   screen: 'simulationUploadHub', color: '#8B5CF6' },
             ].map(({ icon: Icon, label, screen, color }) => (
               <motion.button
                 key={label}
