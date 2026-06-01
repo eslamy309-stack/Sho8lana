@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createHmac } from 'crypto'
 
 // ── Rate limiting store (in-memory, resets on cold start) ─────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -24,14 +23,24 @@ function getIP(req: NextRequest): string {
   )
 }
 
-// ── Owner token validation (mirrors /api/owner/auth logic) ───────────────
-function isValidOwnerToken(token: string | null): boolean {
+// ── Owner token validation using Web Crypto API (Edge Runtime compatible) ───
+async function isValidOwnerToken(token: string | null): Promise<boolean> {
   const secret = process.env.OWNER_SECRET
   if (!secret || !token) return false
   try {
-    const decoded = Buffer.from(token, 'base64url').toString()
+    const decoded = atob(token.replace(/-/g, '+').replace(/_/g, '/'))
     const [ts, sig] = decoded.split('.')
-    const expected = createHmac('sha256', secret).update(ts).digest('hex')
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    )
+    const sigBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ts))
+    const expected = Array.from(new Uint8Array(sigBytes))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
     const age = Date.now() - parseInt(ts)
     return sig === expected && age < 8 * 60 * 60 * 1000
   } catch {
@@ -39,7 +48,7 @@ function isValidOwnerToken(token: string | null): boolean {
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const ip = getIP(req)
 
@@ -50,7 +59,7 @@ export function middleware(req: NextRequest) {
       req.headers.get('x-owner-token') ??
       null
 
-    if (!isValidOwnerToken(token)) {
+    if (!(await isValidOwnerToken(token))) {
       // Redirect to home with a query param so the landing page opens owner panel
       const url = req.nextUrl.clone()
       url.pathname = '/'
