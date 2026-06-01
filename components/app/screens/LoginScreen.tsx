@@ -1,22 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Zap, Loader2, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Zap, Loader2, AlertCircle, Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 
 type Provider = 'google' | 'github'
+type Mode = 'signin' | 'signup'
 
 const up = {
   hidden:  { opacity: 0, y: 16 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 },
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const, delay: i * 0.08 },
   }),
 }
-
-// ── Provider icons ────────────────────────────────────────────────────────────
 
 function GoogleIcon() {
   return (
@@ -37,59 +36,22 @@ function GitHubIcon() {
   )
 }
 
-// ── OAuth button ──────────────────────────────────────────────────────────────
-
-function OAuthButton({
-  provider, icon, label, busy, onPress,
-}: {
-  provider: Provider
-  icon: React.ReactNode
-  label: string
-  busy: Provider | null
-  onPress: (p: Provider) => void
-}) {
-  const loading  = busy === provider
-  const disabled = busy !== null
-
-  return (
-    <motion.button
-      onClick={() => onPress(provider)}
-      disabled={disabled}
-      whileHover={disabled ? {} : { scale: 1.015 }}
-      whileTap={disabled ? {} : { scale: 0.985 }}
-      className="w-full flex items-center gap-3 px-5 py-3.5 rounded-xl
-                 bg-white border border-neutral-200 text-neutral-800
-                 font-semibold text-sm shadow-sm
-                 hover:bg-neutral-50 hover:border-neutral-300
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 transition-colors duration-150"
-    >
-      <span className="flex items-center justify-center w-5">
-        {loading ? <Loader2 className="w-4 h-4 animate-spin text-neutral-400" /> : icon}
-      </span>
-      <span className="flex-1 text-left">
-        {loading ? `Connecting to ${label}…` : `Continue with ${label}`}
-      </span>
-      {!loading && (
-        <svg className="w-4 h-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      )}
-    </motion.button>
-  )
-}
-
-// ── Main screen ───────────────────────────────────────────────────────────────
-
 export function LoginScreen() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const ar = state.lang === 'ar'
 
-  const [busy, setBusy]   = useState<Provider | null>(null)
-  const [error, setError] = useState('')
+  const [mode, setMode]         = useState<Mode>('signin')
+  const [busy, setBusy]         = useState<Provider | 'email' | null>(null)
+  const [error, setError]       = useState('')
+  const [success, setSuccess]   = useState('')
+  const [showPass, setShowPass] = useState(false)
+
+  const [name,     setName]     = useState('')
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
 
   async function handleOAuth(provider: Provider) {
-    setBusy(provider); setError('')
+    setBusy(provider); setError(''); setSuccess('')
     try {
       const { error: e } = await supabase.auth.signInWithOAuth({
         provider,
@@ -98,103 +60,247 @@ export function LoginScreen() {
       if (e) {
         setError(
           e.message.toLowerCase().includes('not enabled')
-            ? `${provider === 'google' ? 'Google' : 'GitHub'} sign-in is not enabled yet. Please contact support.`
+            ? `${provider === 'google' ? 'Google' : 'GitHub'} sign-in is not enabled. Try email instead.`
             : e.message
         )
         setBusy(null)
       }
-      // On success: Supabase redirects away — setBusy stays until page reload
     } catch {
       setError('Connection failed. Check your internet and try again.')
       setBusy(null)
     }
   }
 
-  return (
-    <div className="min-h-dvh flex flex-col items-center justify-center
-                    bg-neutral-50 px-6 py-12">
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email || !password) { setError('Please fill in all fields.'); return }
+    if (mode === 'signup' && !name) { setError('Please enter your name.'); return }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
 
-      {/* Card */}
+    setBusy('email'); setError(''); setSuccess('')
+
+    try {
+      if (mode === 'signin') {
+        const { error: e } = await supabase.auth.signInWithPassword({ email, password })
+        if (e) {
+          setError(e.message === 'Invalid login credentials'
+            ? 'Incorrect email or password.'
+            : e.message)
+          setBusy(null)
+          return
+        }
+        // Success → app will detect session and navigate
+        dispatch({ type: 'GO', screen: 'home' })
+      } else {
+        const { error: e } = await supabase.auth.signUp({
+          email, password,
+          options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/auth/callback` },
+        })
+        if (e) { setError(e.message); setBusy(null); return }
+        setSuccess('Check your email for a confirmation link, then sign in.')
+        setMode('signin')
+        setPassword('')
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const emailBusy = busy === 'email'
+
+  return (
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-neutral-50 px-6 py-12">
       <motion.div
         className="w-full max-w-sm"
         initial="hidden"
         animate="visible"
-        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.09 } } }}
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
       >
         {/* Logo */}
-        <motion.div variants={up} custom={0} className="flex flex-col items-center mb-10">
-          <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center
-                          shadow-lg shadow-brand-600/30 mb-4">
+        <motion.div variants={up} custom={0} className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-600/30 mb-4">
             <Zap className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
             {ar ? 'تسجيل الدخول' : 'Sign in to Sho8lana'}
           </h1>
           <p className="text-sm text-neutral-500 mt-1.5 text-center">
-            {ar
-              ? 'اختر طريقة تسجيل الدخول'
-              : 'Your career journey starts with one click'}
+            {ar ? 'اختر طريقة تسجيل الدخول' : 'Your career journey starts here'}
           </p>
         </motion.div>
 
-        {/* Buttons */}
-        <motion.div variants={up} custom={1} className="flex flex-col gap-3 mb-6">
-          <OAuthButton
-            provider="google"
-            icon={<GoogleIcon />}
-            label="Google"
-            busy={busy}
-            onPress={handleOAuth}
-          />
-          <OAuthButton
-            provider="github"
-            icon={<GitHubIcon />}
-            label="GitHub"
-            busy={busy}
-            onPress={handleOAuth}
-          />
+        {/* OAuth buttons */}
+        <motion.div variants={up} custom={1} className="flex flex-col gap-2.5 mb-5">
+          {([
+            { provider: 'google' as Provider, icon: <GoogleIcon />, label: 'Google' },
+            { provider: 'github' as Provider, icon: <GitHubIcon />, label: 'GitHub' },
+          ]).map(({ provider, icon, label }) => {
+            const loading  = busy === provider
+            const disabled = busy !== null
+            return (
+              <motion.button
+                key={provider}
+                onClick={() => handleOAuth(provider)}
+                disabled={disabled}
+                whileHover={disabled ? {} : { scale: 1.015 }}
+                whileTap={disabled ? {} : { scale: 0.985 }}
+                className="w-full flex items-center gap-3 px-5 py-3 rounded-xl bg-white border border-neutral-200 text-neutral-800 font-semibold text-sm shadow-sm hover:bg-neutral-50 hover:border-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <span className="flex items-center justify-center w-5">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin text-neutral-400" /> : icon}
+                </span>
+                <span className="flex-1 text-left">
+                  {loading ? `Connecting…` : `Continue with ${label}`}
+                </span>
+                {!loading && (
+                  <svg className="w-4 h-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </motion.button>
+            )
+          })}
         </motion.div>
 
-        {/* Error */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-start gap-2.5 text-red-600 text-xs
-                       bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5"
-          >
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </motion.div>
-        )}
-
-        {/* Divider + info */}
-        <motion.div variants={up} custom={2} className="text-center">
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            {ar
-              ? 'بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية'
-              : 'By continuing, you agree to our Terms of Service and Privacy Policy'}
-          </p>
+        {/* Divider */}
+        <motion.div variants={up} custom={2} className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-neutral-200" />
+          <span className="text-xs text-neutral-400 font-medium">or use email</span>
+          <div className="flex-1 h-px bg-neutral-200" />
         </motion.div>
 
-        {/* What happens after */}
-        <motion.div
-          variants={up} custom={3}
-          className="mt-8 p-4 rounded-xl bg-white border border-neutral-100 shadow-sm"
-        >
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-            {ar ? 'ما الذي يحدث بعد تسجيل الدخول؟' : 'What happens after you sign in'}
-          </p>
-          <div className="flex flex-col gap-2">
-            {[
-              ar ? '✦ يُنشأ حسابك تلقائياً' : '✦ Your account is created instantly',
-              ar ? '✦ تُستورد بياناتك من المزود' : '✦ Your profile is auto-filled from your provider',
-              ar ? '✦ تبدأ رحلتك المهنية فوراً' : '✦ You jump straight into the platform',
-            ].map((line, i) => (
-              <p key={i} className="text-xs text-neutral-500">{line}</p>
-            ))}
+        {/* Sign in / Sign up tabs */}
+        <motion.div variants={up} custom={3} className="flex bg-neutral-100 rounded-xl p-1 mb-5">
+          {(['signin', 'signup'] as Mode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => { setMode(m); setError(''); setSuccess('') }}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                mode === m
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              {m === 'signin'
+                ? (ar ? 'تسجيل الدخول' : 'Sign In')
+                : (ar ? 'إنشاء حساب' : 'Create Account')}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Email form */}
+        <motion.form variants={up} custom={4} onSubmit={handleEmail} className="flex flex-col gap-3">
+          <AnimatePresence>
+            {mode === 'signup' && (
+              <motion.div
+                key="name-field"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder={ar ? 'الاسم الكامل' : 'Full name'}
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <input
+              type="email"
+              placeholder={ar ? 'البريد الإلكتروني' : 'Email address'}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="email"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+            />
           </div>
-        </motion.div>
+
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <input
+              type={showPass ? 'text' : 'password'}
+              placeholder={ar ? 'كلمة المرور' : 'Password'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              className="w-full pl-10 pr-11 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(v => !v)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+              tabIndex={-1}
+            >
+              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {mode === 'signin' && (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'GO', screen: 'forgotPassword' })}
+              className="text-xs text-brand-600 hover:underline text-right self-end -mt-1"
+            >
+              {ar ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+            </button>
+          )}
+
+          {/* Error / Success */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="flex items-start gap-2.5 text-red-600 text-xs bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+            {success && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="text-emerald-700 text-xs bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3"
+              >
+                ✓ {success}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.button
+            type="submit"
+            disabled={emailBusy || busy !== null}
+            whileHover={emailBusy ? {} : { scale: 1.015 }}
+            whileTap={emailBusy ? {} : { scale: 0.985 }}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-sm shadow-brand-600/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {emailBusy
+              ? <><Loader2 className="w-4 h-4 animate-spin" />{ar ? 'جارٍ التحقق…' : 'Please wait…'}</>
+              : mode === 'signin'
+                ? (ar ? 'تسجيل الدخول' : 'Sign In')
+                : (ar ? 'إنشاء حساب' : 'Create Account')}
+          </motion.button>
+        </motion.form>
+
+        {/* Footer */}
+        <motion.p variants={up} custom={5} className="text-xs text-neutral-400 text-center mt-6 leading-relaxed">
+          {ar
+            ? 'بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية'
+            : 'By continuing, you agree to our Terms of Service and Privacy Policy'}
+        </motion.p>
       </motion.div>
     </div>
   )
