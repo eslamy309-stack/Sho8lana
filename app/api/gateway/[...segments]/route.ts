@@ -66,9 +66,10 @@ async function logEvent(record: ReturnType<typeof buildAuditRecord>) {
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 
-async function handler(req: NextRequest, { params }: { params: { segments: string[] } }) {
+async function handler(req: NextRequest, { params }: { params: Promise<{ segments: string[] }> }) {
   const start     = Date.now()
-  const segments  = params.segments ?? []
+  const { segments: rawSegments } = await params
+  const segments  = rawSegments ?? []
   const companyId = segments[0]
   const simId     = segments[1]
   const rest      = segments.slice(2).join('/')
