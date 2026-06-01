@@ -11,6 +11,7 @@ export type Screen =
   | 'mfaSetup' | 'mfaVerify'
   | 'hrDashboard' | 'talentMarketplace' | 'candidateIntelligence' | 'recruitmentPipeline'
   | 'companyOnboarding'
+  | 'talentProfile' | 'internshipHub' | 'careerAnalytics'
 
 export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
 

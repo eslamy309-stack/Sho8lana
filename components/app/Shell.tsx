@@ -33,6 +33,9 @@ import { TalentMarketplaceScreen }      from './screens/TalentMarketplaceScreen'
 import { CandidateIntelligenceScreen }  from './screens/CandidateIntelligenceScreen'
 import { RecruitmentPipelineScreen }    from './screens/RecruitmentPipelineScreen'
 import { CompanyOnboardingScreen }      from './screens/CompanyOnboardingScreen'
+import { TalentProfileScreen }          from './screens/TalentProfileScreen'
+import { InternshipHubScreen }          from './screens/InternshipHubScreen'
+import { CareerAnalyticsScreen }        from './screens/CareerAnalyticsScreen'
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
@@ -77,6 +80,9 @@ function ScreenRouter() {
     candidateIntelligence:  <CandidateIntelligenceScreen />,
     recruitmentPipeline:    <RecruitmentPipelineScreen />,
     companyOnboarding:      <CompanyOnboardingScreen />,
+    talentProfile:          <TalentProfileScreen />,
+    internshipHub:          <InternshipHubScreen />,
+    careerAnalytics:        <CareerAnalyticsScreen />,
   }
 
   return (

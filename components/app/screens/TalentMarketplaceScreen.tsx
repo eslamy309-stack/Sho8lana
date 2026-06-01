@@ -16,17 +16,38 @@ const up = {
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: i * 0.04 } }),
 }
 
-const TRACKS   = ['All', 'Finance', 'Marketing', 'Business', 'Engineering', 'Leadership']
-const TIERS    = ['All', 'Platinum', 'Gold', 'Silver', 'Bronze']
-const SORT_BY  = ['Score', 'Rank', 'GPA', 'XP', 'Latest']
+const TRACKS        = ['All', 'Finance', 'Marketing', 'Business', 'Engineering', 'Leadership']
+const TIERS         = ['All', 'Platinum', 'Gold', 'Silver', 'Bronze']
+const SORT_BY       = ['Talent Score', 'Rank', 'GPA', 'XP', 'Latest']
+const MIN_SCORE_OPTS = [
+  { label: 'Any',  value: 0   },
+  { label: '70+',  value: 70  },
+  { label: '80+',  value: 80  },
+  { label: '90+',  value: 90  },
+]
 
-function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 90 ? '#10B981' : score >= 80 ? '#3B82F6' : score >= 70 ? '#F59E0B' : '#6B7280'
+function talentScoreColor(score: number) {
+  if (score >= 90) return '#10B981'   // emerald
+  if (score >= 75) return '#6366F1'   // indigo
+  if (score >= 60) return '#F59E0B'   // amber
+  return '#EF4444'                    // red
+}
+
+/** 44 px circle badge for Talent Score */
+function TalentScoreCircle({ score }: { score: number }) {
+  const color = talentScoreColor(score)
   return (
-    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl border-2 shrink-0"
-      style={{ borderColor: `${color}40`, background: `${color}0F` }}>
-      <span className="text-sm font-bold" style={{ color }}>{score}</span>
-      <span className="text-[8px] font-medium" style={{ color: `${color}99` }}>KPI</span>
+    <div
+      className="flex flex-col items-center justify-center shrink-0"
+      style={{
+        width: 44, height: 44,
+        borderRadius: '50%',
+        border: `2.5px solid ${color}`,
+        background: `${color}12`,
+      }}
+    >
+      <span className="text-sm font-extrabold leading-none" style={{ color }}>{score}</span>
+      <span className="text-[7px] font-semibold uppercase tracking-wide mt-0.5" style={{ color: `${color}BB` }}>TS</span>
     </div>
   )
 }
@@ -50,14 +71,16 @@ function CandidateCard({ candidate, onView, onAdd, delay }: {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-bold text-neutral-900 truncate">{candidate.name}</p>
-            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-              style={{ background: tc.bg, color: tc.text }}>
-              {TIER_LABELS[candidate.tier]}
-            </span>
           </div>
           <p className="text-[10px] text-neutral-500 mt-0.5 truncate">{candidate.major}</p>
+          {/* Tier badge below name */}
+          <span className="inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+            style={{ background: tc.bg, color: tc.text }}>
+            {TIER_LABELS[candidate.tier]}
+          </span>
         </div>
-        <ScoreBadge score={candidate.overallScore} />
+        {/* Talent Score circle — top right, largest element */}
+        <TalentScoreCircle score={candidate.overallScore} />
       </div>
 
       {/* Details */}
@@ -129,7 +152,8 @@ export function TalentMarketplaceScreen() {
   const [query, setQuery]         = useState('')
   const [track, setTrack]         = useState('All')
   const [tier, setTier]           = useState('All')
-  const [sortBy, setSortBy]       = useState('Score')
+  const [sortBy, setSortBy]       = useState('Talent Score')
+  const [minScore, setMinScore]   = useState(0)
   const [showFilters, setFilters] = useState(false)
   const [addedId, setAddedId]     = useState<string | null>(null)
 
@@ -142,15 +166,16 @@ export function TalentMarketplaceScreen() {
     )
     if (track !== 'All') list = list.filter(c => c.tracks.includes(track))
     if (tier  !== 'All') list = list.filter(c => c.tier === tier.toLowerCase() as HRTier)
+    if (minScore > 0)    list = list.filter(c => c.overallScore >= minScore)
 
     return list.sort((a, b) => {
-      if (sortBy === 'Score') return b.overallScore - a.overallScore
-      if (sortBy === 'Rank')  return a.rank - b.rank
-      if (sortBy === 'GPA')   return b.gpa - a.gpa
-      if (sortBy === 'XP')    return b.totalXP - a.totalXP
+      if (sortBy === 'Talent Score') return b.overallScore - a.overallScore
+      if (sortBy === 'Rank')         return a.rank - b.rank
+      if (sortBy === 'GPA')          return b.gpa - a.gpa
+      if (sortBy === 'XP')           return b.totalXP - a.totalXP
       return new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime()
     })
-  }, [query, track, tier, sortBy])
+  }, [query, track, tier, sortBy, minScore])
 
   function handleAdd(c: TalentCandidate) {
     setAddedId(c.id)
@@ -170,8 +195,8 @@ export function TalentMarketplaceScreen() {
             <ChevronLeft className="w-4 h-4 text-neutral-700" />
           </motion.button>
           <div>
-            <h1 className="text-base font-bold text-neutral-900">Talent Marketplace</h1>
-            <p className="text-[10px] text-neutral-400">{TALENT_POOL.length.toLocaleString()}+ candidates</p>
+            <h1 className="text-base font-bold text-neutral-900">Talent Intelligence</h1>
+            <p className="text-[10px] text-neutral-400">Discover candidates by real performance</p>
           </div>
           <motion.button whileTap={{ scale: 0.9 }}
             onClick={() => setFilters(f => !f)}
@@ -231,6 +256,20 @@ export function TalentMarketplaceScreen() {
                     >{t}</button>
                   ))}
                 </div>
+                {/* Min Talent Score */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-neutral-400 shrink-0">Min Score:</span>
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                    {MIN_SCORE_OPTS.map(opt => (
+                      <button key={opt.label} onClick={() => setMinScore(opt.value)}
+                        className={cn(
+                          'shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold border transition-colors',
+                          minScore === opt.value ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-neutral-600 border-neutral-200'
+                        )}
+                      >{opt.label}</button>
+                    ))}
+                  </div>
+                </div>
                 {/* Sort */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-neutral-400 shrink-0">Sort:</span>
@@ -254,12 +293,15 @@ export function TalentMarketplaceScreen() {
       {/* ── Results ── */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-neutral-500 font-medium">
-            {filtered.length} candidate{filtered.length !== 1 ? 's' : ''} found
-          </p>
-          {(track !== 'All' || tier !== 'All' || query) && (
+          <div>
+            <p className="text-xs font-semibold text-neutral-700">
+              {filtered.length} candidate{filtered.length !== 1 ? 's' : ''} found
+            </p>
+            <p className="text-[10px] text-neutral-400">Sorted by Talent Score</p>
+          </div>
+          {(track !== 'All' || tier !== 'All' || query || minScore > 0) && (
             <button
-              onClick={() => { setQuery(''); setTrack('All'); setTier('All') }}
+              onClick={() => { setQuery(''); setTrack('All'); setTier('All'); setMinScore(0) }}
               className="text-[11px] text-red-500 font-semibold"
             >Clear filters</button>
           )}

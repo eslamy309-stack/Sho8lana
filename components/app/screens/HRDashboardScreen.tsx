@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Users, Briefcase, TrendingUp, Award, Search,
   BarChart2, GitBranch, Plus, Bell, ChevronRight,
-  CheckCircle, Clock, Star, Zap, ArrowUpRight,
+  CheckCircle, Clock, Star, Zap, ArrowUpRight, Brain,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { TALENT_POOL, PIPELINE, CAMPAIGNS, HR_ANALYTICS, RECRUITER_ACTIVITY, TIER_COLORS } from '@/lib/hr-data'
@@ -23,6 +23,13 @@ const ACTIVITY_ICONS: Record<string, { icon: string; color: string }> = {
   note:        { icon: '📝', color: '#6B7280' },
   hired:       { icon: '✅', color: '#10B981' },
   rejected:    { icon: '❌', color: '#EF4444' },
+}
+
+function talentScoreColor(score: number) {
+  if (score >= 90) return '#10B981'   // emerald
+  if (score >= 75) return '#6366F1'   // indigo
+  if (score >= 60) return '#F59E0B'   // amber
+  return '#EF4444'                    // red
 }
 
 function StatCard({ icon: Icon, label, value, sub, color, delay }: {
@@ -91,8 +98,8 @@ export function HRDashboardScreen() {
           className="flex items-center justify-between mb-1"
         >
           <div>
-            <p className="text-neutral-400 text-xs font-medium uppercase tracking-wider">HR Control Center</p>
-            <h1 className="text-white text-xl font-bold mt-0.5">Talent Intelligence</h1>
+            <p className="text-neutral-400 text-xs font-medium uppercase tracking-wider">Talent Intelligence Platform</p>
+            <h1 className="text-white text-xl font-bold mt-0.5">Hire smarter, faster.</h1>
           </div>
           <div className="relative">
             <motion.button
@@ -132,20 +139,36 @@ export function HRDashboardScreen() {
         <motion.div variants={up} initial="hidden" animate="visible" custom={2}
           className="grid grid-cols-2 gap-3"
         >
-          <StatCard icon={Users}     label="Talent Pool"      value={HR_ANALYTICS.totalCandidates.toLocaleString()} sub="↑ 65 this week"      color="#6366F1" delay={2} />
-          <StatCard icon={Briefcase} label="Active Campaigns" value={String(HR_ANALYTICS.activeCampaigns)}           sub="3 closing soon"     color="#F59E0B" delay={3} />
-          <StatCard icon={TrendingUp} label="Avg KPI Score"   value={`${HR_ANALYTICS.avgCandidateScore}`}            sub="↑ 2.1 vs last month" color="#10B981" delay={4} />
-          <StatCard icon={Award}     label="Hired This Month" value={String(HR_ANALYTICS.hiredThisMonth)}             sub={`${Math.round(HR_ANALYTICS.hireRate * 100)}% hire rate`} color="#EF4444" delay={5} />
+          <StatCard icon={Users}      label="Talent Pool"       value={HR_ANALYTICS.totalCandidates.toLocaleString()} sub="↑ 65 this week"      color="#6366F1" delay={2} />
+          <StatCard icon={TrendingUp} label="Avg Talent Score"  value="84"                                             sub="↑ 2.1 vs last month" color="#10B981" delay={3} />
+          <StatCard icon={Clock}      label="Time to Hire"      value="4.2 days"                                       sub="↓ 1.3d vs last month" color="#F59E0B" delay={4} />
+          <StatCard icon={Award}      label="Hired"             value="18"                                             sub={`${Math.round(HR_ANALYTICS.hireRate * 100)}% hire rate`} color="#EF4444" delay={5} />
+        </motion.div>
+
+        {/* ── Talent Score Banner ── */}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={6}
+          className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 flex items-start gap-3"
+        >
+          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+            <Brain className="w-4.5 h-4.5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-indigo-900">Talent Score</p>
+            <p className="text-[11px] text-indigo-700 mt-0.5 leading-relaxed">
+              Our single 0–100 metric combining simulation performance, consistency, and behavioral indicators.
+              The only number you need to evaluate a candidate.
+            </p>
+          </div>
         </motion.div>
 
         {/* ── Quick Actions ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={6}>
+        <motion.div variants={up} initial="hidden" animate="visible" custom={7}>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { icon: Search,    label: 'Search',   screen: 'talentMarketplace', color: '#6366F1' },
-              { icon: GitBranch, label: 'Pipeline', screen: 'recruitmentPipeline', color: '#F59E0B' },
-              { icon: BarChart2, label: 'Analytics', screen: 'hrAnalytics', color: '#10B981' },
-              { icon: Plus,      label: 'Campaign', screen: 'hrDashboard', color: '#EF4444' },
+              { icon: Search,    label: 'Search',      screen: 'talentMarketplace',   color: '#6366F1' },
+              { icon: GitBranch, label: 'Pipeline',    screen: 'recruitmentPipeline', color: '#F59E0B' },
+              { icon: BarChart2, label: 'Analytics',   screen: 'hrAnalytics',         color: '#10B981' },
+              { icon: Briefcase, label: 'Post Intern', screen: 'companyPortal',        color: '#EF4444' },
             ].map(({ icon: Icon, label, screen, color }) => (
               <motion.button
                 key={label}
@@ -163,13 +186,13 @@ export function HRDashboardScreen() {
         </motion.div>
 
         {/* ── Top Performers ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={7}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={8}
           className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden"
         >
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-50">
             <div>
               <p className="text-sm font-semibold text-neutral-900">Top Performers</p>
-              <p className="text-[10px] text-neutral-400">Ranked by overall KPI score</p>
+              <p className="text-[10px] text-neutral-400">Ranked by Talent Score</p>
             </div>
             <button
               onClick={() => dispatch({ type: 'GO', screen: 'talentMarketplace' as never })}
@@ -182,6 +205,7 @@ export function HRDashboardScreen() {
           <div className="divide-y divide-neutral-50">
             {topCandidates.map((c, i) => {
               const tc = TIER_COLORS[c.tier]
+              const scoreColor = talentScoreColor(c.overallScore)
               return (
                 <motion.button
                   key={c.id}
@@ -198,7 +222,13 @@ export function HRDashboardScreen() {
                     <p className="text-[10px] text-neutral-400 truncate">{c.university} · {c.tracks[0]}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="text-sm font-bold text-neutral-900">{c.overallScore}</span>
+                    {/* Talent Score — primary, large, colored */}
+                    <span className="text-xl font-extrabold leading-none" style={{ color: scoreColor }}>
+                      {c.overallScore}
+                    </span>
+                    <span className="text-[8px] font-semibold uppercase tracking-wide" style={{ color: scoreColor }}>
+                      Talent Score
+                    </span>
                     <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
                       style={{ background: tc.bg, color: tc.text }}>
                       {c.tier.charAt(0).toUpperCase() + c.tier.slice(1)}
@@ -211,7 +241,7 @@ export function HRDashboardScreen() {
         </motion.div>
 
         {/* ── Pipeline Overview ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={8}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={9}
           className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4"
         >
           <div className="flex items-center justify-between mb-3">
@@ -239,7 +269,7 @@ export function HRDashboardScreen() {
         </motion.div>
 
         {/* ── Active Campaigns ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={9}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={10}
           className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden"
         >
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-50">
@@ -255,7 +285,7 @@ export function HRDashboardScreen() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-neutral-900 truncate">{campaign.title}</p>
-                    <p className="text-[10px] text-neutral-400 mt-0.5">{campaign.department} · Min score {campaign.minScore}</p>
+                    <p className="text-[10px] text-neutral-400 mt-0.5">{campaign.department} · Min Talent Score {campaign.minScore}</p>
                   </div>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 shrink-0">
                     {campaign.candidateCount} applied
@@ -271,7 +301,7 @@ export function HRDashboardScreen() {
         </motion.div>
 
         {/* ── Recent Activity ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={10}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={11}
           className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden"
         >
           <div className="px-4 pt-4 pb-3 border-b border-neutral-50">
@@ -295,7 +325,7 @@ export function HRDashboardScreen() {
         </motion.div>
 
         {/* ── Tier Breakdown ── */}
-        <motion.div variants={up} initial="hidden" animate="visible" custom={11}
+        <motion.div variants={up} initial="hidden" animate="visible" custom={12}
           className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 mb-4"
         >
           <p className="text-sm font-semibold text-neutral-900 mb-3">Talent Pool Tiers</p>

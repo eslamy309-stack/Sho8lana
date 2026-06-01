@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Search, Globe, Wifi, MapPin, Star, Zap, Map, Bookmark,
   BookmarkCheck, Building2, ExternalLink, ChevronRight, ChevronLeft,
+  TrendingUp, Briefcase, BarChart2,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { COMPANIES, JOBS, SOURCE_CONFIG } from '@/lib/data'
@@ -315,6 +316,28 @@ export function HomeScreen() {
               </div>
             </div>
           </motion.button>
+        )}
+
+        {/* Talent Intelligence quick access */}
+        {tab === 'local' && (
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { icon: TrendingUp, label: ar ? 'ملفي' : 'My Profile', screen: 'talentProfile', color: 'bg-emerald-500' },
+              { icon: Briefcase,  label: ar ? 'التدريب' : 'Internships', screen: 'internshipHub', color: 'bg-violet-500' },
+              { icon: BarChart2,  label: ar ? 'تحليلاتي' : 'Analytics', screen: 'careerAnalytics', color: 'bg-indigo-500' },
+            ].map(({ icon: Icon, label, screen, color }) => (
+              <button
+                key={screen}
+                onClick={() => dispatch({ type: 'GO', screen: screen as never })}
+                className="flex flex-col items-center gap-1.5 p-3 bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-sm transition-all"
+              >
+                <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center`}>
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xs font-semibold text-neutral-700">{label}</span>
+              </button>
+            ))}
+          </div>
         )}
 
         {/* ── Local jobs (Direct + curated) ── */}
