@@ -148,7 +148,13 @@ export function OnboardScreen() {
         // Save academic info to Supabase
         if (user.supabaseId) {
           setAuthLoading(true)
-          await sbSaveProfile(user.supabaseId, user)
+          try {
+            await sbSaveProfile(user.supabaseId, user)
+          } catch (e: unknown) {
+            setStep0Errors({ email: e instanceof Error ? e.message : 'Database error saving profile — please try again' })
+            setAuthLoading(false)
+            return
+          }
           setAuthLoading(false)
         }
         dispatch({ type: 'SET_ONBOARD_STEP', step: 1 })
@@ -178,7 +184,12 @@ export function OnboardScreen() {
       if (!allRequiredOk) return
       // Mark onboarding complete
       if (user.supabaseId) {
-        await sbSaveProfile(user.supabaseId, { ...user, onboardingCompleted: true })
+        try {
+          await sbSaveProfile(user.supabaseId, { ...user, onboardingCompleted: true })
+        } catch (e: unknown) {
+          setStep0Errors({ email: e instanceof Error ? e.message : 'Database error saving profile — please try again' })
+          return
+        }
       }
       dispatch({ type: 'SET_USER', user: { onboardingCompleted: true } })
       dispatch({ type: 'SET_ONBOARD_STEP', step: 0 })

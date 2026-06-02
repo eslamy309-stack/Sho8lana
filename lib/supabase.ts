@@ -78,16 +78,17 @@ export async function sbMfaGetAAL() {
 
 // ── Profile ───────────────────────────────────────────────────────────────────
 
-export async function sbSaveProfile(userId: string, profile: Partial<UserProfile>) {
+export async function sbSaveProfile(userId: string, profile: Partial<UserProfile>): Promise<void> {
   const { error } = await supabase.from('profiles').upsert({
     id: userId,
     name: profile.name ?? '',
     university: profile.university ?? '',
     major: profile.major ?? '',
-    gpa: profile.gpa ?? '',
+    // DB columns are NUMERIC(3,2) and INT — never pass empty strings
+    gpa: profile.gpa ? parseFloat(profile.gpa) : null,
     phone: profile.phone ?? '',
     location: profile.location ?? 'Cairo',
-    graduation_year: profile.graduationYear ?? '',
+    graduation_year: profile.graduationYear ? parseInt(profile.graduationYear, 10) : null,
     bio: profile.bio ?? null,
     linkedin_url: profile.linkedinUrl ?? null,
     portfolio_url: profile.portfolioUrl ?? null,
@@ -95,9 +96,11 @@ export async function sbSaveProfile(userId: string, profile: Partial<UserProfile
     github_username: profile.githubUsername ?? null,
     auth_provider: profile.authProvider ?? null,
     onboarding_completed: profile.onboardingCompleted ?? false,
+    kpi_score: profile.kpiScore ?? 0,
+    skills: profile.skills ?? [],
     updated_at: new Date().toISOString(),
   })
-  if (error) console.error('sbSaveProfile error:', error.message)
+  if (error) throw new Error(error.message)
 }
 
 export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile> | null> {
@@ -111,10 +114,10 @@ export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile
     name: data.name ?? '',
     university: data.university ?? '',
     major: data.major ?? '',
-    gpa: data.gpa ?? '',
+    gpa: data.gpa != null ? String(data.gpa) : '',
     phone: data.phone ?? '',
     location: data.location ?? 'Cairo',
-    graduationYear: data.graduation_year ?? '',
+    graduationYear: data.graduation_year != null ? String(data.graduation_year) : '',
     bio: data.bio ?? undefined,
     linkedinUrl: data.linkedin_url ?? undefined,
     portfolioUrl: data.portfolio_url ?? undefined,
@@ -122,6 +125,8 @@ export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile
     githubUsername: data.github_username ?? undefined,
     authProvider: data.auth_provider ?? undefined,
     onboardingCompleted: data.onboarding_completed ?? false,
+    kpiScore: data.kpi_score ?? 0,
+    skills: data.skills ?? [],
   }
 }
 

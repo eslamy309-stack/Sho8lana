@@ -30,6 +30,10 @@ import {
   LogOut,
   Lock,
   AlertTriangle,
+  Zap,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -1236,19 +1240,186 @@ function PlatformHealthView() {
   )
 }
 
+// ─── Emergency Panel ─────────────────────────────────────────────────────────
+
+type KillSwitch = {
+  key: string
+  label: string
+  description: string
+  danger: boolean
+}
+
+const KILL_SWITCHES: KillSwitch[] = [
+  { key: 'registrations_enabled',          label: 'Student Registrations',      description: 'Allow new students to sign up',               danger: false },
+  { key: 'company_onboarding_enabled',     label: 'Company Onboarding',         description: 'Allow new companies to register',             danger: false },
+  { key: 'simulation_publishing_enabled',  label: 'Simulation Publishing',      description: 'Allow companies to publish simulations',      danger: false },
+  { key: 'internship_applications_enabled','label': 'Internship Applications',  description: 'Allow students to submit applications',       danger: false },
+  { key: 'maintenance_mode',               label: 'Maintenance Mode',           description: 'Show maintenance page to all visitors',       danger: true  },
+]
+
+function EmergencyView() {
+  const [settings, setSettings]     = useState<Record<string, boolean>>({})
+  const [loading, setLoading]       = useState(true)
+  const [saving, setSaving]         = useState<string | null>(null)
+  const [resetConfirm, setResetConfirm] = useState(false)
+  const [resetRunning, setResetRunning] = useState(false)
+  const [resetResult, setResetResult]   = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.from('platform_settings').select('key,value').then(({ data }) => {
+      const map: Record<string, boolean> = {}
+      ;(data ?? []).forEach((r: { key: string; value: string }) => { map[r.key] = r.value === 'true' })
+      setSettings(map)
+      setLoading(false)
+    })
+  }, [])
+
+  async function toggle(key: string, current: boolean) {
+    setSaving(key)
+    const next = !current
+    const { error } = await supabase
+      .from('platform_settings')
+      .update({ value: next ? 'true' : 'false', updated_at: new Date().toISOString(), updated_by: 'admin' })
+      .eq('key', key)
+    if (!error) setSettings(prev => ({ ...prev, [key]: next }))
+    setSaving(null)
+  }
+
+  async function runReset() {
+    setResetRunning(true)
+    const { data, error } = await supabase.rpc('perform_platform_reset')
+    setResetResult(error ? `Error: ${error.message}` : (data as string))
+    setResetRunning(false)
+    setResetConfirm(false)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+          <Zap className="w-5 h-5 text-red-400" />
+        </div>
+        <div>
+          <h2 className="text-white font-bold text-lg">Emergency Panel</h2>
+          <p className="text-neutral-500 text-sm">Kill switches and platform reset — changes take effect immediately</p>
+        </div>
+      </div>
+
+      {/* Kill Switches */}
+      <div className="rounded-xl border border-white/[0.08] overflow-hidden">
+        <div className="px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+          <h3 className="text-white font-semibold text-sm">Platform Kill Switches</h3>
+        </div>
+        {loading ? (
+          <div className="px-5 py-8 text-center text-neutral-500 text-sm animate-pulse">Loading settings...</div>
+        ) : (
+          <div className="divide-y divide-white/[0.05]">
+            {KILL_SWITCHES.map(sw => {
+              const enabled = settings[sw.key] ?? true
+              const isSaving = saving === sw.key
+              const isMaintenanceOn = sw.key === 'maintenance_mode' && enabled
+              return (
+                <div key={sw.key} className={`flex items-center justify-between px-5 py-4 ${isMaintenanceOn ? 'bg-red-500/[0.05]' : ''}`}>
+                  <div>
+                    <p className={`text-sm font-semibold ${sw.danger ? 'text-red-300' : 'text-white'}`}>{sw.label}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">{sw.description}</p>
+                  </div>
+                  <button
+                    onClick={() => toggle(sw.key, enabled)}
+                    disabled={isSaving}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      enabled
+                        ? sw.danger
+                          ? 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25'
+                          : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25'
+                        : 'bg-white/[0.04] text-neutral-500 border-white/10 hover:bg-white/[0.08]'
+                    } disabled:opacity-50`}
+                  >
+                    {isSaving ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : enabled ? (
+                      <ToggleRight className="w-3.5 h-3.5" />
+                    ) : (
+                      <ToggleLeft className="w-3.5 h-3.5" />
+                    )}
+                    {sw.key === 'maintenance_mode'
+                      ? (enabled ? 'ON — Site in maintenance' : 'OFF')
+                      : (enabled ? 'Enabled' : 'Disabled')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Platform Reset */}
+      <div className="rounded-xl border border-red-500/20 bg-red-500/[0.03] overflow-hidden">
+        <div className="px-5 py-3 border-b border-red-500/20">
+          <h3 className="text-red-400 font-semibold text-sm flex items-center gap-2">
+            <Trash2 className="w-4 h-4" />
+            Platform Reset
+          </h3>
+        </div>
+        <div className="px-5 py-5">
+          <p className="text-neutral-400 text-sm mb-1">
+            Deletes <strong className="text-white">all non-admin data</strong> — students, companies, simulations, applications, notifications.
+            Super admin accounts are preserved. <strong className="text-red-400">This cannot be undone.</strong>
+          </p>
+          <p className="text-neutral-600 text-xs mb-4">Use before public launch to clear test data. Take a Supabase backup first.</p>
+
+          {resetResult && (
+            <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium border ${resetResult.startsWith('Error') ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
+              {resetResult}
+            </div>
+          )}
+
+          {!resetConfirm ? (
+            <button
+              onClick={() => setResetConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Reset Platform Data
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <p className="text-red-400 text-sm font-semibold">Are you absolutely sure?</p>
+              <button
+                onClick={runReset}
+                disabled={resetRunning}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {resetRunning ? 'Resetting...' : 'Yes, Reset Everything'}
+              </button>
+              <button
+                onClick={() => setResetConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-neutral-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Admin Page ─────────────────────────────────────────────────────────
 
 type NavItem = { id: string; label: string; icon: React.ElementType }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'students', label: 'Students', icon: Users },
-  { id: 'companies', label: 'Companies', icon: Building2 },
-  { id: 'simulations', label: 'Simulations', icon: FlaskConical },
-  { id: 'payments', label: 'Payments', icon: CreditCard },
-  { id: 'audit', label: 'Audit Log', icon: ScrollText },
-  { id: 'support', label: 'Support', icon: Headphones },
-  { id: 'health', label: 'Platform Health', icon: Activity },
+  { id: 'overview',   label: 'Overview',         icon: LayoutDashboard },
+  { id: 'students',   label: 'Students',          icon: Users },
+  { id: 'companies',  label: 'Companies',         icon: Building2 },
+  { id: 'simulations',label: 'Simulations',       icon: FlaskConical },
+  { id: 'payments',   label: 'Payments',          icon: CreditCard },
+  { id: 'audit',      label: 'Audit Log',         icon: ScrollText },
+  { id: 'support',    label: 'Support',           icon: Headphones },
+  { id: 'health',     label: 'Platform Health',   icon: Activity },
+  { id: 'emergency',  label: 'Emergency',         icon: Zap },
 ]
 
 // Notifications loaded from admin_notifications table on mount
@@ -1384,8 +1555,9 @@ export default function AdminPage() {
       case 'payments': return <PaymentsView />
       case 'audit': return <AuditLogView />
       case 'support': return <SupportView />
-      case 'health': return <PlatformHealthView />
-      default: return <OverviewView />
+      case 'health':     return <PlatformHealthView />
+      case 'emergency':  return <EmergencyView />
+      default:           return <OverviewView />
     }
   }
 
@@ -1411,11 +1583,16 @@ export default function AdminPage() {
           {NAV_ITEMS.map(item => {
             const Icon = item.icon
             const active = activeNav === item.id
+            const isEmergency = item.id === 'emergency'
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveNav(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${active ? 'bg-indigo-600/15 text-indigo-400' : 'text-neutral-500 hover:text-white hover:bg-white/[0.04]'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                  active
+                    ? isEmergency ? 'bg-red-500/15 text-red-400' : 'bg-indigo-600/15 text-indigo-400'
+                    : isEmergency ? 'text-red-500/70 hover:text-red-400 hover:bg-red-500/[0.06]' : 'text-neutral-500 hover:text-white hover:bg-white/[0.04]'
+                }`}
               >
                 <Icon size={16} />
                 <span className="font-medium">{item.label}</span>

@@ -361,7 +361,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!state.user.supabaseId) return
     if (profileSaveTimer.current) clearTimeout(profileSaveTimer.current)
     profileSaveTimer.current = setTimeout(() => {
-      sbSaveProfile(state.user.supabaseId!, state.user)
+      sbSaveProfile(state.user.supabaseId!, state.user).catch(
+        (e: unknown) => console.error('Background profile save failed:', e instanceof Error ? e.message : e)
+      )
     }, 1500)
     return () => { if (profileSaveTimer.current) clearTimeout(profileSaveTimer.current) }
   }, [state.user])
@@ -409,7 +411,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             githubUsername: autoGithub,
             authProvider: provider,
           }
-          await sbSaveProfile(uid, oauthProfile)
+          await sbSaveProfile(uid, oauthProfile).catch(
+            (e: unknown) => console.error('OAuth profile save failed:', e instanceof Error ? e.message : e)
+          )
           dispatch({ type: 'SET_USER', user: oauthProfile })
           // New user → set up MFA first, then onboard
           dispatch({ type: 'GO', screen: 'mfaSetup' })
