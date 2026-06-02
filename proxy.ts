@@ -98,6 +98,26 @@ export async function proxy(req: NextRequest) {
     }
   }
 
+  // ── /api/jobs/search — 30 req/min per IP ────────────────────────────────
+  if (pathname === '/api/jobs/search') {
+    if (!rateLimit(`jobs:${ip}`, 30, 60_000)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment.' },
+        { status: 429 }
+      )
+    }
+  }
+
+  // ── /api/simulations/generate — 10 req/min per IP ───────────────────────
+  if (pathname === '/api/simulations/generate') {
+    if (!rateLimit(`sims:${ip}`, 10, 60_000)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment.' },
+        { status: 429 }
+      )
+    }
+  }
+
   // ── /api/integrations — require Supabase session header ─────────────────
   if (pathname.startsWith('/api/integrations')) {
     const authHeader = req.headers.get('authorization')
@@ -118,6 +138,8 @@ export const config = {
     '/api/ai',
     '/api/email',
     '/api/stripe/checkout',
+    '/api/jobs/search',
+    '/api/simulations/generate',
     '/api/integrations/:path*',
   ],
 }

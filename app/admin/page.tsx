@@ -200,7 +200,12 @@ function LoginScreen({ onAuth }: { onAuth: () => void }) {
     setLoading(true)
     setError('')
     await new Promise(r => setTimeout(r, 600))
-    const adminPwd = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? 'sho8admin2026'
+    const adminPwd = process.env.NEXT_PUBLIC_ADMIN_PASSWORD
+    if (!adminPwd) {
+      setError('Admin panel is not configured. Set NEXT_PUBLIC_ADMIN_PASSWORD.')
+      setLoading(false)
+      return
+    }
     if (password === adminPwd) {
       sessionStorage.setItem('sho8_admin_authed', 'true')
       onAuth()
