@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import type {
-  Lang, Screen, UserProfile, Application, ChatMessage, Badge,
+  Lang, Screen, UserProfile, Application, AppStatus, ChatMessage, Badge,
   MatchScore, SimTrack, SimTask, LiveJob, DocumentFile,
 } from './types'
 import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl, sbMfaGetAAL, sbMfaListFactors } from './supabase'
@@ -54,6 +54,7 @@ type Action =
   | { type: 'SET_USER'; user: Partial<UserProfile> }
   | { type: 'TOGGLE_DOC'; key: string }
   | { type: 'ADD_APPLICATION'; app: Application }
+  | { type: 'SET_APPLICATIONS'; apps: Application[] }
   | { type: 'SET_SEARCH'; query: string }
   | { type: 'SET_LOCATION_FILTER'; location: string }
   | { type: 'SET_JOB_TYPE_FILTER'; filter: 'all' | 'internship' | 'full-time' }
@@ -190,6 +191,9 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'ADD_APPLICATION':
       return { ...state, applications: [...state.applications, action.app] }
+
+    case 'SET_APPLICATIONS':
+      return { ...state, applications: action.apps }
 
     case 'SET_SEARCH':
       return { ...state, searchQuery: action.query }
@@ -378,6 +382,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Load profile from Supabase
         const profile = await sbLoadProfile(uid)
         dispatch({ type: 'SET_USER', user: { supabaseId: uid, email, ...(profile ?? {}) } })
+
+        // Load applications from DB (source of truth)
+        try {
+          const appsRes = await fetch(`/api/applications?userId=${uid}`)
+          if (appsRes.ok) {
+            const appsJson = await appsRes.json()
+            const dbApps: Application[] = (appsJson.applications ?? []).map((r: Record<string, unknown>) => ({
+              id: r.id as string,
+              jobId: (r.job_id as string) ?? null,
+              title: (r.job_title as string) ?? '',
+              company: (r.company as string) ?? '',
+              status: (r.status as AppStatus) ?? 'applied',
+              date: new Date(r.applied_at as string).toLocaleDateString('en-GB'),
+              logo: (r.company_logo as string) ?? '🏢',
+              externalUrl: (r.external_url as string) ?? undefined,
+              source: (r.source as string) ?? undefined,
+            }))
+            dispatch({ type: 'SET_APPLICATIONS', apps: dbApps })
+          }
+        } catch { /* keep localStorage fallback */ }
 
         // Refresh document signed URLs
         const docs = await sbLoadDocuments(uid)

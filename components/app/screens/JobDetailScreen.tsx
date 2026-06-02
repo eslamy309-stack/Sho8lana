@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Check, Sparkles, Copy, Send } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Check, Sparkles, Copy, Send, Loader2, AlertCircle } from 'lucide-react'
 import { useApp, callGemini } from '@/lib/store'
 import { COMPANIES, JOBS, SOURCE_CONFIG, DOCUMENTS } from '@/lib/data'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,8 @@ export function JobDetailScreen() {
   const { state, dispatch } = useApp()
   const ar = state.lang === 'ar'
   const job = JOBS.find(j => j.id === state.selectedJob)
+  const [applying, setApplying] = useState(false)
+  const [applyError, setApplyError] = useState('')
 
   if (!job) { dispatch({ type: 'GO', screen: 'home' }); return null }
 
@@ -47,13 +50,50 @@ export function JobDetailScreen() {
     dispatch({ type: 'SET_CV_LOADING', loading: false })
   }
 
-  function apply() {
+  async function apply() {
     if (!job) return
-    dispatch({ type: 'ADD_APPLICATION', app: {
-      id: Date.now(), jobId: job.id, title: ar ? job.titleAr : job.title,
-      company: company.name, status: 'applied',
-      date: new Date().toLocaleDateString('en-GB'), logo: company.logo,
-    }})
+    if (!state.user.supabaseId) {
+      setApplyError(ar ? 'يجب تسجيل الدخول للتقديم' : 'Sign in required to apply.')
+      return
+    }
+    setApplying(true)
+    setApplyError('')
+    try {
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId:      state.user.supabaseId,
+          jobId:       null,
+          jobTitle:    ar ? job.titleAr : job.title,
+          company:     company.name,
+          companyLogo: company.logo,
+          coverNote:   state.cvText ?? '',
+          source:      job.source,
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 409) {
+        // Already applied — mark as applied locally and continue
+        dispatch({ type: 'ADD_APPLICATION', app: {
+          id: Date.now(), jobId: job.id, title: ar ? job.titleAr : job.title,
+          company: company.name, status: 'applied',
+          date: new Date().toLocaleDateString('en-GB'), logo: company.logo,
+        }})
+        return
+      }
+      if (!res.ok) throw new Error(data.error ?? 'Application failed')
+      dispatch({ type: 'ADD_APPLICATION', app: {
+        id: data.application?.id ?? Date.now(),
+        jobId: job.id, title: ar ? job.titleAr : job.title,
+        company: company.name, status: 'applied',
+        date: new Date().toLocaleDateString('en-GB'), logo: company.logo,
+      }})
+    } catch (e: unknown) {
+      setApplyError(e instanceof Error ? e.message : 'Failed to submit application')
+    } finally {
+      setApplying(false)
+    }
   }
 
   return (
@@ -216,14 +256,26 @@ export function JobDetailScreen() {
 
       {/* Fixed Apply CTA */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app px-4 py-4 bg-white border-t border-neutral-100 pb-safe">
+        {applyError && (
+          <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-2">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+            {applyError}
+          </div>
+        )}
         {applied
           ? <Button className="w-full bg-success-500 hover:bg-success-600 gap-2" disabled>
               <Check className="w-4 h-4" /> {ar ? '✓ تم الإرسال' : '✓ Application Sent'}
             </Button>
-          : <Button className="w-full gap-2" onClick={apply} disabled={!isProfileDone}
+          : <Button className="w-full gap-2" onClick={apply} disabled={!isProfileDone || applying}
               variant={isProfileDone ? 'primary' : 'ghost'}>
-              <Send className="w-4 h-4" />
-              {isProfileDone ? (ar ? 'قدّم بضغطة' : 'Apply with 1 Tap') : (ar ? 'أكمل ملفك أولاً' : 'Complete profile first')}
+              {applying
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <Send className="w-4 h-4" />}
+              {applying
+                ? (ar ? 'جارٍ الإرسال...' : 'Submitting...')
+                : isProfileDone
+                  ? (ar ? 'قدّم بضغطة' : 'Apply with 1 Tap')
+                  : (ar ? 'أكمل ملفك أولاً' : 'Complete profile first')}
             </Button>
         }
       </div>

@@ -149,13 +149,15 @@ export interface UserProfile {
 }
 
 export interface Application {
-  id: number
-  jobId: number
+  id: string | number
+  jobId: string | number | null
   title: string
   company: string
   status: AppStatus
   date: string
   logo: string
+  externalUrl?: string
+  source?: string
 }
 
 export interface ChatMessage {

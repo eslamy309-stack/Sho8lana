@@ -1,18 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Search, Globe, Wifi, MapPin, Star, Zap, Map, Bookmark,
   BookmarkCheck, Building2, ExternalLink, ChevronRight, ChevronLeft,
-  TrendingUp, Briefcase, BarChart2,
+  TrendingUp, Briefcase, BarChart2, Send, Check, Loader2,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { COMPANIES, JOBS, SOURCE_CONFIG } from '@/lib/data'
 import { DOCUMENTS } from '@/lib/data'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import type { Job } from '@/lib/types'
+import type { Job, LiveJob } from '@/lib/types'
 import { fetchLiveJobs, getWuzzufMockJobs, formatTimeAgo } from '@/lib/api'
+
+interface DbJob {
+  id: string
+  title: string
+  company_name: string
+  location: string | null
+  type: string | null
+  description: string | null
+  created_at: string
+}
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
 const up = {
@@ -159,11 +170,19 @@ export function HomeScreen() {
   const ar = lang === 'ar'
   const [tab, setTab] = useState<HomeTab>(JOBS.length > 0 ? 'local' : 'linkedin')
 
+  // DB jobs posted by companies
+  const [dbJobs, setDbJobs]           = useState<DbJob[]>([])
+  const [dbJobsLoading, setDbJobsLoading] = useState(false)
+
+  // Per-live-job applying state: jobId → 'idle' | 'loading' | 'done' | 'error'
+  const [liveApplyState, setLiveApplyState] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({})
+  const [liveApplyError, setLiveApplyError] = useState<Record<string, string>>({})
+
   const isProfileDone =
     state.user.name && state.user.university && state.user.major &&
     DOCUMENTS.filter(d => d.required).every(d => state.user.documents[d.key])
 
-  // Load live jobs eagerly on mount (and when switching to linkedin/wuzzuf tab)
+  // Load live jobs eagerly on mount
   useEffect(() => {
     if ((tab === 'linkedin' || tab === 'wuzzuf' || JOBS.length === 0) && state.liveJobs.length === 0 && !state.liveJobsLoading) {
       dispatch({ type: 'SET_LIVE_JOBS_LOADING', loading: true })
@@ -173,6 +192,108 @@ export function HomeScreen() {
       })
     }
   }, [tab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load company-posted DB jobs for Direct tab
+  useEffect(() => {
+    if (tab !== 'local') return
+    setDbJobsLoading(true)
+    supabase
+      .from('jobs')
+      .select('id, title, location, type, description, created_at, companies(name)')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        const rows: DbJob[] = (data ?? []).map((r: Record<string, unknown>) => ({
+          id: r.id as string,
+          title: r.title as string,
+          company_name: ((r.companies as { name?: string } | null)?.name ?? 'Company') as string,
+          location: r.location as string | null,
+          type: r.type as string | null,
+          description: r.description as string | null,
+          created_at: r.created_at as string,
+        }))
+        setDbJobs(rows)
+        setDbJobsLoading(false)
+      })
+  }, [tab])
+
+  // Apply to a live (LinkedIn/Wuzzuf) job internally
+  const applyToLiveJob = useCallback(async (j: LiveJob) => {
+    if (!state.user.supabaseId) return
+    setLiveApplyState(s => ({ ...s, [j.id]: 'loading' }))
+    setLiveApplyError(s => ({ ...s, [j.id]: '' }))
+    try {
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId:        state.user.supabaseId,
+          jobTitle:      j.title,
+          company:       j.company,
+          externalJobId: j.id,
+          externalUrl:   j.url,
+          source:        j.source,
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 409 || res.ok) {
+        setLiveApplyState(s => ({ ...s, [j.id]: 'done' }))
+        dispatch({ type: 'ADD_APPLICATION', app: {
+          id: Date.now(), jobId: j.id, title: j.title, company: j.company,
+          status: 'applied', date: new Date().toLocaleDateString('en-GB'), logo: '🔗',
+          externalUrl: j.url, source: j.source,
+        }})
+      } else {
+        setLiveApplyState(s => ({ ...s, [j.id]: 'error' }))
+        setLiveApplyError(s => ({ ...s, [j.id]: data.error ?? 'Failed' }))
+      }
+    } catch {
+      setLiveApplyState(s => ({ ...s, [j.id]: 'error' }))
+      setLiveApplyError(s => ({ ...s, [j.id]: 'Connection error' }))
+    }
+  }, [state.user.supabaseId, dispatch])
+
+  // Apply to a company-posted DB job
+  const applyToDbJob = useCallback(async (j: DbJob) => {
+    if (!state.user.supabaseId) return
+    setLiveApplyState(s => ({ ...s, [j.id]: 'loading' }))
+    try {
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId:    state.user.supabaseId,
+          jobId:     j.id,
+          jobTitle:  j.title,
+          company:   j.company_name,
+          source:    'company',
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 409 || res.ok) {
+        setLiveApplyState(s => ({ ...s, [j.id]: 'done' }))
+        dispatch({ type: 'ADD_APPLICATION', app: {
+          id: data.application?.id ?? Date.now(),
+          jobId: j.id, title: j.title, company: j.company_name,
+          status: 'applied', date: new Date().toLocaleDateString('en-GB'), logo: '🏢',
+        }})
+      } else {
+        setLiveApplyState(s => ({ ...s, [j.id]: 'error' }))
+        setLiveApplyError(s => ({ ...s, [j.id]: data.error ?? 'Failed' }))
+      }
+    } catch {
+      setLiveApplyState(s => ({ ...s, [j.id]: 'error' }))
+    }
+  }, [state.user.supabaseId, dispatch])
+
+  // Check if already applied (by jobId or externalUrl)
+  const isApplied = useCallback((key: string) => {
+    const st = liveApplyState[key]
+    if (st === 'done') return true
+    return state.applications.some(a =>
+      a.jobId === key || a.externalUrl === key
+    )
+  }, [liveApplyState, state.applications])
 
   const wuzzufJobs = getWuzzufMockJobs()
 
@@ -370,41 +491,67 @@ export function HomeScreen() {
               {ar ? <ChevronLeft className="w-4 h-4 text-neutral-400 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-neutral-400 flex-shrink-0" />}
             </button>
 
-            {/* All jobs list */}
+            {/* Company-posted DB jobs */}
             <div>
               <h3 className="text-sm font-bold text-neutral-900 mb-2">
-                {filtered.length < JOBS.length
-                  ? `${filtered.length} ${ar ? 'نتائج' : 'results'}`
-                  : (ar ? 'جميع الوظائف' : `All ${JOBS.length} opportunities`)}
+                {ar ? 'وظائف الشركات' : 'Company Postings'}
               </h3>
-              <motion.div variants={stagger} initial="hidden" animate="visible" className="flex flex-col gap-3">
-                {filtered.length === 0
-                  ? (
-                    <div className="text-center py-10 flex flex-col items-center gap-3">
-                      <p className="text-sm text-neutral-500 font-medium">
-                        {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
-                      </p>
-                      <p className="text-xs text-neutral-400">
-                        {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf for live opportunities'}
-                      </p>
-                      <div className="flex gap-2 mt-1">
-                        <button
-                          onClick={() => setTab('linkedin')}
-                          className="px-4 py-2 bg-[#0077B5] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
-                        >
-                          LinkedIn
-                        </button>
-                        <button
-                          onClick={() => setTab('wuzzuf')}
-                          className="px-4 py-2 bg-[#E8464E] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
-                        >
-                          Wuzzuf
-                        </button>
+              {dbJobsLoading ? (
+                <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-neutral-400" /></div>
+              ) : dbJobs.length === 0 ? (
+                <div className="text-center py-10 flex flex-col items-center gap-3">
+                  <p className="text-sm text-neutral-500 font-medium">
+                    {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf for live opportunities'}
+                  </p>
+                  <div className="flex gap-2 mt-1">
+                    <button onClick={() => setTab('linkedin')} className="px-4 py-2 bg-[#0077B5] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">LinkedIn</button>
+                    <button onClick={() => setTab('wuzzuf')} className="px-4 py-2 bg-[#E8464E] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">Wuzzuf</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {dbJobs.map(j => {
+                    const applied = isApplied(j.id)
+                    const st = liveApplyState[j.id] ?? 'idle'
+                    return (
+                      <div key={j.id} className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-bold text-neutral-900">{j.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{j.company_name}</p>
+                          </div>
+                          <span className="text-2xs font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-600">Direct</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {j.location && <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>}
+                          {j.type && <span className={cn('text-2xs font-semibold px-2 py-1 rounded-lg', j.type === 'internship' ? 'text-brand-600 bg-brand-50' : 'text-violet-600 bg-violet-50')}>{j.type === 'internship' ? (ar ? 'تدريب' : 'Internship') : j.type}</span>}
+                          <span className="text-2xs text-neutral-400">{formatTimeAgo(j.created_at)}</span>
+                        </div>
+                        {liveApplyError[j.id] && <p className="text-xs text-red-500 mt-2">{liveApplyError[j.id]}</p>}
+                        <div className="mt-3">
+                          {applied ? (
+                            <span className="flex items-center gap-1 text-xs font-semibold text-success-600">
+                              <Check className="w-3.5 h-3.5" /> {ar ? 'تم التقديم ✓' : 'Applied ✓'}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => applyToDbJob(j)}
+                              disabled={st === 'loading' || !state.user.supabaseId}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-60"
+                            >
+                              {st === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                              {st === 'loading' ? (ar ? 'جارٍ...' : 'Applying...') : (ar ? 'قدّم الآن' : 'Apply Now')}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                  : filtered.map((j, i) => <JobCard key={j.id} job={j} index={i} />)}
-              </motion.div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -435,40 +582,46 @@ export function HomeScreen() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {(state.liveJobs.length > 0 ? state.liveJobs : []).map(j => (
-                  <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-bold text-neutral-900">{j.title}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+                {(state.liveJobs.length > 0 ? state.liveJobs : []).map(j => {
+                  const applied = isApplied(j.id)
+                  const st = liveApplyState[j.id] ?? 'idle'
+                  return (
+                    <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-bold text-neutral-900">{j.title}</p>
+                          <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+                        </div>
+                        <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#0077B515', color: '#0077B5' }}>LinkedIn</span>
                       </div>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#0077B515', color: '#0077B5' }}>
-                        LinkedIn
-                      </span>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>
+                        {j.salary && <span className="text-2xs font-semibold text-warning-700 bg-warning-50 px-2 py-1 rounded-lg">{j.salary}</span>}
+                        <span className="text-2xs text-neutral-400">{formatTimeAgo(j.postedAt)}</span>
+                      </div>
+                      {liveApplyError[j.id] && <p className="text-xs text-red-500 mt-2">{liveApplyError[j.id]}</p>}
+                      <div className="flex items-center gap-3 mt-3">
+                        {applied ? (
+                          <span className="flex items-center gap-1 text-xs font-semibold text-success-600">
+                            <Check className="w-3.5 h-3.5" /> {ar ? 'تم التقديم ✓' : 'Applied ✓'}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => applyToLiveJob(j)}
+                            disabled={st === 'loading' || !state.user.supabaseId}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-60"
+                          >
+                            {st === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                            {st === 'loading' ? (ar ? 'جارٍ...' : 'Applying...') : (ar ? 'قدّم الآن' : 'Apply Now')}
+                          </button>
+                        )}
+                        <a href={j.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-neutral-500 hover:text-brand-600 transition-colors">
+                          {ar ? 'الإعلان الأصلي' : 'Original Posting'} <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg">
-                        <MapPin className="w-2.5 h-2.5" />{j.location}
-                      </span>
-                      {j.salary && (
-                        <span className="text-2xs font-semibold text-warning-700 bg-warning-50 px-2 py-1 rounded-lg">{j.salary}</span>
-                      )}
-                      <span className="text-2xs text-neutral-400">{formatTimeAgo(j.postedAt)}</span>
-                    </div>
-                    <a
-                      href={j.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 flex items-center gap-1 text-xs text-brand-600 font-semibold hover:underline"
-                    >
-                      {ar ? 'اعرض على LinkedIn' : 'View on LinkedIn'}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                ))}
-                <p className="text-center text-xs text-neutral-400 py-2">
-                  {ar ? 'لإضافة بيانات LinkedIn الحقيقية، أضف مفتاح JSearch API إلى .env.local' : 'Add your JSearch API key to .env.local for live LinkedIn data'}
-                </p>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -487,43 +640,49 @@ export function HomeScreen() {
               <span className="text-xs text-neutral-400 ml-auto">{ar ? 'محدّث' : 'Updated'}</span>
             </div>
             <div className="flex flex-col gap-3">
-              {wuzzufJobs.map(j => (
-                <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold text-neutral-900">{j.title}</p>
-                      <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+              {wuzzufJobs.map(j => {
+                const applied = isApplied(j.id)
+                const st = liveApplyState[j.id] ?? 'idle'
+                return (
+                  <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold text-neutral-900">{j.title}</p>
+                        <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+                      </div>
+                      <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#E8464E15', color: '#E8464E' }}>Wuzzuf</span>
                     </div>
-                    <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#E8464E15', color: '#E8464E' }}>
-                      Wuzzuf
-                    </span>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>
+                      {j.salary && <span className="text-2xs font-semibold text-warning-700 bg-warning-50 px-2 py-1 rounded-lg">{j.salary}</span>}
+                      <span className={cn('text-2xs font-semibold px-2 py-1 rounded-lg', j.type === 'INTERN' ? 'text-brand-600 bg-brand-50' : 'text-violet-600 bg-violet-50')}>
+                        {j.type === 'INTERN' ? (ar ? 'تدريب' : 'Internship') : (ar ? 'دوام كامل' : 'Full-time')}
+                      </span>
+                      <span className="text-2xs text-neutral-400">{formatTimeAgo(j.postedAt)}</span>
+                    </div>
+                    {liveApplyError[j.id] && <p className="text-xs text-red-500 mt-2">{liveApplyError[j.id]}</p>}
+                    <div className="flex items-center gap-3 mt-3">
+                      {applied ? (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-success-600">
+                          <Check className="w-3.5 h-3.5" /> {ar ? 'تم التقديم ✓' : 'Applied ✓'}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => applyToLiveJob(j)}
+                          disabled={st === 'loading' || !state.user.supabaseId}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E8464E] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+                        >
+                          {st === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                          {st === 'loading' ? (ar ? 'جارٍ...' : 'Applying...') : (ar ? 'قدّم الآن' : 'Apply Now')}
+                        </button>
+                      )}
+                      <a href={j.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-neutral-500 hover:text-[#E8464E] transition-colors">
+                        {ar ? 'الإعلان الأصلي' : 'Original Posting'} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg">
-                      <MapPin className="w-2.5 h-2.5" />{j.location}
-                    </span>
-                    {j.salary && (
-                      <span className="text-2xs font-semibold text-warning-700 bg-warning-50 px-2 py-1 rounded-lg">{j.salary}</span>
-                    )}
-                    <span className={cn(
-                      'text-2xs font-semibold px-2 py-1 rounded-lg',
-                      j.type === 'INTERN' ? 'text-brand-600 bg-brand-50' : 'text-violet-600 bg-violet-50',
-                    )}>
-                      {j.type === 'INTERN' ? (ar ? 'تدريب' : 'Internship') : (ar ? 'دوام كامل' : 'Full-time')}
-                    </span>
-                    <span className="text-2xs text-neutral-400">{formatTimeAgo(j.postedAt)}</span>
-                  </div>
-                  <a
-                    href={j.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center gap-1 text-xs text-[#E8464E] font-semibold hover:underline"
-                  >
-                    {ar ? 'اعرض على Wuzzuf' : 'View on Wuzzuf'}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
