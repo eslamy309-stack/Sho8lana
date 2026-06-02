@@ -131,45 +131,13 @@ export default function CompanyPortalPage() {
               {/* Recent applicants */}
               <div className="bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
                 <p className="text-sm font-bold text-neutral-900 mb-3">Recent Applicants</p>
-                {[
-                  { name: 'Sara Ahmed',    uni: 'GUC', role: 'Marketing Intern',    gpa: '3.8', status: 'Reviewing', sc: '#2563EB' },
-                  { name: 'Omar Hassan',   uni: 'AUC', role: 'Financial Analyst', gpa: '3.6', status: 'Applied',   sc: '#6B7280' },
-                  { name: 'Nour Khalil',   uni: 'BUE', role: 'Software Engineer', gpa: '3.9', status: 'Interview', sc: '#7C3AED' },
-                ].map(a => (
-                  <div key={a.name} className="flex items-center gap-3 py-2 border-b border-neutral-50 last:border-0">
-                    <div className="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center font-bold text-brand-600 text-sm flex-shrink-0">
-                      {a.name[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-neutral-900">{a.name}</p>
-                      <p className="text-xs text-neutral-500">{a.uni} · GPA {a.gpa}</p>
-                    </div>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: `${a.sc}15`, color: a.sc }}>
-                      {a.status}
-                    </span>
-                  </div>
-                ))}
+                <p className="text-sm text-neutral-400 text-center py-4">No applicants yet</p>
               </div>
 
               {/* Active postings */}
               <div className="bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
                 <p className="text-sm font-bold text-neutral-900 mb-3">Active Postings</p>
-                {[
-                  { title: 'Marketing Intern',      apps: 47, type: 'Internship' },
-                  { title: 'Financial Analyst Intern', apps: 32, type: 'Internship' },
-                  { title: 'Junior Software Engineer', apps: 89, type: 'Full-time'  },
-                ].map(p => (
-                  <div key={p.title} className="flex items-center justify-between py-2 border-b border-neutral-50 last:border-0">
-                    <div>
-                      <p className="text-sm font-semibold text-neutral-900">{p.title}</p>
-                      <p className="text-xs text-neutral-500">{p.type}</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-neutral-600">
-                      <Users className="w-3 h-3" />
-                      {p.apps}
-                    </div>
-                  </div>
-                ))}
+                <p className="text-sm text-neutral-400 text-center py-4">No active postings</p>
                 <button onClick={() => setPortalTab('post')} className="text-xs text-brand-600 font-semibold mt-2 hover:underline">
                   + Post a new job →
                 </button>
@@ -237,32 +205,12 @@ export default function CompanyPortalPage() {
 
           {/* Applicants */}
           {portalTab === 'applicants' && (
-            <div className="space-y-3">
-              {[
-                { name: 'Sara Ahmed',    uni: 'GUC', major: 'Marketing', gpa: '3.8', role: 'Marketing Intern',       status: 'Reviewing', sc: '#2563EB', docs: ['CV','Transcript','National ID'] },
-                { name: 'Omar Hassan',   uni: 'AUC', major: 'Finance',   gpa: '3.6', role: 'Financial Analyst Intern', status: 'Applied',   sc: '#6B7280', docs: ['CV','Transcript','National ID','Cover Letter'] },
-                { name: 'Nour Khalil',   uni: 'BUE', major: 'CS',        gpa: '3.9', role: 'Software Engineer',        status: 'Interview', sc: '#7C3AED', docs: ['CV','Transcript','National ID','Portfolio'] },
-                { name: 'Amr El-Sayed', uni: 'Cairo', major: 'Business', gpa: '3.4', role: 'Marketing Intern',       status: 'Applied',   sc: '#6B7280', docs: ['CV','Transcript','National ID'] },
-              ].map(a => (
-                <div key={a.name} className="bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center font-bold text-brand-600 flex-shrink-0">
-                    {a.name[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-neutral-900">{a.name}</p>
-                    <p className="text-xs text-neutral-500">{a.uni} · {a.major} · GPA {a.gpa} · Applied for: {a.role}</p>
-                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                      {a.docs.map(d => <span key={d} className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">{d}</span>)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: `${a.sc}15`, color: a.sc }}>{a.status}</span>
-                    <button className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors">
-                      Review
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-white rounded-2xl p-8 border border-neutral-100 shadow-sm text-center">
+              <p className="text-sm font-semibold text-neutral-500">No applications yet</p>
+              <p className="text-xs text-neutral-400 mt-1">Post a job to start receiving applications</p>
+              <button onClick={() => setPortalTab('post')} className="mt-3 px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors">
+                + Post a Job
+              </button>
             </div>
           )}
         </div>
