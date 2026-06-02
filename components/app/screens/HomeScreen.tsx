@@ -163,9 +163,9 @@ export function HomeScreen() {
     state.user.name && state.user.university && state.user.major &&
     DOCUMENTS.filter(d => d.required).every(d => state.user.documents[d.key])
 
-  // Load live jobs eagerly on mount (and when switching to linkedin tab)
+  // Load live jobs eagerly on mount (and when switching to linkedin/wuzzuf tab)
   useEffect(() => {
-    if ((tab === 'linkedin' || JOBS.length === 0) && state.liveJobs.length === 0 && !state.liveJobsLoading) {
+    if ((tab === 'linkedin' || tab === 'wuzzuf' || JOBS.length === 0) && state.liveJobs.length === 0 && !state.liveJobsLoading) {
       dispatch({ type: 'SET_LIVE_JOBS_LOADING', loading: true })
       fetchLiveJobs('intern Egypt').then(jobs => {
         dispatch({ type: 'SET_LIVE_JOBS', jobs })
@@ -385,14 +385,22 @@ export function HomeScreen() {
                         {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
                       </p>
                       <p className="text-xs text-neutral-400">
-                        {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf tabs for live opportunities'}
+                        {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf for live opportunities'}
                       </p>
-                      <button
-                        onClick={() => setTab('linkedin')}
-                        className="mt-1 px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors"
-                      >
-                        {ar ? 'عرض وظائف LinkedIn' : 'View LinkedIn Jobs'}
-                      </button>
+                      <div className="flex gap-2 mt-1">
+                        <button
+                          onClick={() => setTab('linkedin')}
+                          className="px-4 py-2 bg-[#0077B5] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                        >
+                          LinkedIn
+                        </button>
+                        <button
+                          onClick={() => setTab('wuzzuf')}
+                          className="px-4 py-2 bg-[#E8464E] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                        >
+                          Wuzzuf
+                        </button>
+                      </div>
                     </div>
                   )
                   : filtered.map((j, i) => <JobCard key={j.id} job={j} index={i} />)}
