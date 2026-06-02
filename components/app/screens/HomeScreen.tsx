@@ -157,15 +157,15 @@ export function HomeScreen() {
   const { state, dispatch } = useApp()
   const { lang, searchQuery, locationFilter, jobTypeFilter } = state
   const ar = lang === 'ar'
-  const [tab, setTab] = useState<HomeTab>('local')
+  const [tab, setTab] = useState<HomeTab>(JOBS.length > 0 ? 'local' : 'linkedin')
 
   const isProfileDone =
     state.user.name && state.user.university && state.user.major &&
     DOCUMENTS.filter(d => d.required).every(d => state.user.documents[d.key])
 
-  // Load live jobs when switching to linkedin or wuzzuf tab
+  // Load live jobs eagerly on mount (and when switching to linkedin tab)
   useEffect(() => {
-    if (tab === 'linkedin' && state.liveJobs.length === 0 && !state.liveJobsLoading) {
+    if ((tab === 'linkedin' || JOBS.length === 0) && state.liveJobs.length === 0 && !state.liveJobsLoading) {
       dispatch({ type: 'SET_LIVE_JOBS_LOADING', loading: true })
       fetchLiveJobs('intern Egypt').then(jobs => {
         dispatch({ type: 'SET_LIVE_JOBS', jobs })
@@ -379,7 +379,22 @@ export function HomeScreen() {
               </h3>
               <motion.div variants={stagger} initial="hidden" animate="visible" className="flex flex-col gap-3">
                 {filtered.length === 0
-                  ? <p className="text-center text-sm text-neutral-400 py-8">{ar ? 'لا توجد نتائج' : 'No results found'}</p>
+                  ? (
+                    <div className="text-center py-10 flex flex-col items-center gap-3">
+                      <p className="text-sm text-neutral-500 font-medium">
+                        {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
+                      </p>
+                      <p className="text-xs text-neutral-400">
+                        {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf tabs for live opportunities'}
+                      </p>
+                      <button
+                        onClick={() => setTab('linkedin')}
+                        className="mt-1 px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors"
+                      >
+                        {ar ? 'عرض وظائف LinkedIn' : 'View LinkedIn Jobs'}
+                      </button>
+                    </div>
+                  )
                   : filtered.map((j, i) => <JobCard key={j.id} job={j} index={i} />)}
               </motion.div>
             </div>
