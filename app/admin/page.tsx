@@ -199,20 +199,26 @@ function LoginScreen({ onAuth }: { onAuth: () => void }) {
   const handleLogin = async () => {
     setLoading(true)
     setError('')
-    await new Promise(r => setTimeout(r, 600))
-    const adminPwd = process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-    if (!adminPwd) {
-      setError('Admin panel is not configured. Set NEXT_PUBLIC_ADMIN_PASSWORD.')
-      setLoading(false)
-      return
-    }
-    if (password === adminPwd) {
+    try {
+      const res = await fetch('/api/owner/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Incorrect password. Access denied.')
+        return
+      }
+      // Set the owner token cookie so the proxy lets us through on refresh
+      document.cookie = `sho8_owner_token=${data.token}; path=/; max-age=28800; SameSite=Strict`
       sessionStorage.setItem('sho8_admin_authed', 'true')
       onAuth()
-    } else {
-      setError('Incorrect password. Access denied.')
+    } catch {
+      setError('Connection error. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
