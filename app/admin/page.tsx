@@ -435,11 +435,16 @@ function SimApprovalModal({ sim, onClose, onApprove, onReject }: { sim: Simulati
 
 function OverviewView() {
   const [counts, setCounts] = useState({ students: 0, companies: 0, activeCompanies: 0, applications: 0, simulations: 0, pendingCompanies: 0 })
+  const [today, setToday] = useState({ students: 0, companies: 0, applications: 0, simulations: 0 })
   const [recentActivity, setRecentActivity] = useState<{ id: string; type: string; body: string; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const iso = todayStart.toISOString()
+
       const [
         { count: students },
         { count: companies },
@@ -448,6 +453,10 @@ function OverviewView() {
         { count: applications },
         { count: simulations },
         { data: activity },
+        { count: todayStudents },
+        { count: todayCompanies },
+        { count: todayApplications },
+        { count: todaySimulations },
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
         supabase.from('companies').select('*', { count: 'exact', head: true }),
@@ -456,8 +465,13 @@ function OverviewView() {
         supabase.from('applications').select('*', { count: 'exact', head: true }),
         supabase.from('simulations').select('*', { count: 'exact', head: true }),
         supabase.from('admin_notifications').select('id,type,body,created_at').order('created_at', { ascending: false }).limit(10),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').gte('created_at', iso),
+        supabase.from('companies').select('*', { count: 'exact', head: true }).gte('created_at', iso),
+        supabase.from('applications').select('*', { count: 'exact', head: true }).gte('applied_at', iso),
+        supabase.from('simulations').select('*', { count: 'exact', head: true }).gte('created_at', iso),
       ])
       setCounts({ students: students ?? 0, companies: companies ?? 0, activeCompanies: activeCompanies ?? 0, applications: applications ?? 0, simulations: simulations ?? 0, pendingCompanies: pendingCompanies ?? 0 })
+      setToday({ students: todayStudents ?? 0, companies: todayCompanies ?? 0, applications: todayApplications ?? 0, simulations: todaySimulations ?? 0 })
       setRecentActivity(activity ?? [])
       setLoading(false)
     }
@@ -497,7 +511,17 @@ function OverviewView() {
         <div className="grid grid-cols-3 gap-4">
           <MetricCard label="MRR" value="EGP 0" />
           <MetricCard label="ARR" value="EGP 0" />
-          <MetricCard label="Active Subscriptions" value="161" trend="up" />
+          <MetricCard label="Active Subscriptions" value="0" />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Today</p>
+        <div className="grid grid-cols-4 gap-4">
+          <MetricCard label="New Students" value={loading ? '—' : today.students.toString()} trend={today.students > 0 ? 'up' : 'neutral'} />
+          <MetricCard label="New Companies" value={loading ? '—' : today.companies.toString()} trend={today.companies > 0 ? 'up' : 'neutral'} />
+          <MetricCard label="Applications" value={loading ? '—' : today.applications.toString()} trend={today.applications > 0 ? 'up' : 'neutral'} />
+          <MetricCard label="Simulations" value={loading ? '—' : today.simulations.toString()} trend={today.simulations > 0 ? 'up' : 'neutral'} />
         </div>
       </div>
 

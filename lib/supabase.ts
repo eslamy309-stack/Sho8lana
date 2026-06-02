@@ -99,6 +99,7 @@ export async function sbSaveProfile(userId: string, profile: Partial<UserProfile
     kpi_score: profile.kpiScore ?? 0,
     skills: profile.skills ?? [],
     updated_at: new Date().toISOString(),
+    // role is never overwritten by client — only set by server/admin
   })
   if (error) throw new Error(error.message)
 }
@@ -127,6 +128,7 @@ export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile
     onboardingCompleted: data.onboarding_completed ?? false,
     kpiScore: data.kpi_score ?? 0,
     skills: data.skills ?? [],
+    role: data.role ?? 'student',
   }
 }
 

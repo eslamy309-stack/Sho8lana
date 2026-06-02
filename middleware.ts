@@ -48,7 +48,7 @@ async function isValidOwnerToken(token: string | null): Promise<boolean> {
   }
 }
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const ip = getIP(req)
 
@@ -60,11 +60,15 @@ export async function proxy(req: NextRequest) {
       null
 
     if (!(await isValidOwnerToken(token))) {
-      // Redirect to home with a query param so the landing page opens owner panel
-      const url = req.nextUrl.clone()
-      url.pathname = '/'
-      url.searchParams.set('owner_required', '1')
-      return NextResponse.redirect(url)
+      // Show the admin login page (not redirect away) — the page itself handles auth
+      // Only block sub-paths after auth; the root /admin shows the login screen
+      if (pathname !== '/admin') {
+        const url = req.nextUrl.clone()
+        url.pathname = '/admin'
+        return NextResponse.redirect(url)
+      }
+      // Let /admin through so the LoginScreen renders
+      return NextResponse.next()
     }
   }
 

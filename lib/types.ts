@@ -145,6 +145,7 @@ export interface UserProfile {
   mfaEnabled?: boolean
   kpiScore?: number       // 0–100 composite score from simulations
   skills?: string[]       // verified skills earned via simulations
+  role?: 'student' | 'company_recruiter' | 'company_admin' | 'super_admin'
 }
 
 export interface Application {

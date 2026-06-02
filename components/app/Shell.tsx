@@ -40,6 +40,13 @@ import { SimulationUploadHubScreen }    from './screens/SimulationUploadHubScree
 
 const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
 
+// Screens only accessible to company/admin roles
+const COMPANY_SCREENS = new Set([
+  'hrDashboard', 'talentMarketplace', 'candidateIntelligence',
+  'recruitmentPipeline', 'companyOnboarding', 'simulationUploadHub',
+  'companyPortal', 'integrationPortal', 'devPortal',
+])
+
 const pageVariants = {
   enter:  { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
@@ -47,8 +54,17 @@ const pageVariants = {
 }
 
 function ScreenRouter() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const showNav = (NAV_SCREENS as readonly string[]).includes(state.screen)
+
+  const role = state.user.role ?? 'student'
+  const isCompanyOrAdmin = role === 'company_recruiter' || role === 'company_admin' || role === 'super_admin'
+
+  // Redirect students who land on company-only screens
+  if (COMPANY_SCREENS.has(state.screen) && !isCompanyOrAdmin) {
+    dispatch({ type: 'GO', screen: 'home' })
+    return null
+  }
 
   const screens: Record<string, React.ReactNode> = {
     lang:           <LangScreen />,
