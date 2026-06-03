@@ -57,7 +57,7 @@ export function BottomNav() {
                 className={cn(
                   'font-semibold transition-colors duration-200',
                   active ? 'text-brand-600' : 'text-neutral-400',
-                  ar ? 'text-2xs' : 'text-2xs'
+                  'text-xs'
                 )}
               >
                 {ar ? tab.labelAr : tab.labelEn}

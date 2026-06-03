@@ -8,12 +8,13 @@ import {
 } from '@/lib/integration-gateway'
 import type { SimulationEndpointCreate } from '@/lib/integration-types'
 
-const supabase = createClient(
+const sb = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
 async function auth(req: NextRequest, companyId: string) {
+  const supabase = sb()
   const raw = extractApiKey(req.headers.get('authorization'))
   if (!raw) throw new Error('Missing API key')
 
@@ -36,6 +37,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ companyId: string }> },
 ) {
+  const supabase = sb()
   const { companyId } = await params
   try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
@@ -63,6 +65,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ companyId: string }> },
 ) {
+  const supabase = sb()
   const { companyId } = await params
   try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
@@ -119,6 +122,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ companyId: string }> },
 ) {
+  const supabase = sb()
   const { companyId } = await params
   try { await auth(req, companyId) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }

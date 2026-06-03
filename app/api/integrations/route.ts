@@ -7,12 +7,13 @@ import { createClient } from '@supabase/supabase-js'
 import { generateApiKey, gatewayError, gatewaySuccess } from '@/lib/integration-gateway'
 import type { CompanyIntegrationCreate } from '@/lib/integration-types'
 
-const supabase = createClient(
+const sb = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
 export async function GET(req: NextRequest) {
+  const supabase = sb()
   const { searchParams } = req.nextUrl
   const status = searchParams.get('status')
   const tier   = searchParams.get('tier')
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = sb()
   let body: CompanyIntegrationCreate
   try {
     body = await req.json()

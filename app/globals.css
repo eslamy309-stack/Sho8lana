@@ -36,6 +36,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Eliminate 300ms tap delay on iOS for all interactive elements */
+  button, a, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+  }
+
   /* RTL support */
   [dir="rtl"] { font-family: 'Noto Kufi Arabic', 'Outfit', sans-serif; }
 

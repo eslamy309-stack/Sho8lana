@@ -166,9 +166,11 @@ function FeaturedCard({ job }: { job: Job }) {
 
 export function HomeScreen() {
   const { state, dispatch } = useApp()
-  const { lang, searchQuery, locationFilter, jobTypeFilter } = state
+  const { lang, searchQuery, locationFilter, jobTypeFilter, industryFilter } = state
   const ar = lang === 'ar'
   const [tab, setTab] = useState<HomeTab>(JOBS.length > 0 ? 'local' : 'linkedin')
+  const [paidOnly, setPaidOnly] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(10)
 
   // DB jobs posted by companies
   const [dbJobs, setDbJobs]           = useState<DbJob[]>([])
@@ -304,8 +306,18 @@ export function HomeScreen() {
       COMPANIES.find(c => c.id === j.companyId)?.name.toLowerCase().includes(q)
     const matchL = locationFilter === 'All' || j.location === locationFilter
     const matchT = jobTypeFilter === 'all' || j.type === jobTypeFilter
-    return matchQ && matchL && matchT
+    const matchI = industryFilter === 'All' || j.industry === industryFilter
+    const matchP = !paidOnly || (j.salary && !j.salary.toLowerCase().includes('unpaid') && !j.salary.toLowerCase().includes('0'))
+    return matchQ && matchL && matchT && matchI && matchP
   })
+
+  const activeFilterCount = [
+    locationFilter !== 'All', jobTypeFilter !== 'all',
+    industryFilter !== 'All', paidOnly,
+  ].filter(Boolean).length
+
+  // Reset visible count when filters change so the list doesn't stay truncated
+  useEffect(() => { setVisibleCount(10) }, [searchQuery, locationFilter, jobTypeFilter, industryFilter, paidOnly])
 
   const featured = JOBS.filter(j => j.featured)
 
@@ -412,6 +424,55 @@ export function HomeScreen() {
                 </button>
               ))}
             </div>
+
+            {/* Industry filter + Paid toggle */}
+            <div className="flex gap-2 overflow-x-auto scroll-hide pb-1">
+              {INDUSTRIES.map(ind => (
+                <button
+                  key={ind}
+                  onClick={() => dispatch({ type: 'SET_INDUSTRY_FILTER', industry: ind })}
+                  className={cn(
+                    'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all',
+                    industryFilter === ind
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300',
+                  )}
+                >
+                  {ind === 'All' ? (ar ? 'كل القطاعات' : 'All Industries') : ind}
+                </button>
+              ))}
+              <button
+                onClick={() => setPaidOnly(p => !p)}
+                className={cn(
+                  'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all',
+                  paidOnly
+                    ? 'bg-success-600 text-white border-success-600'
+                    : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300',
+                )}
+              >
+                💰 {ar ? 'مدفوع فقط' : 'Paid only'}
+              </button>
+            </div>
+
+            {/* Active filter summary + clear */}
+            {activeFilterCount > 0 && (
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-neutral-500">
+                  {filtered.length} {ar ? 'نتيجة' : 'results'} · {activeFilterCount} {ar ? 'فلتر مفعّل' : 'filter(s) active'}
+                </p>
+                <button
+                  onClick={() => {
+                    dispatch({ type: 'SET_LOCATION_FILTER', location: 'All' })
+                    dispatch({ type: 'SET_JOB_TYPE_FILTER', filter: 'all' })
+                    dispatch({ type: 'SET_INDUSTRY_FILTER', industry: 'All' })
+                    setPaidOnly(false)
+                  }}
+                  className="text-xs text-brand-600 font-semibold hover:underline"
+                >
+                  {ar ? 'مسح الكل' : 'Clear all'}
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -490,6 +551,29 @@ export function HomeScreen() {
               </div>
               {ar ? <ChevronLeft className="w-4 h-4 text-neutral-400 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-neutral-400 flex-shrink-0" />}
             </button>
+
+            {/* Curated jobs list (paginated) */}
+            {filtered.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-neutral-900">
+                    {ar ? 'فرص مختارة' : 'Curated Opportunities'}
+                  </h3>
+                  <span className="text-xs text-neutral-400">{filtered.length} {ar ? 'نتيجة' : 'results'}</span>
+                </div>
+                <motion.div variants={stagger} initial="hidden" animate="visible" className="flex flex-col gap-3">
+                  {filtered.slice(0, visibleCount).map((j, i) => <JobCard key={j.id} job={j} index={i} />)}
+                </motion.div>
+                {visibleCount < filtered.length && (
+                  <button
+                    onClick={() => setVisibleCount(v => v + 10)}
+                    className="mt-3 w-full py-2.5 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50 transition-all"
+                  >
+                    {ar ? `عرض المزيد (${filtered.length - visibleCount} متبقية)` : `Load more (${filtered.length - visibleCount} remaining)`}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Company-posted DB jobs */}
             <div>

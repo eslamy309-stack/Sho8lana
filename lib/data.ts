@@ -42,9 +42,6 @@ export const COMPANIES: Company[] = [
 ]
 
 export const JOBS: Job[] = [
-]
-
-const _JOBS_ARCHIVE: Job[] = [
   // Vodafone Egypt
   { id: 1,  companyId: 1,  title: 'Marketing Intern',            titleAr: 'متدرب تسويق',              location: 'Smart Village',  salary: 'EGP 5,000/mo',  postedAgo: '2d',  applicants: 47,  skills: ['Social Media','Analytics','Content'],                type: 'internship', industry: 'Telecom',    description: "Join Vodafone's marketing team and work on real campaigns reaching millions of Egyptian subscribers.", descriptionAr: 'انضم لفريق التسويق في فودافون واعمل على حملات حقيقية تصل لملايين المشتركين.', requirements: ['Marketing or Business student','Strong English skills','Basic analytics knowledge'], requirementsAr: ['طالب تسويق أو أعمال','إنجليزي قوي','معرفة أساسية بالتحليلات'], featured: true,  source: 'linkedin', deadline: '2026-06-30' },
   { id: 2,  companyId: 2,  title: 'Financial Analyst Intern',    titleAr: 'متدرب محلل مالي',          location: 'New Cairo',      salary: 'EGP 6,000/mo',  postedAgo: '1d',  applicants: 32,  skills: ['Excel','Financial Modeling','Data Analysis'],       type: 'internship', industry: 'Banking',    description: "Work alongside CIB's finance team analyzing real portfolios and building financial models.", descriptionAr: 'اعمل مع فريق المالية في CIB لتحليل محافظ حقيقية وبناء نماذج مالية.', requirements: ['Finance or Accounting major','Advanced Excel','GPA 3.0+'], requirementsAr: ['تخصص مالية أو محاسبة','Excel متقدم','معدل 3.0+'], featured: true,  source: 'company', deadline: '2026-06-15' },

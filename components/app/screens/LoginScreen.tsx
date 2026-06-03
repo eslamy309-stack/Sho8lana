@@ -208,7 +208,7 @@ export function LoginScreen() {
                     placeholder={ar ? 'الاسم الكامل' : 'Full name'}
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-base text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                   />
                 </div>
               </motion.div>
@@ -223,7 +223,7 @@ export function LoginScreen() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 bg-white text-base text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
             />
           </div>
 
@@ -235,7 +235,7 @@ export function LoginScreen() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              className="w-full pl-10 pr-11 py-3 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+              className="w-full pl-10 pr-11 py-3 rounded-xl border border-neutral-200 bg-white text-base text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
             />
             <button
               type="button"

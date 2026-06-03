@@ -59,17 +59,22 @@ export function JobDetailScreen() {
     setApplying(true)
     setApplyError('')
     try {
+      // Look up the Supabase UUID for this curated job (seeded via seed.sql)
+      const dbJobId = state.jobDbIds[job.id] ?? null
+
       const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId:      state.user.supabaseId,
-          jobId:       null,
+          jobId:       dbJobId,
           jobTitle:    ar ? job.titleAr : job.title,
           company:     company.name,
           companyLogo: company.logo,
           coverNote:   state.cvText ?? '',
           source:      job.source,
+          // Fall back to externalUrl so the duplicate check still works before seed is run
+          externalJobId: dbJobId ? undefined : `local-${job.id}`,
         }),
       })
       const data = await res.json()

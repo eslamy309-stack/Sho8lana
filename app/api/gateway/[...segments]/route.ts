@@ -20,7 +20,7 @@ import {
   buildAuditRecord,
 } from '@/lib/integration-gateway'
 
-const supabase = createClient(
+const sb = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
@@ -28,6 +28,7 @@ const supabase = createClient(
 // ── Auth + context loader ─────────────────────────────────────────────────────
 
 async function resolveApiKey(rawKey: string) {
+  const supabase = sb()
   const keyHash = await hashApiKey(rawKey)
 
   const { data: key, error } = await supabase
@@ -51,6 +52,7 @@ async function resolveApiKey(rawKey: string) {
 // ── Audit logger ──────────────────────────────────────────────────────────────
 
 async function logEvent(record: ReturnType<typeof buildAuditRecord>) {
+  const supabase = sb()
   await supabase.from('integration_events').insert([{
     company_id:    record.companyId,
     event_type:    record.eventType,
@@ -67,6 +69,7 @@ async function logEvent(record: ReturnType<typeof buildAuditRecord>) {
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 async function handler(req: NextRequest, { params }: { params: Promise<{ segments: string[] }> }) {
+  const supabase = sb()
   const start     = Date.now()
   const { segments: rawSegments } = await params
   const segments  = rawSegments ?? []

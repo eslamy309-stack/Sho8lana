@@ -11,12 +11,13 @@ import {
 } from '@/lib/integration-gateway'
 import type { ApiKeyPermission, ApiKeyEnvironment } from '@/lib/integration-types'
 
-const supabase = createClient(
+const sb = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
 async function authenticate(req: NextRequest) {
+  const supabase = sb()
   const raw = extractApiKey(req.headers.get('authorization'))
   if (!raw) throw new Error('Missing API key')
   const keyHash = await hashApiKey(raw)
@@ -35,6 +36,7 @@ async function authenticate(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const supabase = sb()
   let authKey: Awaited<ReturnType<typeof authenticate>>
   try { authKey = await authenticate(req) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
@@ -54,6 +56,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = sb()
   let authKey: Awaited<ReturnType<typeof authenticate>>
   try { authKey = await authenticate(req) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }
@@ -104,6 +107,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const supabase = sb()
   let authKey: Awaited<ReturnType<typeof authenticate>>
   try { authKey = await authenticate(req) }
   catch (e) { return gatewayError(401, 'UNAUTHORIZED', (e as Error).message) }

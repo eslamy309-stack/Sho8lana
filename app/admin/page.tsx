@@ -34,6 +34,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
+  BarChart2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -72,6 +73,8 @@ interface Company {
   recruiters: number
   simulations: number
   joined: string
+  owner_id?: string
+  email?: string
 }
 
 interface Simulation {
@@ -192,26 +195,31 @@ function MetricCard({ label, value, sub, icon: Icon, trend }: { label: string; v
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
 function LoginScreen({ onAuth }: { onAuth: () => void }) {
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
 
   const handleLogin = async () => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/owner/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Incorrect password. Access denied.')
+      const { data, error: signInErr } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInErr || !data.user) {
+        setError(signInErr?.message ?? 'Invalid credentials.')
         return
       }
-      // Set the owner token cookie so the proxy lets us through on refresh
-      document.cookie = `sho8_owner_token=${data.token}; path=/; max-age=28800; SameSite=Strict`
+      // Verify super_admin role in profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single()
+      if (profile?.role !== 'super_admin') {
+        await supabase.auth.signOut()
+        setError('Access denied. This account does not have admin privileges.')
+        return
+      }
       sessionStorage.setItem('sho8_admin_authed', 'true')
       onAuth()
     } catch {
@@ -234,7 +242,17 @@ function LoginScreen({ onAuth }: { onAuth: () => void }) {
           </div>
           <div className="space-y-4">
             <div>
-              <label className="text-neutral-400 text-xs mb-1.5 block">Admin Password</label>
+              <label className="text-neutral-400 text-xs mb-1.5 block">Admin Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@sho8lana.com"
+                className="w-full bg-[#060D1F] border border-white/10 rounded-lg px-4 py-2.5 text-white text-base placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"
+              />
+            </div>
+            <div>
+              <label className="text-neutral-400 text-xs mb-1.5 block">Password</label>
               <div className="relative">
                 <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
                 <input
@@ -242,8 +260,8 @@ function LoginScreen({ onAuth }: { onAuth: () => void }) {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  placeholder="Enter admin password"
-                  className="w-full bg-[#060D1F] border border-white/10 rounded-lg px-4 py-2.5 pl-9 text-white text-sm placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"
+                  placeholder="••••••••"
+                  className="w-full bg-[#060D1F] border border-white/10 rounded-lg px-4 py-2.5 pl-9 text-white text-base placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"
                 />
               </div>
             </div>
@@ -588,7 +606,18 @@ function StudentsView() {
   })
 
   const updateStatus = async (id: string, status: Student['status']) => {
-    await supabase.from('profiles').update({ role: status === 'Banned' ? 'banned' : 'student' }).eq('id', id)
+    const student = students.find(s => s.id === id)
+    await supabase.from('profiles').update({ role: status === 'Banned' ? 'banned' : status === 'Suspended' ? 'suspended' : 'student' }).eq('id', id)
+    const { data: { session } } = await supabase.auth.getSession()
+    await supabase.from('audit_logs').insert([{
+      actor_email:   session?.user?.email ?? 'admin',
+      actor_role:    'super_admin',
+      action:        'user_update',
+      resource_type: 'profile',
+      resource_id:   id,
+      description:   `${status === 'Banned' ? '🚫 Banned' : status === 'Suspended' ? '⏸ Suspended' : '✅ Reactivated'} student: ${student?.name ?? id} (${student?.email ?? ''})`,
+      metadata:      { student_name: student?.name, student_email: student?.email, new_status: status },
+    }])
     setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s))
   }
 
@@ -679,7 +708,7 @@ function CompaniesView() {
 
   useEffect(() => {
     supabase.from('companies')
-      .select('id,name,industry,subscription_plan,status,created_at')
+      .select('id,name,industry,subscription_plan,status,created_at,owner_id,email')
       .order('created_at', { ascending: false })
       .limit(200)
       .then(({ data }) => {
@@ -692,17 +721,47 @@ function CompaniesView() {
           recruiters: 0,
           simulations: 0,
           joined: new Date(c.created_at as string).toLocaleDateString(),
+          owner_id: (c.owner_id as string) ?? undefined,
+          email: (c.email as string) ?? undefined,
         })))
         setLoading(false)
       })
   }, [])
 
   const updateStatus = async (id: string, status: Company['status']) => {
+    const company = companies.find(c => c.id === id)
     const dbStatus = status === 'Active' ? 'active' : status === 'Suspended' ? 'suspended' : 'pending'
     await supabase.from('companies').update({
       status: dbStatus,
       ...(dbStatus === 'active' ? { approved_at: new Date().toISOString(), approved_by: 'admin' } : {}),
     }).eq('id', id)
+
+    // Write audit log entry
+    const { data: { session } } = await supabase.auth.getSession()
+    await supabase.from('audit_logs').insert([{
+      actor_email:   session?.user?.email ?? 'admin',
+      actor_role:    'super_admin',
+      action:        'company_approval',
+      resource_type: 'company',
+      resource_id:   id,
+      description:   `${status === 'Active' ? '✅ Approved' : '🚫 Suspended'} company: ${company?.name ?? id}`,
+      metadata:      { company_name: company?.name, new_status: dbStatus },
+    }])
+
+    // Notify the company owner if owner_id is set
+    if (company?.owner_id) {
+      const isApproved = status === 'Active'
+      await supabase.from('notifications').insert([{
+        user_id:       company.owner_id,
+        type:          isApproved ? 'welcome' : 'general',
+        title:         isApproved ? 'Company Account Approved ✅' : 'Company Account Suspended',
+        body:          isApproved
+          ? `${company.name} has been approved. You can now post internships on Sho8lana.`
+          : `${company.name} has been suspended. Please contact support for more information.`,
+        action_screen: 'hrDashboard',
+      }])
+    }
+
     setCompanies(prev => prev.map(c => c.id === id ? { ...c, status } : c))
   }
 
@@ -870,10 +929,39 @@ function SimulationsView() {
 
 function PaymentsView() {
   const [tab, setTab] = useState<'student' | 'company'>('student')
-  const studentPayments: Payment[] = []
-  const companyPayments: Payment[] = []
-  const activeStudent = 0
-  const activeCompany = 0
+  const [studentPayments, setStudentPayments] = useState<Payment[]>([])
+  const [companyPayments, setCompanyPayments] = useState<Payment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('id,user_id,plan,status,amount_egp,next_billing_at,started_at,type,recruiter_count')
+        .order('started_at', { ascending: false })
+        .limit(200)
+      if (data) {
+        const all = data.map((r: Record<string, unknown>) => ({
+          id: String(r.id),
+          name: String(r.user_id ?? '').slice(0, 8) + '...',
+          plan: String(r.plan ?? 'Free'),
+          amount: r.amount_egp ? `EGP ${(r.amount_egp as number).toLocaleString()}` : 'EGP 0',
+          status: ((r.status as string) === 'active' ? 'Active' : 'Cancelled') as Payment['status'],
+          nextBilling: r.next_billing_at ? new Date(r.next_billing_at as string).toLocaleDateString() : '—',
+          started: r.started_at ? new Date(r.started_at as string).toLocaleDateString() : '—',
+          type: (r.type as string) === 'company' ? 'company' : 'student' as Payment['type'],
+          recruiters: (r.recruiter_count as number) ?? undefined,
+        }))
+        setStudentPayments(all.filter(p => p.type === 'student'))
+        setCompanyPayments(all.filter(p => p.type === 'company'))
+      }
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const activeStudent = studentPayments.filter(p => p.status === 'Active').length
+  const activeCompany = companyPayments.filter(p => p.status === 'Active').length
 
   return (
     <div className="space-y-5">
@@ -883,13 +971,13 @@ function PaymentsView() {
       </div>
 
       <div className="grid grid-cols-4 gap-4">
-        <MetricCard label="MRR" value="EGP 48,300" trend="up" />
-        <MetricCard label="Total Revenue (All Time)" value="EGP 289,400" />
-        <MetricCard label="Active Paid Subscriptions" value={activeStudent + activeCompany} />
-        <div className="bg-[#0D1526] rounded-xl border border-red-500/20 p-4">
-          <p className="text-neutral-500 text-xs mb-1">Failed Payments</p>
-          <p className="text-red-400 text-2xl font-bold">3</p>
-          <p className="text-red-500 text-xs mt-1">Requires attention</p>
+        <MetricCard label="Active Student Subs" value={loading ? '—' : activeStudent} trend={activeStudent > 0 ? 'up' : 'neutral'} />
+        <MetricCard label="Active Company Subs" value={loading ? '—' : activeCompany} trend={activeCompany > 0 ? 'up' : 'neutral'} />
+        <MetricCard label="Total Active Subscriptions" value={loading ? '—' : activeStudent + activeCompany} />
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 p-4">
+          <p className="text-neutral-500 text-xs mb-1">Stripe Integration</p>
+          <p className="text-amber-400 text-sm font-bold mt-2">Configure via .env</p>
+          <p className="text-neutral-600 text-xs mt-1">STRIPE_SECRET_KEY</p>
         </div>
       </div>
 
@@ -1441,12 +1529,195 @@ function EmergencyView() {
   )
 }
 
+// ─── Analytics View ───────────────────────────────────────────────────────────
+
+function AnalyticsView() {
+  type DayBucket = { label: string; students: number; companies: number; applications: number }
+  const [buckets, setBuckets] = useState<DayBucket[]>([])
+  const [totals, setTotals]   = useState({ dau: 0, wau: 0, mau: 0 })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const now     = new Date()
+      const days14  = new Date(now); days14.setDate(now.getDate() - 13)
+      const days7   = new Date(now); days7.setDate(now.getDate() - 7)
+      const days1   = new Date(now); days1.setDate(now.getDate() - 1)
+      const iso14   = days14.toISOString()
+      const iso7    = days7.toISOString()
+      const iso1    = days1.toISOString()
+
+      const [
+        { data: students14 },
+        { data: companies14 },
+        { data: apps14 },
+        { count: dau },
+        { count: wau },
+        { count: mau },
+      ] = await Promise.all([
+        supabase.from('profiles').select('created_at').eq('role', 'student').gte('created_at', iso14),
+        supabase.from('companies').select('created_at').gte('created_at', iso14),
+        supabase.from('applications').select('applied_at').gte('applied_at', iso14),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').gte('created_at', iso1),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').gte('created_at', iso7),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+      ])
+
+      // Build 14-day buckets
+      const dayLabels: DayBucket[] = Array.from({ length: 14 }, (_, i) => {
+        const d = new Date(days14)
+        d.setDate(d.getDate() + i)
+        return { label: d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }), students: 0, companies: 0, applications: 0 }
+      })
+
+      const toKey = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+
+      ;(students14 ?? []).forEach(r => {
+        const idx = dayLabels.findIndex(b => b.label === toKey(r.created_at))
+        if (idx >= 0) dayLabels[idx].students++
+      })
+      ;(companies14 ?? []).forEach(r => {
+        const idx = dayLabels.findIndex(b => b.label === toKey(r.created_at))
+        if (idx >= 0) dayLabels[idx].companies++
+      })
+      ;(apps14 ?? []).forEach(r => {
+        const idx = dayLabels.findIndex(b => b.label === toKey(r.applied_at))
+        if (idx >= 0) dayLabels[idx].applications++
+      })
+
+      setBuckets(dayLabels)
+      setTotals({ dau: dau ?? 0, wau: wau ?? 0, mau: mau ?? 0 })
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  function BarChart({ data, color, label }: { data: number[]; color: string; label: string }) {
+    const max = Math.max(...data, 1)
+    return (
+      <div>
+        <p className="text-neutral-500 text-xs font-medium mb-3">{label}</p>
+        <div className="flex items-end gap-1 h-28">
+          {data.map((v, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+              <div
+                title={`${v}`}
+                className="w-full rounded-t-sm transition-opacity hover:opacity-80 cursor-default"
+                style={{ height: `${Math.max((v / max) * 100, v > 0 ? 8 : 2)}%`, background: color }}
+              />
+              {i % 2 === 0 && (
+                <span className="text-[9px] text-neutral-700 -rotate-45 origin-top-left hidden sm:block">
+                  {buckets[i]?.label ?? ''}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-white text-xl font-bold mb-1">Analytics</h2>
+        <p className="text-neutral-500 text-sm">Growth trends and engagement metrics — last 14 days</p>
+      </div>
+
+      {/* DAU / WAU / MAU */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 p-4">
+          <p className="text-neutral-500 text-xs mb-1">Daily Active Users (DAU)</p>
+          <p className="text-white text-3xl font-bold">{loading ? '—' : totals.dau.toLocaleString()}</p>
+          <p className="text-neutral-600 text-xs mt-1">New signups today</p>
+        </div>
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 p-4">
+          <p className="text-neutral-500 text-xs mb-1">Weekly (WAU)</p>
+          <p className="text-white text-3xl font-bold">{loading ? '—' : totals.wau.toLocaleString()}</p>
+          <p className="text-neutral-600 text-xs mt-1">New signups last 7 days</p>
+        </div>
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 p-4">
+          <p className="text-neutral-500 text-xs mb-1">Monthly (MAU)</p>
+          <p className="text-white text-3xl font-bold">{loading ? '—' : totals.mau.toLocaleString()}</p>
+          <p className="text-neutral-600 text-xs mt-1">Total registered students</p>
+        </div>
+      </div>
+
+      {/* Charts */}
+      {loading ? (
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 p-8 text-center text-neutral-600 animate-pulse text-sm">Loading analytics data...</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          <div className="bg-[#0D1526] rounded-xl border border-white/5 p-5">
+            <BarChart data={buckets.map(b => b.students)} color="#6366f1" label="Student Registrations — Last 14 Days" />
+            <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+              <span className="text-neutral-500 text-xs">Total this period</span>
+              <span className="text-indigo-400 text-sm font-bold">{buckets.reduce((s, b) => s + b.students, 0)} new students</span>
+            </div>
+          </div>
+
+          <div className="bg-[#0D1526] rounded-xl border border-white/5 p-5">
+            <BarChart data={buckets.map(b => b.applications)} color="#10b981" label="Applications Submitted — Last 14 Days" />
+            <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+              <span className="text-neutral-500 text-xs">Total this period</span>
+              <span className="text-emerald-400 text-sm font-bold">{buckets.reduce((s, b) => s + b.applications, 0)} applications</span>
+            </div>
+          </div>
+
+          <div className="bg-[#0D1526] rounded-xl border border-white/5 p-5">
+            <BarChart data={buckets.map(b => b.companies)} color="#f59e0b" label="Company Registrations — Last 14 Days" />
+            <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+              <span className="text-neutral-500 text-xs">Total this period</span>
+              <span className="text-amber-400 text-sm font-bold">{buckets.reduce((s, b) => s + b.companies, 0)} new companies</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Day-by-day table */}
+      {!loading && (
+        <div className="bg-[#0D1526] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-5 py-3 border-b border-white/[0.04]">
+            <h3 className="text-white font-semibold text-sm">Daily Breakdown</h3>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.04]">
+                {['Date', 'New Students', 'Applications', 'New Companies'].map(h => (
+                  <th key={h} className="text-left text-neutral-500 text-xs font-medium px-5 py-3">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...buckets].reverse().map((b, i) => (
+                <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                  <td className="px-5 py-2.5 text-neutral-400 text-xs font-mono">{b.label}</td>
+                  <td className="px-5 py-2.5">
+                    <span className="text-indigo-400 text-sm font-semibold">{b.students}</span>
+                  </td>
+                  <td className="px-5 py-2.5">
+                    <span className="text-emerald-400 text-sm font-semibold">{b.applications}</span>
+                  </td>
+                  <td className="px-5 py-2.5">
+                    <span className="text-amber-400 text-sm font-semibold">{b.companies}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Admin Page ─────────────────────────────────────────────────────────
 
 type NavItem = { id: string; label: string; icon: React.ElementType }
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'overview',   label: 'Overview',         icon: LayoutDashboard },
+  { id: 'analytics',  label: 'Analytics',        icon: BarChart2 },
   { id: 'students',   label: 'Students',          icon: Users },
   { id: 'companies',  label: 'Companies',         icon: Building2 },
   { id: 'simulations',label: 'Simulations',       icon: FlaskConical },
@@ -1583,16 +1854,17 @@ export default function AdminPage() {
 
   const renderView = () => {
     switch (activeNav) {
-      case 'overview': return <OverviewView />
-      case 'students': return <StudentsView />
-      case 'companies': return <CompaniesView />
+      case 'overview':    return <OverviewView />
+      case 'analytics':   return <AnalyticsView />
+      case 'students':    return <StudentsView />
+      case 'companies':   return <CompaniesView />
       case 'simulations': return <SimulationsView />
-      case 'payments': return <PaymentsView />
-      case 'audit': return <AuditLogView />
-      case 'support': return <SupportView />
-      case 'health':     return <PlatformHealthView />
-      case 'emergency':  return <EmergencyView />
-      default:           return <OverviewView />
+      case 'payments':    return <PaymentsView />
+      case 'audit':       return <AuditLogView />
+      case 'support':     return <SupportView />
+      case 'health':      return <PlatformHealthView />
+      case 'emergency':   return <EmergencyView />
+      default:            return <OverviewView />
     }
   }
 

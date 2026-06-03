@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { UserProfile, DocumentFile } from './types'
+import type { UserProfile, DocumentFile, AppNotification, NotificationType, Screen } from './types'
 
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -132,6 +132,44 @@ export async function sbLoadProfile(userId: string): Promise<Partial<UserProfile
   }
 }
 
+// ── Job local_id → UUID mapping ───────────────────────────────────────────────
+// Returns { [local_id]: uuid } for all seeded jobs so the frontend can pass
+// real job_id UUIDs to /api/applications instead of null.
+
+export async function sbLoadJobDbIds(): Promise<Record<number, string>> {
+  const { data } = await supabase
+    .from('jobs')
+    .select('id, local_id')
+    .not('local_id', 'is', null)
+  if (!data) return {}
+  const map: Record<number, string> = {}
+  for (const row of data) {
+    if (row.local_id != null) map[row.local_id as number] = row.id as string
+  }
+  return map
+}
+
+// ── Saved jobs sync ───────────────────────────────────────────────────────────
+// Requires a `saved_job_ids` JSONB column on the profiles table:
+//   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS saved_job_ids jsonb DEFAULT '[]';
+
+export async function sbSaveSavedJobs(userId: string, jobIds: (string | number)[]): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ saved_job_ids: jobIds })
+    .eq('id', userId)
+  if (error) console.warn('Could not sync saved jobs:', error.message)
+}
+
+export async function sbLoadSavedJobs(userId: string): Promise<(string | number)[]> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('saved_job_ids')
+    .eq('id', userId)
+    .single()
+  return (data?.saved_job_ids as (string | number)[]) ?? []
+}
+
 // ── Document storage ──────────────────────────────────────────────────────────
 
 export async function sbUploadDocument(
@@ -197,4 +235,41 @@ export async function sbLoadDocuments(userId: string): Promise<DocumentFile[]> {
     status: 'uploaded' as const,
     storageType: 'supabase' as const,
   }))
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+export async function sbLoadNotifications(userId: string): Promise<AppNotification[]> {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error || !data) return []
+  return data.map(row => ({
+    id: row.id as string,
+    type: (row.type as NotificationType) ?? 'general',
+    title: row.title as string,
+    body: row.body as string,
+    read: row.read as boolean,
+    createdAt: row.created_at as string,
+    actionScreen: (row.action_screen as Screen) ?? undefined,
+  }))
+}
+
+export async function sbMarkNotificationRead(userId: string, notificationId: string): Promise<void> {
+  await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('id', notificationId)
+    .eq('user_id', userId)
+}
+
+export async function sbMarkAllNotificationsRead(userId: string): Promise<void> {
+  await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('user_id', userId)
+    .eq('read', false)
 }

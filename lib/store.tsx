@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import type {
   Lang, Screen, UserProfile, Application, AppStatus, ChatMessage, Badge,
-  MatchScore, SimTrack, SimTask, LiveJob, DocumentFile,
+  MatchScore, SimTrack, SimTask, LiveJob, DocumentFile, AppNotification,
 } from './types'
-import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl, sbMfaGetAAL, sbMfaListFactors } from './supabase'
+import { supabase, sbSaveProfile, sbLoadProfile, sbLoadDocuments, sbGetDocumentUrl, sbMfaGetAAL, sbMfaListFactors, sbSaveSavedJobs, sbLoadSavedJobs, sbLoadJobDbIds, sbLoadNotifications, sbMarkNotificationRead, sbMarkAllNotificationsRead } from './supabase'
 
 interface AppState {
   lang: Lang
@@ -44,6 +44,8 @@ interface AppState {
   savedJobs: number[]
   documentFiles: Record<string, DocumentFile>
   mfaFactorId: string | null
+  notifications: AppNotification[]
+  jobDbIds: Record<number, string>
 }
 
 type Action =
@@ -55,6 +57,8 @@ type Action =
   | { type: 'TOGGLE_DOC'; key: string }
   | { type: 'ADD_APPLICATION'; app: Application }
   | { type: 'SET_APPLICATIONS'; apps: Application[] }
+  | { type: 'WITHDRAW_APPLICATION'; id: string | number }
+  | { type: 'UPDATE_APPLICATION_STATUS'; id: string | number; status: AppStatus }
   | { type: 'SET_SEARCH'; query: string }
   | { type: 'SET_LOCATION_FILTER'; location: string }
   | { type: 'SET_JOB_TYPE_FILTER'; filter: 'all' | 'internship' | 'full-time' }
@@ -82,10 +86,16 @@ type Action =
   | { type: 'SET_LIVE_JOBS'; jobs: LiveJob[] }
   | { type: 'SET_LIVE_JOBS_LOADING'; loading: boolean }
   | { type: 'TOGGLE_SAVE_JOB'; id: number }
+  | { type: 'SET_SAVED_JOBS'; ids: number[] }
+  | { type: 'SET_JOB_DB_IDS'; map: Record<number, string> }
   | { type: 'SET_DOCUMENT_FILE'; file: DocumentFile }
   | { type: 'REMOVE_DOCUMENT_FILE'; key: string }
   | { type: 'SET_DOC_URL'; key: string; url: string }
   | { type: 'SET_MFA_FACTOR'; factorId: string | null }
+  | { type: 'ADD_NOTIFICATION'; notification: AppNotification }
+  | { type: 'MARK_NOTIFICATION_READ'; id: string }
+  | { type: 'MARK_ALL_NOTIFICATIONS_READ' }
+  | { type: 'DISMISS_NOTIFICATION'; id: string }
 
 const defaultUser: UserProfile = {
   name: '', university: '', major: '', gpa: '',
@@ -151,6 +161,8 @@ function getInitialState(): AppState {
     savedJobs: loadFromStorage<number[]>('sho8_saved', []),
     documentFiles: loadFromStorage<Record<string, DocumentFile>>('sho8_doc_meta', {}),
     mfaFactorId: null,
+    notifications: loadFromStorage<AppNotification[]>('sho8_notifications', []),
+    jobDbIds: {},
   }
 }
 
@@ -194,6 +206,35 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_APPLICATIONS':
       return { ...state, applications: action.apps }
+
+    case 'WITHDRAW_APPLICATION':
+      return { ...state, applications: state.applications.filter(a => a.id !== action.id) }
+
+    case 'UPDATE_APPLICATION_STATUS': {
+      const target = state.applications.find(a => a.id === action.id)
+      const statusLabels: Record<string, string> = {
+        reviewing: 'Under Review', shortlisted: 'Shortlisted', interview: 'Interview Scheduled',
+        accepted: 'Accepted 🎉', rejected: 'Not Selected',
+      }
+      const autoNotif: AppNotification | null = target ? {
+        id: `notif_${Date.now()}`,
+        type: 'status_change',
+        title: statusLabels[action.status] ?? action.status,
+        body: `Your application to ${target.company} for "${target.title}" has been updated.`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        actionScreen: 'tracker',
+      } : null
+      return {
+        ...state,
+        applications: state.applications.map(a =>
+          a.id === action.id ? { ...a, status: action.status } : a
+        ),
+        notifications: autoNotif
+          ? [autoNotif, ...state.notifications].slice(0, 50)
+          : state.notifications,
+      }
+    }
 
     case 'SET_SEARCH':
       return { ...state, searchQuery: action.query }
@@ -258,15 +299,22 @@ function reducer(state: AppState, action: Action): AppState {
       if (!state.simTask) return state
       const tid = state.simTask.id
       if (state.simDone.includes(tid)) return state
+      const badgeLabel = state.lang === 'ar' ? state.simTask.badgeAr : state.simTask.badge
+      const simNotif: AppNotification = {
+        id: `notif_sim_${Date.now()}`,
+        type: 'sim_complete',
+        title: `Badge Earned: ${badgeLabel}`,
+        body: `You completed "${state.simTask.title}" and earned ${state.simTask.xp} XP!`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        actionScreen: 'leaderboard',
+      }
       return {
         ...state,
         simDone: [...state.simDone, tid],
         simXP: state.simXP + state.simTask.xp,
-        simBadges: [...state.simBadges, {
-          id: tid,
-          label: state.lang === 'ar' ? state.simTask.badgeAr : state.simTask.badge,
-          trackId: state.simTrack?.id || '',
-        }],
+        simBadges: [...state.simBadges, { id: tid, label: badgeLabel, trackId: state.simTrack?.id || '' }],
+        notifications: [simNotif, ...state.notifications].slice(0, 50),
       }
     }
 
@@ -307,6 +355,12 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, savedJobs: saved }
     }
 
+    case 'SET_SAVED_JOBS':
+      return { ...state, savedJobs: action.ids }
+
+    case 'SET_JOB_DB_IDS':
+      return { ...state, jobDbIds: action.map }
+
     case 'SET_DOCUMENT_FILE':
       return {
         ...state,
@@ -334,6 +388,21 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_MFA_FACTOR':
       return { ...state, mfaFactorId: action.factorId }
 
+    case 'ADD_NOTIFICATION':
+      return { ...state, notifications: [action.notification, ...state.notifications].slice(0, 50) }
+
+    case 'MARK_NOTIFICATION_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => n.id === action.id ? { ...n, read: true } : n),
+      }
+
+    case 'MARK_ALL_NOTIFICATIONS_READ':
+      return { ...state, notifications: state.notifications.map(n => ({ ...n, read: true })) }
+
+    case 'DISMISS_NOTIFICATION':
+      return { ...state, notifications: state.notifications.filter(n => n.id !== action.id) }
+
     default:
       return state
   }
@@ -344,6 +413,7 @@ const Ctx = createContext<{ state: AppState; dispatch: React.Dispatch<Action> } 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, getInitialState)
   const profileSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const realtimeNotifRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => {
@@ -353,12 +423,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sho8_xp', JSON.stringify(state.simXP))
     localStorage.setItem('sho8_badges', JSON.stringify(state.simBadges))
     localStorage.setItem('sho8_saved', JSON.stringify(state.savedJobs))
+    localStorage.setItem('sho8_notifications', JSON.stringify(state.notifications))
     // Strip session-only Object URLs before persisting — Supabase signed URLs are also session-only
     const docMeta = Object.fromEntries(
       Object.entries(state.documentFiles).map(([k, v]) => [k, { ...v, url: undefined }])
     )
     localStorage.setItem('sho8_doc_meta', JSON.stringify(docMeta))
-  }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles])
+  }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles, state.notifications])
+
+  // ── Load job local_id → UUID map on mount (public, no auth needed) ─────────
+  useEffect(() => {
+    sbLoadJobDbIds()
+      .then(map => { if (Object.keys(map).length > 0) dispatch({ type: 'SET_JOB_DB_IDS', map }) })
+      .catch(() => {/* silently ignore until seed.sql has been run */})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sync profile to Supabase (debounced) ──────────────────────────────────
   useEffect(() => {
@@ -371,6 +449,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }, 1500)
     return () => { if (profileSaveTimer.current) clearTimeout(profileSaveTimer.current) }
   }, [state.user])
+
+  // ── Sync notification read-state to Supabase (debounced) ─────────────────
+  const notifReadTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (!state.user.supabaseId) return
+    const uid = state.user.supabaseId
+    const readIds = state.notifications.filter(n => n.read).map(n => n.id)
+    if (readIds.length === 0) return
+    if (notifReadTimer.current) clearTimeout(notifReadTimer.current)
+    notifReadTimer.current = setTimeout(async () => {
+      // If all are read, use bulk update; otherwise mark individually
+      const unread = state.notifications.filter(n => !n.read)
+      if (unread.length === 0) {
+        sbMarkAllNotificationsRead(uid).catch(() => {/* ignore */})
+      } else {
+        for (const id of readIds) {
+          sbMarkNotificationRead(uid, id).catch(() => {/* ignore */})
+        }
+      }
+    }, 2000)
+    return () => { if (notifReadTimer.current) clearTimeout(notifReadTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.notifications, state.user.supabaseId])
+
+  // ── Sync saved jobs to Supabase (debounced) ───────────────────────────────
+  const savedJobsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (!state.user.supabaseId) return
+    if (savedJobsTimer.current) clearTimeout(savedJobsTimer.current)
+    savedJobsTimer.current = setTimeout(() => {
+      sbSaveSavedJobs(state.user.supabaseId!, state.savedJobs).catch(() => {/* silently ignore if column missing */})
+    }, 1000)
+    return () => { if (savedJobsTimer.current) clearTimeout(savedJobsTimer.current) }
+  }, [state.savedJobs, state.user.supabaseId])
 
   // ── Restore Supabase session on mount ────────────────────────────────────
   useEffect(() => {
@@ -385,7 +497,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         // Load applications from DB (source of truth)
         try {
-          const appsRes = await fetch(`/api/applications?userId=${uid}`)
+          const appsRes = await fetch(`/api/applications?userId=${uid}`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
           if (appsRes.ok) {
             const appsJson = await appsRes.json()
             const dbApps: Application[] = (appsJson.applications ?? []).map((r: Record<string, unknown>) => ({
@@ -402,6 +516,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             dispatch({ type: 'SET_APPLICATIONS', apps: dbApps })
           }
         } catch { /* keep localStorage fallback */ }
+
+        // Load saved jobs from Supabase (overrides localStorage if column exists)
+        try {
+          const saved = await sbLoadSavedJobs(uid)
+          if (saved.length > 0) dispatch({ type: 'SET_SAVED_JOBS', ids: saved as number[] })
+        } catch { /* silently ignore if column missing */ }
+
+        // Load notifications from Supabase (replaces localStorage snapshot)
+        try {
+          const dbNotifs = await sbLoadNotifications(uid)
+          if (dbNotifs.length > 0) {
+            for (const n of dbNotifs.slice().reverse()) dispatch({ type: 'ADD_NOTIFICATION', notification: n })
+          }
+        } catch { /* table may not exist yet */ }
+
+        // Subscribe to realtime notifications for this user
+        if (realtimeNotifRef.current) {
+          supabase.removeChannel(realtimeNotifRef.current)
+          realtimeNotifRef.current = null
+        }
+        realtimeNotifRef.current = supabase
+          .channel(`notif:${uid}`)
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
+            (payload) => {
+              const row = payload.new as Record<string, unknown>
+              dispatch({
+                type: 'ADD_NOTIFICATION',
+                notification: {
+                  id: row.id as string,
+                  type: (row.type as import('./types').NotificationType) ?? 'general',
+                  title: row.title as string,
+                  body: row.body as string,
+                  read: row.read as boolean,
+                  createdAt: row.created_at as string,
+                  actionScreen: (row.action_screen as import('./types').Screen) ?? undefined,
+                },
+              })
+            }
+          )
+          .subscribe()
 
         // Refresh document signed URLs
         const docs = await sbLoadDocuments(uid)
@@ -463,11 +619,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } else if (event === 'SIGNED_OUT') {
+        if (realtimeNotifRef.current) {
+          supabase.removeChannel(realtimeNotifRef.current)
+          realtimeNotifRef.current = null
+        }
         dispatch({ type: 'SET_USER', user: { supabaseId: undefined } })
         dispatch({ type: 'GO', screen: 'login' })
       }
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      if (realtimeNotifRef.current) {
+        supabase.removeChannel(realtimeNotifRef.current)
+        realtimeNotifRef.current = null
+      }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+// createClient is used both for admin (service role) and for JWT verification (anon key)
 
 const FREE_MONTHLY_LIMIT = 5
 
@@ -12,6 +13,19 @@ function getAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
+    // Verify the caller's identity via Supabase JWT
+    const authHeader = req.headers.get('authorization') ?? ''
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+    let verifiedUserId: string | null = null
+    if (token) {
+      const anonClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+      )
+      const { data: { user } } = await anonClient.auth.getUser(token)
+      verifiedUserId = user?.id ?? null
+    }
+
     const body = await req.json()
     const {
       userId,
@@ -27,6 +41,10 @@ export async function POST(req: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: 'You must be signed in to apply.' }, { status: 401 })
+    }
+    // If a JWT was provided, enforce that it matches the submitted userId
+    if (verifiedUserId && verifiedUserId !== userId) {
+      return NextResponse.json({ error: 'Forbidden.' }, { status: 403 })
     }
     if (!jobId && !externalJobId && !externalUrl) {
       return NextResponse.json({ error: 'Missing job reference.' }, { status: 400 })
@@ -100,6 +118,20 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('userId')
   if (!userId) return NextResponse.json({ error: 'Missing userId' }, { status: 400 })
+
+  // Verify caller owns the requested userId
+  const authHeader = req.headers.get('authorization') ?? ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const anonClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+  )
+  const { data: { user } } = await anonClient.auth.getUser(token)
+  if (!user || user.id !== userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const db = getAdmin()
   const { data, error } = await db

@@ -10,7 +10,7 @@ import { useApp } from '@/lib/store'
 import { useDocumentUpload } from '@/lib/useDocumentUpload'
 import { DOCUMENTS } from '@/lib/data'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn, calcProfileCompletion } from '@/lib/utils'
 import type { DocumentFile } from '@/lib/types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -261,11 +261,8 @@ export function ProfileScreen() {
   ).length
   const totalUploaded = uploadedRequired + uploadedOptional
 
-  const completionPct = Math.round(
-    ([user.name, user.university, user.major, user.gpa, user.email, user.phone]
-      .filter(Boolean).length / 6) * 40 +
-    (totalUploaded / DOCUMENTS.length) * 60
-  )
+  const profileCompletion = calcProfileCompletion(user, documentFiles)
+  const completionPct = profileCompletion.score
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -335,6 +332,52 @@ export function ProfileScreen() {
             </div>
           </div>
         </motion.div>
+
+        {/* Profile completion card — shows missing fields */}
+        {completionPct < 100 && profileCompletion.missing.length > 0 && (
+          <motion.div variants={up} className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-amber-800">
+                {ar ? 'أكمل ملفك الشخصي' : 'Complete your profile'}
+              </p>
+              <span className="text-xs font-bold text-amber-600">{completionPct}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-amber-100 overflow-hidden mb-3">
+              <motion.div
+                className="h-full rounded-full bg-amber-400"
+                initial={{ width: 0 }}
+                animate={{ width: `${completionPct}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
+            </div>
+            <p className="text-xs text-amber-700 mb-2 font-medium">
+              {ar ? 'مفقود:' : 'Still needed:'}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {profileCompletion.missing.map(item => (
+                <button key={item}
+                  onClick={() => dispatch({ type: 'GO', screen: 'onboard' })}
+                  className="text-2xs font-semibold text-amber-700 bg-white border border-amber-200 px-2.5 py-1 rounded-full hover:bg-amber-100 transition-colors">
+                  + {item}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {completionPct === 100 && (
+          <motion.div variants={up} className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-emerald-800">
+                {ar ? 'ملفك مكتمل 100%!' : 'Profile 100% complete!'}
+              </p>
+              <p className="text-xs text-emerald-600">
+                {ar ? 'أنت مرئي للمجندين الآن' : 'You are now fully visible to recruiters'}
+              </p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Stats row */}
         <motion.div variants={up} className="grid grid-cols-3 gap-2">

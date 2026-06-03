@@ -7,12 +7,13 @@ import { createClient } from '@supabase/supabase-js'
 import { verifyWebhookSignature, generateSessionId, gatewayError, gatewaySuccess } from '@/lib/integration-gateway'
 import { validateSimulationResult, calculateXpReward } from '@/lib/simulation-contract'
 
-const supabase = createClient(
+const sb = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
 export async function POST(req: NextRequest) {
+  const supabase = sb()
   const body      = await req.text()
   const sigHeader = req.headers.get('x-sho8lana-signature') ?? req.headers.get('x-webhook-signature') ?? ''
   const companyId = req.headers.get('x-company-id') ?? ''

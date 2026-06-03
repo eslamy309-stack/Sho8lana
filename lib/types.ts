@@ -14,7 +14,7 @@ export type Screen =
   | 'talentProfile' | 'internshipHub' | 'careerAnalytics'
   | 'simulationUploadHub'
 
-export type AppStatus = 'applied' | 'reviewing' | 'interview' | 'offer' | 'rejected'
+export type AppStatus = 'applied' | 'reviewing' | 'shortlisted' | 'interview' | 'accepted' | 'rejected'
 
 export interface LatLng { lat: number; lng: number }
 
@@ -278,4 +278,16 @@ export interface LiveJob {
   url: string
   source: 'linkedin' | 'wuzzuf' | 'indeed'
   type: string
+}
+
+export type NotificationType = 'status_change' | 'sim_complete' | 'profile_reminder' | 'new_match' | 'general' | 'new_application' | 'new_job' | 'welcome'
+
+export interface AppNotification {
+  id: string
+  type: NotificationType
+  title: string
+  body: string
+  read: boolean
+  createdAt: string   // ISO date string
+  actionScreen?: Screen
 }
