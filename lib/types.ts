@@ -14,7 +14,34 @@ export type Screen =
   | 'talentProfile' | 'internshipHub' | 'careerAnalytics'
   | 'simulationUploadHub'
   | 'forageHub'
-  | 'forageHub'
+  | 'inbox' | 'chat'
+
+// ── Messaging ─────────────────────────────────────────────────────────────────
+// ForageProgram & ForageCategory types live in @/lib/forage-programs
+
+export interface Conversation {
+  id: string
+  student_id: string
+  company_id: string
+  job_id:      string | null
+  job_title:   string | null
+  company_name: string | null
+  student_name: string | null
+  last_message: string | null
+  last_at:      string
+  unread_student: number
+  unread_company: number
+  created_at:   string
+}
+
+export interface DirectMessage {
+  id:         string
+  sender_id:  string
+  content:    string
+  read:       boolean
+  created_at: string
+  conversation_id?: string
+}
 
 export type AppStatus = 'applied' | 'reviewing' | 'shortlisted' | 'interview' | 'accepted' | 'rejected'
 

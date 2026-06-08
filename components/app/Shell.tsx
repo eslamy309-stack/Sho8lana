@@ -49,13 +49,15 @@ const InternshipHubScreen       = lazy(() => import('./screens/InternshipHubScre
 const CareerAnalyticsScreen     = lazy(() => import('./screens/CareerAnalyticsScreen').then(m => ({ default: m.CareerAnalyticsScreen })))
 const SimulationUploadHubScreen = lazy(() => import('./screens/SimulationUploadHubScreen').then(m => ({ default: m.SimulationUploadHubScreen })))
 const ForageHubScreen           = lazy(() => import('./screens/ForageHubScreen').then(m => ({ default: m.ForageHubScreen })))
+const InboxScreen               = lazy(() => import('./screens/InboxScreen').then(m => ({ default: m.InboxScreen })))
+const ChatScreen                = lazy(() => import('./screens/ChatScreen').then(m => ({ default: m.ChatScreen })))
 
 // ── Nav tabs shared between mobile BottomNav and desktop TopNav ───────────────
 const NAV_TABS: { id: Screen; icon: React.ElementType; labelEn: string; labelAr: string }[] = [
   { id: 'home',        icon: Home,          labelEn: 'Home',    labelAr: 'الرئيسية' },
   { id: 'leaderboard', icon: Trophy,        labelEn: 'Ranks',   labelAr: 'الترتيب'  },
   { id: 'sim',         icon: PlayCircle,    labelEn: 'Practice',labelAr: 'تدريب'    },
-  { id: 'ai',          icon: MessageCircle, labelEn: 'AI',      labelAr: 'ذكاء'     },
+  { id: 'inbox',       icon: MessageCircle, labelEn: 'Messages',labelAr: 'الرسائل'  },
   { id: 'profile',     icon: User,          labelEn: 'Profile', labelAr: 'الملف'    },
 ]
 
@@ -129,7 +131,7 @@ function ScreenFallback() {
   )
 }
 
-const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'ai', 'profile'] as const
+const NAV_SCREENS = ['home', 'leaderboard', 'sim', 'inbox', 'profile'] as const
 
 // Screens only accessible to company/admin roles
 const COMPANY_SCREENS = new Set([
@@ -194,6 +196,8 @@ function ScreenRouter() {
     careerAnalytics:        <CareerAnalyticsScreen />,
     simulationUploadHub:    <SimulationUploadHubScreen />,
     forageHub:              <ForageHubScreen />,
+    inbox:                  <InboxScreen />,
+    chat:                   <ChatScreen />,
   }
 
   const unreadCount = state.notifications.filter(n => !n.read).length

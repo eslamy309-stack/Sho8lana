@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Search, Globe, Wifi, MapPin, Star, Zap, Map, Bookmark,
   BookmarkCheck, Building2, ExternalLink, ChevronRight, ChevronLeft,
-  TrendingUp, Briefcase, BarChart2, Send, Check, Loader2,
+  TrendingUp, Briefcase, BarChart2, Send, Check, Loader2, MessageCircle,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { COMPANIES, JOBS, SOURCE_CONFIG } from '@/lib/data'
@@ -724,11 +724,30 @@ export function HomeScreen() {
                           <span className="text-2xs text-neutral-400">{formatTimeAgo(j.created_at)}</span>
                         </div>
                         {liveApplyError[j.id] && <p className="text-xs text-red-500 mt-2">{liveApplyError[j.id]}</p>}
-                        <div className="mt-3">
+                        <div className="mt-3 flex items-center gap-2">
                           {applied ? (
-                            <span className="flex items-center gap-1 text-xs font-semibold text-success-600">
-                              <Check className="w-3.5 h-3.5" /> {ar ? 'تم التقديم ✓' : 'Applied ✓'}
-                            </span>
+                            <>
+                              <span className="flex items-center gap-1 text-xs font-semibold text-success-600">
+                                <Check className="w-3.5 h-3.5" /> {ar ? 'تم التقديم ✓' : 'Applied ✓'}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  sessionStorage.setItem('sho8_chat_conv', JSON.stringify({
+                                    id: `new-${j.id}`, student_id: state.user.supabaseId,
+                                    company_id: null, job_id: j.id,
+                                    job_title: j.title, company_name: j.company_name,
+                                    student_name: state.user.name,
+                                    last_message: null, last_at: new Date().toISOString(),
+                                    unread_student: 0, unread_company: 0, created_at: new Date().toISOString(),
+                                  }))
+                                  dispatch({ type: 'GO', screen: 'inbox' })
+                                }}
+                                className="flex items-center gap-1 text-xs text-brand-600 font-medium"
+                              >
+                                <MessageCircle className="w-3 h-3" />
+                                {ar ? 'رسالة' : 'Message'}
+                              </button>
+                            </>
                           ) : (
                             <button
                               onClick={() => applyToDbJob(j)}

@@ -832,6 +832,145 @@ function CompaniesView() {
   )
 }
 
+// ─── Applications View ────────────────────────────────────────────────────────
+interface AdminApp {
+  id: string; user_id: string; job_title: string; company: string
+  status: string; applied_at: string; source: string; external_url: string | null
+  profiles: { name: string; email: string } | null
+}
+
+function ApplicationsView() {
+  const [apps, setApps]       = useState<AdminApp[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch]   = useState('')
+  const [statusF, setStatusF] = useState('All')
+
+  useEffect(() => {
+    supabase
+      .from('applications')
+      .select('id,user_id,job_title,company,status,applied_at,source,external_url,profiles(name,email)')
+      .order('applied_at', { ascending: false })
+      .limit(300)
+      .then(({ data }) => {
+        setApps((data ?? []) as unknown as AdminApp[])
+        setLoading(false)
+      })
+  }, [])
+
+  const STATUS_COLORS: Record<string, string> = {
+    applied:     'bg-neutral-700/50 text-neutral-300',
+    reviewing:   'bg-blue-600/20 text-blue-400',
+    shortlisted: 'bg-purple-600/20 text-purple-400',
+    interview:   'bg-amber-600/20 text-amber-300',
+    accepted:    'bg-emerald-600/20 text-emerald-400',
+    rejected:    'bg-red-600/20 text-red-400',
+  }
+
+  const filtered = apps.filter(a => {
+    const q = search.toLowerCase()
+    const matchQ = !q || a.job_title?.toLowerCase().includes(q) || a.company?.toLowerCase().includes(q)
+      || (a.profiles?.name ?? '').toLowerCase().includes(q)
+    const matchS = statusF === 'All' || a.status === statusF.toLowerCase()
+    return matchQ && matchS
+  })
+
+  const statuses = ['All', 'Applied', 'Reviewing', 'Shortlisted', 'Interview', 'Accepted', 'Rejected']
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-white text-xl font-bold">Applications</h2>
+          <p className="text-neutral-500 text-sm mt-0.5">{apps.length} total applications across the platform</p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold text-white">{apps.length}</p>
+          <p className="text-xs text-neutral-500">Total</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap">
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search student, job, company…"
+          className="flex-1 min-w-[180px] bg-[#0D1526] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 outline-none focus:border-indigo-500/50"
+        />
+        <select
+          value={statusF}
+          onChange={e => setStatusF(e.target.value)}
+          className="bg-[#0D1526] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50"
+        >
+          {statuses.map(s => <option key={s}>{s}</option>)}
+        </select>
+      </div>
+
+      {/* Counts by status */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        {['applied', 'reviewing', 'shortlisted', 'interview', 'accepted', 'rejected'].map(s => (
+          <button
+            key={s}
+            onClick={() => setStatusF(s === statusF.toLowerCase() ? 'All' : s.charAt(0).toUpperCase() + s.slice(1))}
+            className="bg-[#0D1526] rounded-xl p-3 border border-white/5 text-center hover:border-white/10 transition-colors"
+          >
+            <p className="text-lg font-bold text-white">{apps.filter(a => a.status === s).length}</p>
+            <p className="text-[10px] text-neutral-500 capitalize mt-0.5">{s}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="bg-[#0D1526] rounded-xl border border-white/5 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/5">
+                <th className="text-left px-4 py-3 text-neutral-500 text-xs font-medium">Student</th>
+                <th className="text-left px-4 py-3 text-neutral-500 text-xs font-medium">Job / Company</th>
+                <th className="text-left px-4 py-3 text-neutral-500 text-xs font-medium">Status</th>
+                <th className="text-left px-4 py-3 text-neutral-500 text-xs font-medium">Source</th>
+                <th className="text-left px-4 py-3 text-neutral-500 text-xs font-medium">Applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr><td colSpan={5} className="text-center py-10 text-neutral-600">Loading…</td></tr>
+              )}
+              {!loading && filtered.length === 0 && (
+                <tr><td colSpan={5} className="text-center py-10 text-neutral-600">No applications found</td></tr>
+              )}
+              {filtered.map(a => (
+                <tr key={a.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="text-white font-medium">{a.profiles?.name ?? 'Unknown'}</p>
+                    <p className="text-neutral-600 text-xs">{a.profiles?.email ?? a.user_id.slice(0, 8) + '…'}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-neutral-200">{a.job_title ?? '—'}</p>
+                    <p className="text-neutral-500 text-xs">{a.company ?? '—'}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full capitalize ${STATUS_COLORS[a.status] ?? 'bg-neutral-700/40 text-neutral-400'}`}>
+                      {a.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs text-neutral-500 capitalize">{a.source ?? 'direct'}</span>
+                  </td>
+                  <td className="px-4 py-3 text-neutral-500 text-xs whitespace-nowrap">
+                    {new Date(a.applied_at).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SimulationsView() {
   const [sims, setSims] = useState<Simulation[]>([])
   const [loading, setLoading] = useState(true)
@@ -1719,16 +1858,17 @@ function AnalyticsView() {
 type NavItem = { id: string; label: string; icon: React.ElementType }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'overview',   label: 'Overview',         icon: LayoutDashboard },
-  { id: 'analytics',  label: 'Analytics',        icon: BarChart2 },
-  { id: 'students',   label: 'Students',          icon: Users },
-  { id: 'companies',  label: 'Companies',         icon: Building2 },
-  { id: 'simulations',label: 'Simulations',       icon: FlaskConical },
-  { id: 'payments',   label: 'Payments',          icon: CreditCard },
-  { id: 'audit',      label: 'Audit Log',         icon: ScrollText },
-  { id: 'support',    label: 'Support',           icon: Headphones },
-  { id: 'health',     label: 'Platform Health',   icon: Activity },
-  { id: 'emergency',  label: 'Emergency',         icon: Zap },
+  { id: 'overview',     label: 'Overview',         icon: LayoutDashboard },
+  { id: 'analytics',    label: 'Analytics',        icon: BarChart2 },
+  { id: 'students',     label: 'Students',          icon: Users },
+  { id: 'companies',    label: 'Companies',         icon: Building2 },
+  { id: 'applications', label: 'Applications',      icon: ScrollText },
+  { id: 'simulations',  label: 'Simulations',       icon: FlaskConical },
+  { id: 'payments',     label: 'Payments',          icon: CreditCard },
+  { id: 'audit',        label: 'Audit Log',         icon: ScrollText },
+  { id: 'support',      label: 'Support',           icon: Headphones },
+  { id: 'health',       label: 'Platform Health',   icon: Activity },
+  { id: 'emergency',    label: 'Emergency',         icon: Zap },
 ]
 
 // Notifications loaded from admin_notifications table on mount
@@ -1860,8 +2000,9 @@ export default function AdminPage() {
       case 'overview':    return <OverviewView />
       case 'analytics':   return <AnalyticsView />
       case 'students':    return <StudentsView />
-      case 'companies':   return <CompaniesView />
-      case 'simulations': return <SimulationsView />
+      case 'companies':    return <CompaniesView />
+      case 'applications': return <ApplicationsView />
+      case 'simulations':  return <SimulationsView />
       case 'payments':    return <PaymentsView />
       case 'audit':       return <AuditLogView />
       case 'support':     return <SupportView />
