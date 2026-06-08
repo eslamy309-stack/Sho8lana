@@ -177,25 +177,20 @@ export async function POST(req: NextRequest) {
 
   if (conv) {
     const isStudent = conv.student_id === uid
-    await db.from('conversations').update({
-      last_message:   content.trim().slice(0, 120),
-      last_at:        new Date().toISOString(),
-      ...(isStudent
-        ? { unread_company: db.rpc('increment_unread_company' as never, { conv_id: convId }) }
-        : { unread_student: db.rpc('increment_unread_student' as never, { conv_id: convId }) }),
-    }).eq('id', convId)
 
-    // Simpler increment approach
-    await db.rpc('increment_conversation_unread', {
-      p_conv_id:   convId,
-      p_is_sender_student: isStudent,
-    }).catch(() => {
-      // RPC might not exist yet — do a manual update
-    })
-    // Fallback: direct SQL increment
+    // Fetch current unread counts so we can increment safely
+    const { data: counts } = await db
+      .from('conversations')
+      .select('unread_student, unread_company')
+      .eq('id', convId)
+      .single()
+
     await db.from('conversations').update({
       last_message: content.trim().slice(0, 120),
       last_at:      new Date().toISOString(),
+      ...(isStudent
+        ? { unread_company: ((counts?.unread_company ?? 0) as number) + 1 }
+        : { unread_student: ((counts?.unread_student ?? 0) as number) + 1 }),
     }).eq('id', convId)
   }
 
