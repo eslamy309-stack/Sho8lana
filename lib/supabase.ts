@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import type { UserProfile, DocumentFile, AppNotification, NotificationType, Screen } from './types'
 
+// Fallback placeholders prevent `createClient` throwing at build time
+// when env vars are absent (e.g. preview Vercel projects without secrets).
+// At runtime the real values are always present.
 export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL    ?? 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key'
 )
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
