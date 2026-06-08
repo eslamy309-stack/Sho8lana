@@ -13,6 +13,8 @@ export type Screen =
   | 'companyOnboarding'
   | 'talentProfile' | 'internshipHub' | 'careerAnalytics'
   | 'simulationUploadHub'
+  | 'forageHub'
+  | 'forageHub'
 
 export type AppStatus = 'applied' | 'reviewing' | 'shortlisted' | 'interview' | 'accepted' | 'rejected'
 
@@ -291,3 +293,5 @@ export interface AppNotification {
   createdAt: string   // ISO date string
   actionScreen?: Screen
 }
+
+// ForageProgram & ForageCategory types live in @/lib/forage-programs

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import {
   ChevronLeft, ChevronRight, Wifi, TrendingUp, Newspaper,
-  Target, BarChart2, Briefcase, Brain, Mic,
+  Target, BarChart2, Briefcase, Brain, Mic, Globe,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 
@@ -14,6 +14,9 @@ const FEED_ITEMS: {
   tag: string; tagAr: string; title: string; titleAr: string;
   body: string; bodyAr: string; color: string; icon: React.ElementType;
   date: string; dateAr: string;
+  screen?: string;    // optional in-app screen to navigate to
+  ctaEn?: string;     // optional CTA button label
+  ctaAr?: string;
 }[] = [
   {
     tag: 'Internship Tip', tagAr: 'نصيحة تدريب',
@@ -55,6 +58,15 @@ const FEED_ITEMS: {
     bodyAr: 'احضّر إجابات بصيغة STAR لـ: العمل الجماعي، والتعامل مع الضغط، وحل المشكلات.',
     color: '#059669', icon: Mic, date: '1 week ago', dateAr: 'منذ أسبوع',
   },
+  {
+    tag: 'Free Training', tagAr: 'تدريب مجاني',
+    title: 'Complete free job simulations from JPMorgan, BCG, and more',
+    titleAr: 'أكمل تدريبات مجانية من JPMorgan و BCG والمزيد',
+    body: 'The Forage offers 700+ free job simulations from top global employers. Earn certificates that impress recruiters.',
+    bodyAr: 'The Forage تقدم أكثر من 700 محاكاة وظيفية مجانية من كبرى الشركات. احصل على شهادات تبهر المسؤولين عن التوظيف.',
+    color: '#003B70', icon: Globe, date: 'Pinned', dateAr: 'مثبت',
+    screen: 'forageHub', ctaEn: 'Explore Programs →', ctaAr: 'استكشف البرامج ←',
+  },
 ]
 
 export function FeedsScreen() {
@@ -84,50 +96,73 @@ export function FeedsScreen() {
 
       <motion.div variants={stagger} initial="hidden" animate="visible" className="px-4 py-4 flex flex-col gap-4">
         {/* Header */}
-        <motion.div variants={up} className="rounded-2xl p-4 border border-brand-200 bg-brand-50">
-          <div className="flex items-center gap-2 mb-1">
-            <Newspaper className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-bold text-brand-800">{ar ? 'لك فقط' : 'Curated for you'}</span>
+        <motion.div
+          variants={up}
+          className="rounded-2xl p-5 overflow-hidden relative"
+          style={{ background: 'linear-gradient(135deg, #0F172A 0%, #0F766E 100%)' }}
+        >
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <Newspaper className="w-4 h-4 text-brand-300" />
+              <span className="text-sm font-bold text-white">{ar ? 'لك فقط' : 'Curated for you'}</span>
+              <span className="ml-auto text-2xs font-bold text-brand-300 bg-white/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+                {ar ? 'مباشر' : 'Live'}
+              </span>
+            </div>
+            <p className="text-xs text-white/60 leading-relaxed">
+              {ar
+                ? 'أحدث النصائح، رؤى السوق، والفرص لطلاب الجامعات المصرية.'
+                : 'Latest tips, market insights, and opportunities for Egyptian university students.'}
+            </p>
+            <div className="flex items-center gap-3 mt-3">
+              <div><p className="text-lg font-black text-white">6</p><p className="text-2xs text-white/50">{ar ? 'مقالة' : 'Articles'}</p></div>
+              <div className="h-6 w-px bg-white/10" />
+              <div><p className="text-lg font-black text-white">6</p><p className="text-2xs text-white/50">{ar ? 'موضوعات رائجة' : 'Trending'}</p></div>
+            </div>
           </div>
-          <p className="text-xs text-brand-600">
-            {ar ? 'أحدث النصائح، رؤى السوق، والفرص لطلاب الجامعات المصرية.' : 'Latest tips, market insights, and opportunities for Egyptian university students.'}
-          </p>
         </motion.div>
 
-        {FEED_ITEMS.map((item, i) => (
-          <motion.div
-            key={i}
-            variants={up}
-            custom={i}
-            whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}
-            className="bg-white rounded-2xl border border-neutral-200 p-4 shadow-card"
-          >
-            <div className="flex items-start gap-3">
-              {(() => {
-                const FeedIcon = item.icon
-                return (
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                       style={{ background: `${item.color}15` }}>
-                    <FeedIcon className="w-5 h-5" style={{ color: item.color }} />
-                  </div>
-                )
-              })()}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xs font-bold px-2 py-0.5 rounded-md"
-                        style={{ background: `${item.color}15`, color: item.color }}>
-                    {ar ? item.tagAr : item.tag}
-                  </span>
-                  <span className="text-2xs text-neutral-400">{ar ? item.dateAr : item.date}</span>
+        {FEED_ITEMS.map((item, i) => {
+          const FeedIcon = item.icon
+          return (
+            <motion.div
+              key={i}
+              variants={up}
+              custom={i}
+              whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}
+              whileTap={item.screen ? { scale: 0.99 } : undefined}
+              onClick={item.screen ? () => dispatch({ type: 'GO', screen: item.screen as never }) : undefined}
+              className={`bg-white rounded-2xl border border-neutral-200 p-4 shadow-card${item.screen ? ' cursor-pointer' : ''}`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                     style={{ background: `${item.color}15` }}>
+                  <FeedIcon className="w-5 h-5" style={{ color: item.color }} />
                 </div>
-                <h4 className="text-sm font-bold text-neutral-900 leading-snug mb-1.5">
-                  {ar ? item.titleAr : item.title}
-                </h4>
-                <p className="text-xs text-neutral-500 leading-relaxed">{ar ? item.bodyAr : item.body}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xs font-bold px-2 py-0.5 rounded-md"
+                          style={{ background: `${item.color}15`, color: item.color }}>
+                      {ar ? item.tagAr : item.tag}
+                    </span>
+                    <span className="text-2xs text-neutral-400">{ar ? item.dateAr : item.date}</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-neutral-900 leading-snug mb-1.5">
+                    {ar ? item.titleAr : item.title}
+                  </h4>
+                  <p className="text-xs text-neutral-500 leading-relaxed">{ar ? item.bodyAr : item.body}</p>
+                  {item.ctaEn && (
+                    <p className="text-xs font-semibold mt-2" style={{ color: item.color }}>
+                      {ar ? item.ctaAr : item.ctaEn}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          )
+        })}
 
         {/* Trending section */}
         <motion.div variants={up} className="rounded-2xl p-4 border border-neutral-200 bg-white">

@@ -41,6 +41,17 @@ export const COMPANIES: Company[] = [
   { id: 25, name: 'Paymob',               logo: '📲', industry: 'Fintech',       location: 'Maadi',            rating: 4.4, color: '#7C3AED', description: "Egypt's leading payment gateway powering 150,000+ merchants.", descriptionAr: 'بوابة الدفع الرائدة في مصر تخدم أكثر من 150,000 تاجر.', coords: { lat: 29.9602, lng: 31.2569 }, website: 'paymob.com', employees: '500+', founded: '2015' },
 ]
 
+
+/** Company ID → display initials (replaces emoji logos in UI) */
+export const COMPANY_INITIALS: Record<number, string> = {
+  1:  'VE',  2:  'CIB', 3:  'P&G', 4:  'MS',  5:  'MC',
+  6:  'FW',  7:  'OE',  8:  'NE',  9:  'UE',  10: 'EFG',
+  11: 'AE',  12: 'IBM', 13: 'BE',  14: 'CC',  15: 'DE',
+  16: 'PwC', 17: 'EM',  18: 'MAF', 19: 'CR',  20: 'VL',
+  21: 'MG',  22: 'NBE', 23: 'BM',  24: 'BF',  25: 'PM',
+}
+
+
 export const JOBS: Job[] = [
   // Vodafone Egypt
   { id: 1,  companyId: 1,  title: 'Marketing Intern',            titleAr: 'متدرب تسويق',              location: 'Smart Village',  salary: 'EGP 5,000/mo',  postedAgo: '2d',  applicants: 47,  skills: ['Social Media','Analytics','Content'],                type: 'internship', industry: 'Telecom',    description: "Join Vodafone's marketing team and work on real campaigns reaching millions of Egyptian subscribers.", descriptionAr: 'انضم لفريق التسويق في فودافون واعمل على حملات حقيقية تصل لملايين المشتركين.', requirements: ['Marketing or Business student','Strong English skills','Basic analytics knowledge'], requirementsAr: ['طالب تسويق أو أعمال','إنجليزي قوي','معرفة أساسية بالتحليلات'], featured: true,  source: 'linkedin', deadline: '2026-06-30' },
@@ -293,6 +304,17 @@ export const SIM_TRACKS: SimTrack[] = [
           { title: 'Propose Your Fix', titleAr: 'اقترح الحل', type: 'text', placeholder: 'Describe your solution: What would you change, how, and what KPI improvement do you expect?', placeholderAr: 'صف حلك: ماذا ستغير، وكيف، وما تحسن KPI المتوقع؟', hint: "Good operations proposals include: What to change + Who is responsible + Timeline + Measurable outcome. E.g., 'Reroute pick paths using WMS zone logic → reduce average pick time from 2.5 hrs to 1.5 hrs within 2 weeks.'", hintAr: 'مقترحات العمليات الجيدة تشمل: ماذا تغير + من المسؤول + الجدول الزمني + النتيجة القابلة للقياس.' },
         ],
       },
+      {
+        id: 'o2', title: 'Supply Chain Cost Reduction', titleAr: 'خفض تكاليف سلسلة التوريد',
+        scenario: "You're the operations analyst at a fast-growing Egyptian food delivery startup. The CFO wants to reduce delivery costs by 20% in Q3 without cutting rider pay or delivery quality. You have 48 hours to propose a plan.",
+        scenarioAr: 'أنت محلل العمليات في شركة توصيل طعام مصرية سريعة النمو. يريد المدير المالي تخفيض تكاليف التوصيل بنسبة 20% في الربع الثالث دون خفض أجور السائقين أو جودة التوصيل. لديك 48 ساعة لتقديم خطة.',
+        xp: 140, badge: 'Cost Engineer', badgeAr: 'مهندس التكاليف', time: '40 min',
+        steps: [
+          { title: 'Break Down the Cost Structure', titleAr: 'حلّل هيكل التكاليف', type: 'multi', options: ['Rider idle time (waiting for orders)','Long delivery distances per order','Fuel costs per km','Vehicle maintenance overhead','Packaging material costs','Customer support costs (complaints)','Technology platform fees','Marketing cost per order'], hint: 'Focus on the 20% of costs that drive 80% of the total. In last-mile delivery, rider idle time and long distances are usually the biggest drivers. Start there.', hintAr: 'ركّز على 20% من التكاليف التي تولّد 80% من الإجمالي. في التوصيل الأخير، وقت الانتظار والمسافات الطويلة عادةً هي الأكبر.' },
+          { title: 'Identify Your Top 3 Cost Levers', titleAr: 'حدد أهم 3 محركات للتكلفة', type: 'text', placeholder: 'For each lever:\n1. What is it?\n2. What % of total cost does it represent?\n3. How would you reduce it by how much?\n\nLever 1: ...\nLever 2: ...\nLever 3: ...', placeholderAr: 'لكل محرك:\n1. ما هو؟\n2. ما نسبته من إجمالي التكلفة؟\n3. كيف ستخفضه وبكم؟\n\nمحرك 1: ...\nمحرك 2: ...\nمحرك 3: ...', hint: 'Classic delivery cost levers: 1) Route optimization (GPS clustering reduces distance 15-25%), 2) Batching orders (1 rider, 2 orders = 50% cost split), 3) Dynamic pricing for peak hours (reduce demand spike).', hintAr: 'محركات التوصيل الكلاسيكية: 1) تحسين المسارات (15-25% تخفيض)، 2) تجميع الطلبات (راكب لطلبين = 50% توفير)، 3) التسعير الديناميكي لأوقات الذروة.' },
+          { title: 'Write the 90-Day Action Plan', titleAr: 'اكتب خطة العمل لـ 90 يوماً', type: 'text', placeholder: 'Month 1 (Quick wins): ...\nMonth 2 (Medium-term): ...\nMonth 3 (Structural changes): ...\n\nExpected cost savings: EGP __ per month', placeholderAr: 'الشهر 1 (مكاسب سريعة): ...\nالشهر 2 (متوسط المدى): ...\nالشهر 3 (تغييرات هيكلية): ...\n\nالتوفير المتوقع: __ جنيه شهرياً', hint: "Structure your plan by time horizon: Quick wins (can be implemented in days, no tech required), Medium-term (need system changes or small investment), Structural (re-think the model — e.g., hub-and-spoke instead of direct delivery).", hintAr: 'هيكل الخطة حسب الأفق الزمني: مكاسب سريعة (أيام)، متوسط المدى (تغييرات نظام)، هيكلي (إعادة تفكير النموذج).' },
+        ],
+      },
     ],
   },
   {
@@ -348,6 +370,68 @@ export const SIM_TRACKS: SimTrack[] = [
           { title: 'Define the Key Metrics', titleAr: 'حدد المؤشرات الرئيسية', type: 'multi', options: ['Revenue by Region (Cairo/Alex/Upper Egypt)','Top 10 Products by Revenue','Customer Acquisition Cost (CAC)','Average Order Value (AOV)','Conversion Rate','Return Rate','Monthly Active Users'], hint: 'Pick 4-5 metrics that tell a clear story about sales performance. Too many metrics confuse; too few hide problems.', hintAr: 'اختر 4-5 مؤشرات تروي قصة واضحة عن أداء المبيعات.', tutorials: dataTutorials },
           { title: 'Write the SQL Query for Top Products', titleAr: 'اكتب استعلام SQL لأفضل المنتجات', type: 'text', placeholder: 'Write a SQL query to get the top 10 products by total revenue this week:\n\nSELECT ...\nFROM ...\nWHERE ...\nGROUP BY ...\nORDER BY ...\nLIMIT 10', placeholderAr: 'اكتب استعلام SQL للحصول على أفضل 10 منتجات من حيث الإيراد هذا الأسبوع:', hint: 'You need: product_name, SUM(revenue) as total_revenue FROM orders_table WHERE order_date >= last 7 days GROUP BY product_name ORDER BY total_revenue DESC LIMIT 10.', hintAr: 'تحتاج: product_name, SUM(revenue) من جدول الطلبات WHERE آخر 7 أيام GROUP BY LIMIT 10.' },
           { title: 'Interpret the Results', titleAr: 'فسّر النتائج', type: 'text', placeholder: "Imagine the dashboard shows: Cairo = 65% revenue, Top product = iPhone cases (EGP 450K), CAC = EGP 85. What does this tell you? What would you recommend to the Sales Director?", placeholderAr: 'افترض أن اللوحة تظهر: القاهرة = 65% من الإيراد، المنتج الأول = حافظات iPhone (450K جنيه)، CAC = 85 جنيه. ماذا تعني؟ ما توصيتك لمدير المبيعات؟', hint: "Good data interpretation: 1) State what the data shows, 2) Infer why (hypothesis), 3) Recommend action. 'Cairo concentration suggests we're under-investing in Alexandria expansion.'", hintAr: 'تفسير البيانات الجيد: 1) ما تظهره البيانات، 2) لماذا (فرضية)، 3) التوصية.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'consulting', label: 'Strategy Consulting', labelAr: 'الاستشارات الاستراتيجية',
+    color: '#00A651', icon: 'bar-chart',
+    description: 'Solve real client cases, build recommendations, present to C-suite',
+    descriptionAr: 'حلّ حالات عملاء حقيقية، ابنِ التوصيات، قدّم للإدارة العليا',
+    tasks: [
+      {
+        id: 'cs1', title: 'Client Case Decomposition', titleAr: 'تحليل قضية العميل',
+        scenario: "You're a new analyst at a top consulting firm. Your client is a large Egyptian supermarket chain losing 3% in same-store sales for 6 months. The partner has asked you to structure the problem before tomorrow's client meeting.",
+        scenarioAr: 'أنت محلل جديد في شركة استشارات كبرى. عميلك سلسلة سوبرماركت مصرية كبيرة تفقد 3% من مبيعاتها في المتاجر القائمة منذ 6 أشهر. الشريك يريدك أن تهيكل المشكلة قبل اجتماع العميل غداً.',
+        xp: 160, badge: 'Case Cracker', badgeAr: 'محلل القضايا', time: '50 min',
+        steps: [
+          { title: 'Define the Problem Statement', titleAr: 'حدد بيان المشكلة', type: 'text', placeholder: 'Write a crisp 1-2 sentence problem statement. What is the core question the client needs answered?', placeholderAr: 'اكتب بيان مشكلة موجز في 1-2 جملة. ما السؤال الجوهري الذي يحتاج العميل إجابته؟', hint: 'A good problem statement is: Specific (not vague), outcome-focused (not activity-focused), and measurable. "Why are same-store sales declining 3% YoY and how can we reverse this within 12 months?"', hintAr: 'بيان المشكلة الجيد: محدد، يركز على النتيجة، وقابل للقياس.' },
+          { title: 'Build Your Issue Tree', titleAr: 'ابنِ شجرة القضايا', type: 'multi', options: ['Customer volume decrease (fewer transactions)','Basket size decrease (less spent per visit)','Competitor opening nearby','Product mix issues (wrong SKUs)','Pricing too high vs. competition','Store experience deterioration','Macro factors (inflation, consumer spending)','Seasonal / timing effects'], hint: 'An issue tree breaks the problem into MECE (Mutually Exclusive, Collectively Exhaustive) branches. Revenue = Volume × Price. Volume = Transactions × Basket. Pick 3-4 most plausible hypotheses.', hintAr: 'شجرة القضايا تقسم المشكلة إلى فروع MECE. الإيراد = الحجم × السعر. اختر 3-4 فرضيات محتملة.' },
+          { title: 'Prioritize Your Analysis', titleAr: 'رتّب أولويات التحليل', type: 'text', placeholder: 'Which hypothesis would you test first and why? What data would you ask the client for? What would prove or disprove your #1 hypothesis?', placeholderAr: 'أي فرضية ستختبر أولاً ولماذا؟ ما البيانات التي ستطلبها من العميل؟ ما الذي سيثبت أو ينفي فرضيتك الأولى؟', hint: "Prioritize by: 1) Impact (does solving this move the needle most?), 2) Feasibility (can we test this quickly with available data?). Start with transaction data split by day/hour/category.", hintAr: 'رتّب بحسب: 1) الأثر (هل حلّها يحرك المؤشرات أكثر؟)، 2) الجدوى (هل يمكننا اختبارها بسرعة؟).' },
+          { title: 'Write the Opening Slide Hypothesis', titleAr: 'اكتب فرضية الشريحة الأولى', type: 'text', placeholder: 'Write a "So What?" hypothesis for your opening slide. Structure: "We believe [X] is happening because [Y]. If confirmed, the fix is [Z]."', placeholderAr: 'اكتب فرضية "ماذا يعني هذا؟" للشريحة الأولى. الهيكل: "نعتقد أن [X] يحدث لأن [Y]. إذا تأكد، الحل هو [Z]."', hint: 'Consultants call this a "ghost deck" hypothesis — you commit to a point of view before all data is in. This forces structured thinking and gives the client something concrete to react to.', hintAr: 'الاستشاريون يسمون هذا فرضية "المجموعة الشبحية" — تلتزم بوجهة نظر قبل اكتمال البيانات.' },
+        ],
+      },
+      {
+        id: 'cs2', title: 'Strategic Recommendation Deck', titleAr: 'عرض التوصية الاستراتيجية',
+        scenario: "You're presenting to the CEO of a mid-size Egyptian logistics company. They want to expand into last-mile delivery for e-commerce. Your analysis shows 3 strategic options. You have 10 minutes to present your recommendation.",
+        scenarioAr: 'تقدّم للرئيس التنفيذي لشركة لوجستية مصرية متوسطة. يريدون التوسع في توصيل المرحلة الأخيرة للتجارة الإلكترونية. تحليلك يظهر 3 خيارات استراتيجية. لديك 10 دقائق لتقديم توصيتك.',
+        xp: 180, badge: 'Strategy Advisor', badgeAr: 'مستشار استراتيجي', time: '55 min',
+        steps: [
+          { title: 'Evaluate the 3 Strategic Options', titleAr: 'قيّم الخيارات الاستراتيجية الثلاثة', type: 'text', placeholder: 'Option A: Build in-house (full control, high cost, 18 months)\nOption B: Acquire competitor (fast, EGP 80M cost)\nOption C: Partner with Aramex/Bosta (low risk, less margin)\n\nFor each: What are the pros, cons, and key risks?', placeholderAr: 'خيار أ: بناء داخلي (تحكم كامل، تكلفة عالية، 18 شهراً)\nخيار ب: استحواذ على منافس (سريع، 80 مليون جنيه)\nخيار ج: شراكة مع Aramex/Bosta (مخاطر منخفضة، هامش أقل)\n\nلكل خيار: الإيجابيات والسلبيات والمخاطر الرئيسية.', hint: 'Evaluate each option against: Cost, Speed to market, Risk level, Strategic fit, Reversibility. Use a simple 3x3 scoring matrix if helpful.', hintAr: 'قيّم كل خيار وفق: التكلفة، السرعة، مستوى المخاطر، الملاءمة الاستراتيجية، قابلية التراجع.' },
+          { title: 'State Your Recommendation', titleAr: 'أعلن توصيتك', type: 'multi', options: ['Option A: Build in-house','Option B: Acquire a competitor','Option C: Strategic partnership','Hybrid: Partner first, acquire later','Hybrid: Build tech + partner for ops','No expansion — focus on core business first'], hint: 'Pick ONE clear recommendation. Great consulting advice is decisive. Hedging ("it depends") without a clear recommendation loses credibility. Explain the 2-3 most critical reasons.', hintAr: 'اختر توصية واحدة واضحة. الاستشارات الجيدة حاسمة. التهرب بـ"يعتمد" دون توصية واضحة يفقدك المصداقية.' },
+          { title: 'Anticipate Objections', titleAr: 'توقّع الاعتراضات', type: 'text', placeholder: "The CEO will likely push back. Write how you'd handle: 'What if the partner goes with a competitor?' and 'Can we really afford 18 months of wait?'", placeholderAr: 'الرئيس التنفيذي سيرفض. اكتب كيف ستتعامل مع: "ماذا لو ذهب الشريك لمنافس؟" و"هل نستطيع الانتظار 18 شهراً؟"', hint: 'Handle objections with data + confidence. "That risk is real — here is how we mitigate it: [X]. The cost of waiting 18 months is estimated at EGP Y in lost market share, which is less than the acquisition premium."', hintAr: 'تعامل مع الاعتراضات بالبيانات والثقة. "هذا الخطر حقيقي — إليك كيف نخففه: [X]."' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tech', label: 'Technology & Product', labelAr: 'التكنولوجيا والمنتج',
+    color: '#6366F1', icon: 'monitor',
+    description: 'Design products, write technical specs, solve engineering trade-offs',
+    descriptionAr: 'صمّم منتجات، اكتب المواصفات التقنية، حلّ مقايضات هندسية',
+    tasks: [
+      {
+        id: 'tp1', title: 'Product Requirements Document', titleAr: 'وثيقة متطلبات المنتج',
+        scenario: "You're a junior product manager at a growing Egyptian fintech startup. The CEO wants to add a 'Pay Later' (BNPL) feature to the app. You need to write the PRD that the engineering team will use to build it.",
+        scenarioAr: 'أنت مدير منتجات مبتدئ في شركة تقنية مالية مصرية ناشئة. الرئيس التنفيذي يريد إضافة ميزة "اشتر الآن وادفع لاحقاً" للتطبيق. تحتاج لكتابة وثيقة متطلبات المنتج التي سيستخدمها الفريق الهندسي.',
+        xp: 150, badge: 'Product Thinker', badgeAr: 'مفكر المنتج', time: '50 min',
+        steps: [
+          { title: 'Define the Target User & Problem', titleAr: 'حدد المستخدم المستهدف والمشكلة', type: 'text', placeholder: 'Who exactly is this for? What problem does BNPL solve for them? Write a 2-3 sentence user problem statement.', placeholderAr: 'لمن هذه الميزة بالضبط؟ ما المشكلة التي يحلها "اشتر الآن وادفع لاحقاً" لهم؟ اكتب بيان مشكلة المستخدم في 2-3 جمل.', hint: 'Think about Egyptian 25-35 year olds shopping online who want to buy EGP 3,000+ items (electronics, furniture) but lack the cash upfront. The problem: high-ticket purchases are blocked by liquidity, not desire.', hintAr: 'فكّر في المصريين من 25-35 عاماً الذين يتسوقون عبر الإنترنت ويريدون شراء منتجات بأكثر من 3,000 جنيه لكن يفتقرون للسيولة الفورية.' },
+          { title: 'Write the Key User Stories', titleAr: 'اكتب قصص المستخدم الرئيسية', type: 'text', placeholder: 'Write 3 user stories in the format: "As a [user], I want to [action], so that [benefit]."\n\nUS1: As a ...\nUS2: As a ...\nUS3: As a ...', placeholderAr: 'اكتب 3 قصص مستخدم بالصيغة: "كـ[مستخدم]، أريد [فعل]، حتى [فائدة]."\n\nقصة 1: كـ...\nقصة 2: كـ...\nقصة 3: كـ...', hint: 'Examples: "As a shopper, I want to split my EGP 4,500 purchase into 3 monthly installments so I can buy the laptop I need without waiting." Keep each story focused on one specific need.', hintAr: 'أمثلة: "كمتسوق، أريد تقسيم مشترياتي على 3 أقساط شهرية حتى أتمكن من شراء ما أحتاجه دون انتظار."' },
+          { title: 'Identify Technical Risks & Trade-offs', titleAr: 'حدد المخاطر التقنية والمقايضات', type: 'multi', options: ['Credit scoring / underwriting complexity','Integration with Egypt\'s CIB/ISETS credit bureau','Fraud & identity verification','Regulatory (FRA approval for BNPL)','Merchant integration API complexity','User experience — too many steps in checkout','Interest rate disclosure requirements','Cash flow / capital requirements for the startup'], hint: "BNPL in Egypt requires FRA licensing. Credit scoring is the hardest technical problem — you can't underwrite without credit history data. Identify the 3 risks you'd flag to engineering on Day 1.", hintAr: 'BNPL في مصر يتطلب ترخيصاً من الهيئة. تقييم الائتمان هو المشكلة التقنية الأصعب — لا يمكنك الاكتتاب بدون تاريخ ائتماني.' },
+          { title: 'Define Success Metrics', titleAr: 'حدد مقاييس النجاح', type: 'text', placeholder: 'What are your 3 key success metrics for the first 6 months? How will you know BNPL is working?\n\nMetric 1: ...\nMetric 2: ...\nMetric 3: ...', placeholderAr: 'ما هي مقاييسك الثلاثة الرئيسية للنجاح في الأشهر الستة الأولى؟ كيف ستعرف أن BNPL يعمل؟\n\nمقياس 1: ...\nمقياس 2: ...\nمقياس 3: ...', hint: "Strong PM metrics tie business outcomes to feature usage. Examples: 1) BNPL adoption rate (target: 15% of eligible transactions), 2) Default rate (target: <3%), 3) Average order value lift (+40% vs non-BNPL), 4) NPS delta for BNPL users.", hintAr: 'المقاييس الجيدة تربط نتائج الأعمال باستخدام الميزة. أمثلة: معدل تبني BNPL، معدل التعثر، ارتفاع متوسط قيمة الطلب.' },
+        ],
+      },
+      {
+        id: 'tp2', title: 'Technical Architecture Decision', titleAr: 'قرار البنية التقنية',
+        scenario: "You're the lead developer at a Cairo-based SaaS startup. The CTO just left. You need to decide: do you migrate the monolithic PHP app to microservices, or scale it vertically? The team has 3 engineers and a June launch deadline.",
+        scenarioAr: 'أنت المطور الرئيسي في شركة SaaS بالقاهرة. غادر المدير التقني للتو. عليك أن تقرر: هل تهاجر التطبيق الأحادي PHP إلى الخدمات المصغرة، أم تحسّنه عمودياً؟ الفريق 3 مهندسين والموعد يونيو.',
+        xp: 140, badge: 'Tech Architect', badgeAr: 'مهندس بنية', time: '45 min',
+        steps: [
+          { title: 'Analyze the Trade-offs', titleAr: 'حلّل المقايضات', type: 'text', placeholder: 'List the pros and cons of each approach:\n\nOption 1 - Microservices migration:\nPros: ...\nCons: ...\n\nOption 2 - Vertical scaling (optimize monolith):\nPros: ...\nCons: ...', placeholderAr: 'اسرد إيجابيات وسلبيات كل نهج:\n\nالخيار 1 - الهجرة للخدمات المصغرة:\nإيجابيات: ...\nسلبيات: ...\n\nالخيار 2 - التحسين العمودي:\nإيجابيات: ...\nسلبيات: ...', hint: 'Microservices: great for scale, terrible for small teams with tight deadlines. Monolith: simpler, faster to ship, easier to debug. Martin Fowler says: "Don\'t start with microservices." 3 engineers + June deadline = probably not the time to refactor architecture.', hintAr: 'الخدمات المصغرة: رائعة للتوسع، سيئة لفرق صغيرة مع مواعيد ضيقة. مارتن فاولر يقول: "لا تبدأ بالخدمات المصغرة."' },
+          { title: 'Make Your Decision', titleAr: 'اتخذ قرارك', type: 'multi', options: ['Migrate to microservices now (before June)','Optimize monolith + scale vertically for now, revisit in Q4','Partial refactor: extract only the 2 most bottlenecked services','Containerize the monolith (Docker) without full microservices','Hire a new CTO before making this decision','Delay launch to properly migrate architecture'], hint: "The right answer considers BOTH technical excellence AND business context. A technically perfect migration that causes a launch delay can kill a startup. What serves the company best RIGHT NOW?", hintAr: 'الجواب الصحيح يأخذ في الاعتبار كل من التميز التقني وسياق الأعمال. الهجرة الكاملة قد تؤخر الإطلاق وتقتل الشركة الناشئة.' },
+          { title: 'Write the Technical Brief', titleAr: 'اكتب الموجز التقني', type: 'text', placeholder: 'Write a 3-4 sentence technical decision brief for the CEO. Include: your recommendation, why, and what it means for the June deadline.', placeholderAr: 'اكتب موجزاً تقنياً من 3-4 جمل للرئيس التنفيذي. تضمّن: توصيتك، السبب، وماذا يعني ذلك لموعد يونيو.', hint: "CEO-friendly format: 'We recommend [X] because [2 business reasons]. This means we will [concrete action] by [date], and [June launch is/is not affected] because [explanation].'", hintAr: 'صيغة صديقة للرئيس التنفيذي: "نوصي بـ[X] لأن [سببان تجاريان]. هذا يعني أننا سنقوم بـ[إجراء] بحلول [تاريخ]."' },
         ],
       },
     ],

@@ -120,9 +120,9 @@ export function JobDetailScreen() {
       <motion.div variants={stagger} initial="hidden" animate="visible" className="px-4 py-4 flex flex-col gap-4">
         {/* Header */}
         <motion.div variants={up} className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-               style={{ background: `${company.color}12` }}>
-            {company.logo}
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-sm font-black text-white"
+               style={{ background: company.color }}>
+            {company.name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()}
           </div>
           <div>
             <h2 className="text-xl font-extrabold text-neutral-900">{ar ? job.titleAr : job.title}</h2>

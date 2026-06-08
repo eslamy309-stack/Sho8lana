@@ -31,6 +31,23 @@ const up = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
 }
 
+/** Generate 1–2 letter initials from a company name */
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(w => /^[A-Za-z؀-ۿ]/.test(w))
+  if (words.length === 0) return name.slice(0, 2).toUpperCase()
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
+  return words.slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
+
+/** Time-aware greeting using the user's first name */
+function getGreeting(name: string | undefined, ar: boolean): string {
+  const first = (name ?? '').split(' ')[0]
+  if (ar) return first ? `مرحباً، ${first}` : 'مرحباً'
+  const h = new Date().getHours()
+  const time = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+  return first ? `${time}, ${first}` : time
+}
+
 const JOB_LOCATIONS = ['All', ...Array.from(new Set(JOBS.map(j => j.location)))]
 const INDUSTRIES = ['All', ...Array.from(new Set(JOBS.map(j => j.industry)))]
 
@@ -66,9 +83,9 @@ function JobCard({ job, index }: { job: Job; index: number }) {
         onClick={() => { dispatch({ type: 'SELECT_JOB', id: job.id }); dispatch({ type: 'GO', screen: 'detail' }) }}
       >
         <div className="flex gap-3">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-               style={{ background: `${company.color}12` }}>
-            {company.logo}
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-extrabold text-white"
+               style={{ background: company.color }}>
+            {getInitials(company.name)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -143,9 +160,9 @@ function FeaturedCard({ job }: { job: Job }) {
       style={{ background: `linear-gradient(145deg, ${company.color}09, white)` }}
     >
       <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-             style={{ background: `${company.color}15` }}>
-          {company.logo}
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0"
+             style={{ background: company.color }}>
+          {getInitials(company.name)}
         </div>
         <div className="min-w-0">
           <p className="text-xs text-neutral-500 truncate">{company.name}</p>
@@ -173,6 +190,7 @@ export function HomeScreen() {
   const [tab, setTab] = useState<HomeTab>(JOBS.length > 0 ? 'local' : 'linkedin')
   const [paidOnly, setPaidOnly] = useState(false)
   const [visibleCount, setVisibleCount] = useState(10)
+  const greeting = getGreeting(state.user.name, ar)
 
   // ── Debounced search (200 ms) ─────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState(searchQuery)
@@ -377,6 +395,37 @@ export function HomeScreen() {
       </div>
 
       <div className="px-4 pt-4 flex flex-col gap-3">
+
+        {/* ── Personalized greeting ── */}
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <h1 className="text-xl font-black text-neutral-900 leading-tight">
+            {greeting} 👋
+          </h1>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            {ar
+              ? `${JOBS.length} فرصة متاحة · ابحث واقدّم الآن`
+              : `${JOBS.length} opportunities · find & apply today`}
+          </p>
+        </motion.div>
+
+        {/* ── Stats strip ── */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { value: state.applications.length, label: ar ? 'طلباتي'  : 'Applied',  color: 'text-brand-600',  bg: 'bg-brand-50',  border: 'border-brand-100' },
+            { value: state.savedJobs.length,    label: ar ? 'محفوظة'  : 'Saved',    color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-100' },
+            { value: state.simXP,               label: ar ? 'نقاط XP' : 'XP',       color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-100' },
+          ].map(s => (
+            <div key={s.label} className={`rounded-xl px-3 py-2.5 border text-center ${s.bg} ${s.border}`}>
+              <p className={`text-lg font-black tabular-nums ${s.color}`}>{s.value}</p>
+              <p className="text-2xs text-neutral-500 font-medium">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Source tabs */}
         <div className="flex gap-1 bg-neutral-100 rounded-xl p-1">
           {(['local', 'linkedin', 'wuzzuf'] as HomeTab[]).map(t => (
@@ -537,23 +586,24 @@ export function HomeScreen() {
           )
         })()}
 
-        {/* Talent Intelligence quick access */}
+        {/* Quick access shortcuts */}
         {tab === 'local' && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {[
-              { icon: TrendingUp, label: ar ? 'ملفي' : 'My Profile', screen: 'talentProfile', color: 'bg-emerald-500' },
-              { icon: Briefcase,  label: ar ? 'التدريب' : 'Internships', screen: 'internshipHub', color: 'bg-violet-500' },
-              { icon: BarChart2,  label: ar ? 'تحليلاتي' : 'Analytics', screen: 'careerAnalytics', color: 'bg-indigo-500' },
+              { icon: TrendingUp, label: ar ? 'ملفي'      : 'Profile',     screen: 'talentProfile',  color: 'bg-emerald-500' },
+              { icon: Briefcase,  label: ar ? 'التدريب'   : 'Internships', screen: 'internshipHub',  color: 'bg-violet-500'  },
+              { icon: BarChart2,  label: ar ? 'تحليلاتي'  : 'Analytics',   screen: 'careerAnalytics',color: 'bg-indigo-500'  },
+              { icon: Globe,      label: ar ? 'Forage'    : 'Forage',      screen: 'forageHub',      color: 'bg-blue-600'    },
             ].map(({ icon: Icon, label, screen, color }) => (
               <button
                 key={screen}
                 onClick={() => dispatch({ type: 'GO', screen: screen as never })}
-                className="flex flex-col items-center gap-1.5 p-3 bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-sm transition-all"
+                className="flex flex-col items-center gap-1.5 p-2.5 bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-sm transition-all min-h-[72px] justify-center"
               >
-                <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center`}>
+                <div className={`w-8 h-8 rounded-xl ${color} flex items-center justify-center`}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xs font-semibold text-neutral-700">{label}</span>
+                <span className="text-[10px] font-semibold text-neutral-700 leading-tight text-center">{label}</span>
               </button>
             ))}
           </div>
@@ -654,12 +704,19 @@ export function HomeScreen() {
                     const st = liveApplyState[j.id] ?? 'idle'
                     return (
                       <div key={j.id} className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-bold text-neutral-900">{j.title}</p>
-                            <p className="text-xs text-neutral-500 mt-0.5">{j.company_name}</p>
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0 bg-brand-600">
+                            {getInitials(j.company_name)}
                           </div>
-                          <span className="text-2xs font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-600">Direct</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-neutral-900 leading-snug">{j.title}</p>
+                                <p className="text-xs text-neutral-500 mt-0.5 truncate">{j.company_name}</p>
+                              </div>
+                              <span className="text-2xs font-bold px-2 py-0.5 rounded flex-shrink-0 bg-brand-50 text-brand-600">Direct</span>
+                            </div>
+                          </div>
                         </div>
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {j.location && <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>}
@@ -734,12 +791,20 @@ export function HomeScreen() {
                   const st = liveApplyState[j.id] ?? 'idle'
                   return (
                     <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-bold text-neutral-900">{j.title}</p>
-                          <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0"
+                             style={{ background: '#0077B5' }}>
+                          {getInitials(j.company)}
                         </div>
-                        <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#0077B515', color: '#0077B5' }}>LinkedIn</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-neutral-900 leading-snug">{j.title}</p>
+                              <p className="text-xs text-neutral-500 mt-0.5 truncate">{j.company}</p>
+                            </div>
+                            <span className="text-2xs font-bold px-2 py-0.5 rounded flex-shrink-0" style={{ background: '#0077B515', color: '#0077B5' }}>LinkedIn</span>
+                          </div>
+                        </div>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>
@@ -792,12 +857,20 @@ export function HomeScreen() {
                 const st = liveApplyState[j.id] ?? 'idle'
                 return (
                   <div key={j.id} className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-bold text-neutral-900">{j.title}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">{j.company}</p>
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0"
+                           style={{ background: '#E8464E' }}>
+                        {getInitials(j.company)}
                       </div>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: '#E8464E15', color: '#E8464E' }}>Wuzzuf</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-neutral-900 leading-snug">{j.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5 truncate">{j.company}</p>
+                          </div>
+                          <span className="text-2xs font-bold px-2 py-0.5 rounded flex-shrink-0" style={{ background: '#E8464E15', color: '#E8464E' }}>Wuzzuf</span>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       <span className="inline-flex items-center gap-1 text-2xs text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"><MapPin className="w-2.5 h-2.5" />{j.location}</span>

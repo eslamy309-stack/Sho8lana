@@ -43,6 +43,7 @@ const TalentProfileScreen       = lazy(() => import('./screens/TalentProfileScre
 const InternshipHubScreen       = lazy(() => import('./screens/InternshipHubScreen').then(m => ({ default: m.InternshipHubScreen })))
 const CareerAnalyticsScreen     = lazy(() => import('./screens/CareerAnalyticsScreen').then(m => ({ default: m.CareerAnalyticsScreen })))
 const SimulationUploadHubScreen = lazy(() => import('./screens/SimulationUploadHubScreen').then(m => ({ default: m.SimulationUploadHubScreen })))
+const ForageHubScreen           = lazy(() => import('./screens/ForageHubScreen').then(m => ({ default: m.ForageHubScreen })))
 
 function ScreenFallback() {
   return (
@@ -116,6 +117,7 @@ function ScreenRouter() {
     internshipHub:          <InternshipHubScreen />,
     careerAnalytics:        <CareerAnalyticsScreen />,
     simulationUploadHub:    <SimulationUploadHubScreen />,
+    forageHub:              <ForageHubScreen />,
   }
 
   const unreadCount = state.notifications.filter(n => !n.read).length
