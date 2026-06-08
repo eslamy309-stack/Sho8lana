@@ -23,10 +23,10 @@ const TRACK_ICONS: Record<string, React.ElementType> = {
 }
 
 // ── Animation variants ───────────────────────────────────────────────────────
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }
 const up = {
-  hidden:  { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+  hidden:  { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
 }
 const fadeIn = {
   hidden:  { opacity: 0 },
@@ -44,9 +44,8 @@ function ForageCard({ program, index }: { program: ForageProgram; index: number 
     <motion.div
       variants={up}
       custom={index}
-      whileHover={{ y: -3, boxShadow: '0 10px 28px rgba(0,0,0,0.10)' }}
       whileTap={{ scale: 0.98 }}
-      className="flex-shrink-0 w-[72vw] max-w-[268px] rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-card"
+      className="flex-shrink-0 w-[72vw] max-w-[268px] rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-card hover:-translate-y-0.5 hover:shadow-md transition-[transform,box-shadow] duration-150"
       style={{ background: `linear-gradient(148deg, ${program.color}07, #ffffff)` }}
     >
       {/* Card header */}
@@ -193,8 +192,8 @@ export function SimHubScreen() {
   return (
     <div className="min-h-dvh bg-neutral-50">
 
-      {/* ── Sticky header ── */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100 px-4 py-3 flex items-center justify-between">
+      {/* ── Sticky header — hidden on desktop (DesktopTopNav handles nav) ── */}
+      <div className="md:hidden sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100 px-4 py-3 flex items-center justify-between">
         <div>
           <h2 className="text-base font-extrabold text-neutral-900 leading-tight">
             {ar ? 'مركز التدريب' : 'Practice Hub'}
@@ -426,7 +425,7 @@ export function SimHubScreen() {
             <span className="text-2xs text-neutral-400">{ar ? 'عربي + إنجليزي' : 'Arabic & English'}</span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {SIM_TRACKS.map((track, i) => {
               const done = track.tasks.filter(t => state.simDone.includes(t.id)).length
               const Icon = TRACK_ICONS[track.icon] || Megaphone
@@ -437,13 +436,12 @@ export function SimHubScreen() {
                   key={track.id}
                   variants={up}
                   custom={i}
-                  whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => {
                     dispatch({ type: 'OPEN_TRACK', track })
                     dispatch({ type: 'GO', screen: 'simTasks' })
                   }}
-                  className="w-full rounded-2xl p-4 border text-left transition-all duration-200"
+                  className="w-full rounded-2xl p-4 border text-left hover:-translate-y-0.5 hover:shadow-md transition-[transform,box-shadow,border-color] duration-150"
                   style={{
                     background:   `linear-gradient(145deg, ${track.color}08, #ffffff)`,
                     borderColor:  `${track.color}28`,

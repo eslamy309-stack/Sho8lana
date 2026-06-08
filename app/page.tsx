@@ -34,7 +34,7 @@ const up = {
 }
 const stag = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }
 
-/* ── Animated background ── */
+/* ── Background — CSS-only animations (no JS overhead, GPU-composited) ── */
 function Bg() {
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0, background: '#020817' }}>
@@ -42,10 +42,9 @@ function Bg() {
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)',
         backgroundSize: '60px 60px',
       }} />
-      <motion.div animate={{ scale:[1,1.1,1], opacity:[0.14,0.22,0.14] }} transition={{ duration:9, repeat:Infinity, ease:'easeInOut' }}
-        className="absolute" style={{ top:'-10%', left:'25%', width:700, height:700, borderRadius:'50%', background:'radial-gradient(circle,rgba(99,102,241,0.25) 0%,transparent 70%)', filter:'blur(70px)' }} />
-      <motion.div animate={{ scale:[1,1.12,1], opacity:[0.09,0.17,0.09] }} transition={{ duration:11, repeat:Infinity, ease:'easeInOut', delay:3 }}
-        className="absolute" style={{ bottom:'5%', right:'10%', width:550, height:550, borderRadius:'50%', background:'radial-gradient(circle,rgba(16,185,129,0.2) 0%,transparent 70%)', filter:'blur(70px)' }} />
+      {/* bg-blob CSS class drives the animation — defined in globals.css */}
+      <div className="bg-blob bg-blob-1" style={{ top:'-10%', left:'25%', width:700, height:700, background:'radial-gradient(circle,rgba(99,102,241,0.25) 0%,transparent 70%)', filter:'blur(70px)' }} />
+      <div className="bg-blob bg-blob-2" style={{ bottom:'5%', right:'10%', width:550, height:550, background:'radial-gradient(circle,rgba(16,185,129,0.2) 0%,transparent 70%)', filter:'blur(70px)' }} />
     </div>
   )
 }
@@ -762,7 +761,7 @@ export default function LandingPage() {
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
             initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}>
             <motion.div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setAppOpen(false)} />
-            <motion.div className="relative z-10 w-full max-w-app h-dvh md:h-[min(900px,90vh)] md:rounded-3xl overflow-hidden shadow-2xl"
+            <motion.div className="relative z-10 w-full max-w-app md:max-w-3xl h-dvh md:h-[min(920px,92vh)] md:rounded-2xl overflow-hidden shadow-2xl"
               initial={{ scale:0.94, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }}
               exit={{ scale:0.94, opacity:0, y:20 }} transition={{ duration:0.32, ease:[0.16,1,0.3,1] }}>
               <button onClick={() => setAppOpen(false)}

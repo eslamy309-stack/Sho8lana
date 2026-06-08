@@ -102,7 +102,7 @@ export function CareerAnalyticsScreen() {
       >
         <button
           onClick={() => dispatch({ type: 'GO_BACK' })}
-          className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+          className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70 min-h-[44px] pr-2"
           style={{ color: '#94A3B8' }}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -341,10 +341,14 @@ export function CareerAnalyticsScreen() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs leading-relaxed" style={{ color: '#CBD5E1' }}>{rec.text}</p>
                     <button
-                      className="mt-2 text-xs font-bold transition-opacity hover:opacity-80 min-h-[36px] flex items-center"
+                      onClick={() => {
+                        if (rec.cta === 'Start Simulation') dispatch({ type: 'GO', screen: 'sim' })
+                        else if (rec.cta === 'Update Profile') dispatch({ type: 'GO', screen: 'onboard' })
+                      }}
+                      className="mt-2 text-xs font-bold transition-opacity hover:opacity-80 min-h-[36px] flex items-center gap-1"
                       style={{ color: rec.color }}
                     >
-                      {rec.cta} →
+                      {rec.cta} <ChevronLeft className="w-3 h-3 rotate-180" />
                     </button>
                   </div>
                 </motion.div>

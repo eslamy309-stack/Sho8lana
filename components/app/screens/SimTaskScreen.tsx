@@ -60,12 +60,18 @@ export function SimTaskScreen() {
   return (
     <div className="min-h-dvh bg-neutral-50 pb-28">
       {/* Topbar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-neutral-100 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => dispatch({ type: 'GO_BACK' })} className="p-1 text-neutral-500">
+      <div className="sticky top-0 z-20 bg-white border-b border-neutral-100 px-4 py-2 flex items-center gap-2">
+        <button
+          onClick={() => dispatch({ type: 'GO_BACK' })}
+          aria-label={ar ? 'رجوع' : 'Go back'}
+          className="w-11 h-11 flex items-center justify-center rounded-xl text-neutral-500 hover:bg-neutral-100 transition-colors -ml-1 shrink-0"
+        >
           {ar ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
         <span className="text-sm font-semibold text-neutral-900 flex-1 truncate">{ar ? task.titleAr : task.title}</span>
-        <span className="text-xs font-semibold text-neutral-500">{stepIdx + 1}/{totalSteps}</span>
+        <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: `${track.color}15`, color: track.color }}>
+          {stepIdx + 1}/{totalSteps}
+        </span>
       </div>
 
       {/* Step progress bar */}

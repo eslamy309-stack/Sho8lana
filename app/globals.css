@@ -111,6 +111,28 @@
   100% { background-position: -200% 0; }
 }
 
+/* ── Landing page background blobs — CSS-driven (no JS, GPU-composited) ── */
+@keyframes blob-pulse-1 {
+  0%, 100% { transform: scale(1);    opacity: 0.14; }
+  50%       { transform: scale(1.1); opacity: 0.22; }
+}
+@keyframes blob-pulse-2 {
+  0%, 100% { transform: scale(1);    opacity: 0.09; }
+  50%       { transform: scale(1.12);opacity: 0.17; }
+}
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform, opacity;
+  transform: translateZ(0);  /* promote to compositor layer */
+}
+.bg-blob-1 {
+  animation: blob-pulse-1 9s ease-in-out infinite;
+}
+.bg-blob-2 {
+  animation: blob-pulse-2 11s ease-in-out 3s infinite;
+}
+
 /* ── Respect reduced-motion: collapse all animations / transitions ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

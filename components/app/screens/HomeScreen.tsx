@@ -25,10 +25,11 @@ interface DbJob {
   created_at: string
 }
 
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
+// Tighter stagger for large lists — fewer delays = less perceived lag
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }
 const up = {
-  hidden:  { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+  hidden:  { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
 }
 
 /** Generate 1–2 letter initials from a company name */
@@ -153,10 +154,9 @@ function FeaturedCard({ job }: { job: Job }) {
   return (
     <motion.button
       variants={up}
-      whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(0,0,0,0.11)' }}
       whileTap={{ scale: 0.97 }}
       onClick={() => { dispatch({ type: 'SELECT_JOB', id: job.id }); dispatch({ type: 'GO', screen: 'detail' }) }}
-      className="flex-shrink-0 w-[72vw] max-w-[272px] rounded-xl border border-neutral-200 p-4 text-left shadow-card bg-white"
+      className="flex-shrink-0 w-[72vw] max-w-[272px] rounded-xl border border-neutral-200 p-4 text-left shadow-card bg-white hover:-translate-y-0.5 hover:shadow-md transition-[transform,box-shadow] duration-150"
       style={{ background: `linear-gradient(145deg, ${company.color}09, white)` }}
     >
       <div className="flex items-center gap-2.5 mb-3">
@@ -352,8 +352,8 @@ export function HomeScreen() {
 
   return (
     <div className="min-h-dvh bg-neutral-50 pb-6">
-      {/* Topbar */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100 px-4 py-2.5 flex items-center justify-between">
+      {/* Topbar — hidden on desktop (DesktopTopNav in Shell handles it) */}
+      <div className="md:hidden sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100 px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center shadow-sm">
             <Zap className="w-4 h-4 text-white" />
@@ -648,7 +648,7 @@ export function HomeScreen() {
                   </h3>
                   <span className="text-xs text-neutral-400">{filtered.length} {ar ? 'نتيجة' : 'results'}</span>
                 </div>
-                <motion.div variants={stagger} initial="hidden" animate="visible" className="flex flex-col gap-3">
+                <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {filtered.slice(0, visibleCount).map((j, i) => <JobCard key={j.id} job={j} index={i} />)}
                 </motion.div>
                 {visibleCount < filtered.length && (

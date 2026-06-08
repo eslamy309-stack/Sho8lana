@@ -57,18 +57,24 @@ export function AIScreen() {
     <div className="flex flex-col h-full">
       {/* Topbar */}
       <div className="sticky top-0 z-20 bg-white border-b border-neutral-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
-            <Bot className="w-3.5 h-3.5 text-white" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center shadow-sm">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-neutral-900">{ar ? 'مساعد المسيرة المهنية' : 'Career Assistant'}</h2>
-            <p className="text-2xs text-violet-500">{ar ? 'مدعوم بـ Groq AI' : 'Powered by Groq AI'}</p>
+            <p className="text-2xs text-violet-500 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {ar ? 'مدعوم بـ Groq AI · متصل' : 'Powered by Groq AI · Online'}
+            </p>
           </div>
         </div>
         {state.chat.length > 0 && (
-          <button onClick={() => dispatch({ type: 'CLEAR_CHAT' })}
-            className="p-1.5 text-neutral-400 hover:text-danger-500 transition-colors rounded-lg hover:bg-danger-50">
+          <button
+            onClick={() => dispatch({ type: 'CLEAR_CHAT' })}
+            aria-label={ar ? 'مسح المحادثة' : 'Clear chat'}
+            className="w-11 h-11 flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
+          >
             <Trash2 className="w-4 h-4" />
           </button>
         )}
@@ -159,9 +165,23 @@ export function AIScreen() {
 
       {/* Input bar */}
       <div className="flex-shrink-0 border-t border-neutral-100 bg-white px-4 py-3 pb-safe">
-        <div className="flex gap-2">
+        {/* Quick-reply chips when there's already a conversation */}
+        {state.chat.length > 0 && state.chat.length < 4 && !state.aiLoading && (
+          <div className="flex gap-2 overflow-x-auto scroll-hide mb-2 pb-0.5">
+            {(ar ? ['شكراً، ممتاز!', 'أخبرني أكثر', 'كيف أبدأ؟'] : ['Tell me more', 'Give me an example', 'What should I do first?']).map(q => (
+              <button
+                key={q}
+                onClick={() => send(q)}
+                className="shrink-0 text-[11px] font-medium text-violet-700 bg-violet-50 border border-violet-200 px-3 py-1.5 rounded-full whitespace-nowrap hover:bg-violet-100 transition-colors"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 items-end">
           <input
-            className="flex-1 h-10 px-4 rounded-xl border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+            className="flex-1 min-h-[44px] px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
             placeholder={ar ? 'اسأل عن مسيرتك المهنية...' : 'Ask about your career...'}
             value={state.aiInput}
             onChange={e => dispatch({ type: 'SET_AI_INPUT', input: e.target.value })}
@@ -171,10 +191,11 @@ export function AIScreen() {
             whileTap={{ scale: 0.92 }}
             disabled={!state.aiInput.trim() || state.aiLoading}
             onClick={() => send(state.aiInput)}
+            aria-label={ar ? 'إرسال' : 'Send message'}
             className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors',
+              'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all',
               state.aiInput.trim() && !state.aiLoading
-                ? 'bg-violet-600 text-white hover:bg-violet-700'
+                ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
                 : 'bg-neutral-100 text-neutral-400'
             )}
           >

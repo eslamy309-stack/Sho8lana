@@ -22,10 +22,10 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string }> = {
   Intermediate: { bg: '#FEF3C7', text: '#92400E' },
 }
 
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }
 const up = {
-  hidden:  { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } },
+  hidden:  { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] } },
 }
 
 // ─── Program Card ─────────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ export function ForageHubScreen() {
     <div className="flex flex-col h-full bg-neutral-50">
 
       {/* ── Header ── */}
-      <div className="bg-white border-b border-neutral-100 px-4 pt-10 pb-3 shrink-0">
+      <div className="bg-white border-b border-neutral-100 px-4 pt-10 md:pt-4 pb-3 shrink-0">
         <div className="flex items-center gap-3 mb-4">
           <motion.button
             whileTap={{ scale: 0.9 }}
@@ -317,9 +317,9 @@ export function ForageHubScreen() {
           )}
         </div>
 
-        <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-3">
+        <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.length === 0 ? (
-            <div className="text-center py-16 flex flex-col items-center">
+            <div className="col-span-full text-center py-16 flex flex-col items-center">
               <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
                 <Search className="w-6 h-6 text-neutral-400" />
               </div>
