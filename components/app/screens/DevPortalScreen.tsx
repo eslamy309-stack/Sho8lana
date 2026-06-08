@@ -869,7 +869,7 @@ export function DevPortalScreen() {
         </div>
 
         {/* Tab navigation */}
-        <div className="flex gap-0.5 overflow-x-auto pb-px scrollbar-hide">
+        <div className="flex gap-0.5 overflow-x-auto pb-px scroll-hide">
           {TABS.map(t => (
             <button
               key={t.id}

@@ -201,7 +201,7 @@ export function RecruitmentPipelineScreen() {
         </div>
 
         {/* Stage tabs */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scroll-hide">
           {STAGES.map(stage => {
             const isActive = stage === activeStage
             const count    = stageCounts[stage] ?? 0

@@ -276,8 +276,11 @@ export function HRDashboardScreen() {
         >
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-50">
             <p className="text-sm font-semibold text-neutral-900">Active Campaigns</p>
-            <button className="w-6 h-6 rounded-lg bg-neutral-900 flex items-center justify-center">
-              <Plus className="w-3 h-3 text-white" />
+            <button
+              aria-label="New campaign"
+              className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center hover:bg-neutral-700 transition-colors active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-white" />
             </button>
           </div>
 

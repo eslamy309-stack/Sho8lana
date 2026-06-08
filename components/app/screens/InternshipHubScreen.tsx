@@ -422,7 +422,7 @@ export function InternshipHubScreen() {
               </div>
 
               {/* Filter chips */}
-              <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scroll-hide">
                 {FILTER_CATEGORIES.map(cat => (
                   <button
                     key={cat}

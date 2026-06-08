@@ -235,7 +235,7 @@ export function TalentMarketplaceScreen() {
             >
               <div className="pt-3 space-y-2">
                 {/* Track */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scroll-hide">
                   {TRACKS.map(t => (
                     <button key={t} onClick={() => setTrack(t)}
                       className={cn(
@@ -246,7 +246,7 @@ export function TalentMarketplaceScreen() {
                   ))}
                 </div>
                 {/* Tier */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scroll-hide">
                   {TIERS.map(t => (
                     <button key={t} onClick={() => setTier(t)}
                       className={cn(
@@ -259,7 +259,7 @@ export function TalentMarketplaceScreen() {
                 {/* Min Talent Score */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-neutral-400 shrink-0">Min Score:</span>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-1.5 overflow-x-auto scroll-hide">
                     {MIN_SCORE_OPTS.map(opt => (
                       <button key={opt.label} onClick={() => setMinScore(opt.value)}
                         className={cn(
@@ -273,7 +273,7 @@ export function TalentMarketplaceScreen() {
                 {/* Sort */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-neutral-400 shrink-0">Sort:</span>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-1.5 overflow-x-auto scroll-hide">
                     {SORT_BY.map(s => (
                       <button key={s} onClick={() => setSortBy(s)}
                         className={cn(
