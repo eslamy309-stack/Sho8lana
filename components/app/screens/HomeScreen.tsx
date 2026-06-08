@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Search, Globe, Wifi, MapPin, Star, Zap, Map, Bookmark,
@@ -110,12 +110,14 @@ function JobCard({ job, index }: { job: Job; index: number }) {
           </div>
         </div>
       </button>
-      {/* Save button */}
+      {/* Save button — extended hit area via padding */}
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-neutral-50">
         <p className="text-2xs text-neutral-400">{job.applicants} {ar ? 'متقدم' : 'applicants'} · {job.postedAgo}</p>
         <button
-          onClick={() => dispatch({ type: 'TOGGLE_SAVE_JOB', id: job.id })}
-          className="text-neutral-400 hover:text-brand-600 transition-colors"
+          onClick={e => { e.stopPropagation(); dispatch({ type: 'TOGGLE_SAVE_JOB', id: job.id }) }}
+          aria-label={saved ? (ar ? 'إلغاء الحفظ' : 'Unsave job') : (ar ? 'حفظ الوظيفة' : 'Save job')}
+          aria-pressed={saved}
+          className="-mr-1 p-2 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-50 active:bg-brand-100 transition-colors"
         >
           {saved
             ? <BookmarkCheck className="w-4 h-4 text-brand-600" />
@@ -135,9 +137,9 @@ function FeaturedCard({ job }: { job: Job }) {
     <motion.button
       variants={up}
       whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(0,0,0,0.11)' }}
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: 0.97 }}
       onClick={() => { dispatch({ type: 'SELECT_JOB', id: job.id }); dispatch({ type: 'GO', screen: 'detail' }) }}
-      className="flex-shrink-0 w-[260px] rounded-xl border border-neutral-200 p-4 text-left shadow-card bg-white"
+      className="flex-shrink-0 w-[72vw] max-w-[272px] rounded-xl border border-neutral-200 p-4 text-left shadow-card bg-white"
       style={{ background: `linear-gradient(145deg, ${company.color}09, white)` }}
     >
       <div className="flex items-center gap-2.5 mb-3">
@@ -171,6 +173,15 @@ export function HomeScreen() {
   const [tab, setTab] = useState<HomeTab>(JOBS.length > 0 ? 'local' : 'linkedin')
   const [paidOnly, setPaidOnly] = useState(false)
   const [visibleCount, setVisibleCount] = useState(10)
+
+  // ── Debounced search (200 ms) ─────────────────────────────────────────────
+  const [searchInput, setSearchInput] = useState(searchQuery)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const handleSearch = useCallback((value: string) => {
+    setSearchInput(value)
+    clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => dispatch({ type: 'SET_SEARCH', query: value }), 200)
+  }, [dispatch])
 
   // DB jobs posted by companies
   const [dbJobs, setDbJobs]           = useState<DbJob[]>([])
@@ -324,31 +335,42 @@ export function HomeScreen() {
   return (
     <div className="min-h-dvh bg-neutral-50 pb-6">
       {/* Topbar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-neutral-100 px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100 px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white" />
+          <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center shadow-sm">
+            <Zap className="w-4 h-4 text-white" />
           </div>
-          <span className="font-serif text-lg text-neutral-900">Sho8lana</span>
+          <span className="font-serif text-lg text-neutral-900 tracking-tight">Sho8lana</span>
           {ar && <span className="text-sm text-neutral-400">شغلانة</span>}
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => dispatch({ type: 'GO', screen: 'map' })}
-            className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center text-brand-600 hover:bg-brand-50 transition-colors"
-            title={ar ? 'خريطة الفرص' : 'Opportunity Map'}>
+        {/* Icon buttons: 44×44 touch targets */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => dispatch({ type: 'GO', screen: 'map' })}
+            aria-label={ar ? 'خريطة الفرص' : 'Opportunity Map'}
+            className="w-11 h-11 rounded-xl border border-neutral-150 bg-white flex items-center justify-center text-brand-600 hover:bg-brand-50 active:bg-brand-100 transition-colors"
+          >
             <Map className="w-4 h-4" />
           </button>
-          <button onClick={() => dispatch({ type: 'GO', screen: 'companyPortal' })}
-            className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:bg-neutral-50 transition-colors"
-            title={ar ? 'بوابة الشركات' : 'Employer Portal'}>
+          <button
+            onClick={() => dispatch({ type: 'GO', screen: 'companyPortal' })}
+            aria-label={ar ? 'بوابة الشركات' : 'Employer Portal'}
+            className="w-11 h-11 rounded-xl border border-neutral-150 bg-white flex items-center justify-center text-neutral-500 hover:bg-neutral-50 active:bg-neutral-100 transition-colors"
+          >
             <Building2 className="w-4 h-4" />
           </button>
-          <button onClick={() => dispatch({ type: 'GO', screen: 'feeds' })}
-            className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center text-success-500 hover:bg-neutral-50 transition-colors">
+          <button
+            onClick={() => dispatch({ type: 'GO', screen: 'feeds' })}
+            aria-label={ar ? 'المستجدات الحية' : 'Live Feeds'}
+            className="w-11 h-11 rounded-xl border border-neutral-150 bg-white flex items-center justify-center text-success-500 hover:bg-neutral-50 active:bg-neutral-100 transition-colors"
+          >
             <Wifi className="w-4 h-4" />
           </button>
-          <button onClick={() => dispatch({ type: 'GO', screen: 'lang' })}
-            className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:bg-neutral-50 transition-colors">
+          <button
+            onClick={() => dispatch({ type: 'GO', screen: 'lang' })}
+            aria-label={ar ? 'تغيير اللغة' : 'Change Language'}
+            className="w-11 h-11 rounded-xl border border-neutral-150 bg-white flex items-center justify-center text-neutral-500 hover:bg-neutral-50 active:bg-neutral-100 transition-colors"
+          >
             <Globe className="w-4 h-4" />
           </button>
         </div>
@@ -362,7 +384,7 @@ export function HomeScreen() {
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors',
+                'flex-1 py-2.5 rounded-lg text-xs font-semibold transition-colors min-h-[44px]',
                 tab === t ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700',
               )}
             >
@@ -375,14 +397,18 @@ export function HomeScreen() {
           ))}
         </div>
 
-        {/* Search */}
+        {/* Search — debounced 200 ms */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <input
-            className="w-full h-10 pl-9 pr-4 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 transition-all"
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            aria-label={ar ? 'ابحث عن وظيفة' : 'Search jobs'}
+            className="w-full h-11 pl-9 pr-4 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 transition-all"
             placeholder={ar ? 'ابحث بالعنوان أو المهارة...' : 'Search title, skill, company…'}
-            value={searchQuery}
-            onChange={e => dispatch({ type: 'SET_SEARCH', query: e.target.value })}
+            value={searchInput}
+            onChange={e => handleSearch(e.target.value)}
           />
         </div>
 
@@ -476,29 +502,40 @@ export function HomeScreen() {
           </>
         )}
 
-        {/* Profile completion banner */}
-        {!isProfileDone && tab === 'local' && (
-          <motion.button
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            onClick={() => dispatch({ type: 'GO', screen: 'onboard' })}
-            className="w-full rounded-xl p-4 text-left"
-            style={{ background: 'linear-gradient(135deg, #0F172A, #0F766E)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white">
-                  {ar ? 'أكمل ملفك للتقديم بنقرة واحدة' : 'Complete profile to apply in 1 tap'}
-                </p>
-                <p className="text-xs text-white/60 mt-0.5">
-                  {ar ? 'ارفع مستنداتك مرة واحدة، قدّم في كل مكان' : 'Upload docs once, apply everywhere'}
-                </p>
+        {/* Profile completion banner — with visual progress bar */}
+        {!isProfileDone && tab === 'local' && (() => {
+          const pct = Math.round((Object.keys(state.user.documents).length / DOCUMENTS.length) * 100)
+          return (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => dispatch({ type: 'GO', screen: 'onboard' })}
+              className="w-full rounded-2xl p-4 text-left"
+              style={{ background: 'linear-gradient(135deg, #0F172A 0%, #0c3f3c 60%, #0F766E 100%)' }}
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-white leading-snug">
+                    {ar ? 'أكمل ملفك للتقديم بنقرة واحدة' : 'Complete your profile to apply in 1 tap'}
+                  </p>
+                  <p className="text-xs text-white/55 mt-1">
+                    {ar ? 'ارفع مستنداتك مرة واحدة، قدّم في كل مكان' : 'Upload once, apply everywhere'}
+                  </p>
+                </div>
+                <span className="text-lg font-black text-white tabular-nums flex-shrink-0">{pct}%</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold text-white">
-                {Math.round((Object.keys(state.user.documents).length / DOCUMENTS.length) * 100)}%
+              {/* Progress bar */}
+              <div className="w-full bg-white/15 rounded-full h-1.5 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+                  className="h-full bg-brand-400 rounded-full"
+                />
               </div>
-            </div>
-          </motion.button>
-        )}
+            </motion.button>
+          )
+        })()}
 
         {/* Talent Intelligence quick access */}
         {tab === 'local' && (
@@ -584,15 +621,30 @@ export function HomeScreen() {
                 <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-neutral-400" /></div>
               ) : dbJobs.length === 0 ? (
                 <div className="text-center py-10 flex flex-col items-center gap-3">
-                  <p className="text-sm text-neutral-500 font-medium">
-                    {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
-                  </p>
-                  <p className="text-xs text-neutral-400">
-                    {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf for live opportunities'}
-                  </p>
+                  <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center">
+                    <Briefcase className="w-7 h-7 text-neutral-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-700 font-semibold">
+                      {ar ? 'لا توجد وظائف محلية حالياً' : 'No local listings right now'}
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      {ar ? 'تصفح LinkedIn أو Wuzzuf للعثور على الفرص المتاحة' : 'Browse LinkedIn or Wuzzuf for live opportunities'}
+                    </p>
+                  </div>
                   <div className="flex gap-2 mt-1">
-                    <button onClick={() => setTab('linkedin')} className="px-4 py-2 bg-[#0077B5] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">LinkedIn</button>
-                    <button onClick={() => setTab('wuzzuf')} className="px-4 py-2 bg-[#E8464E] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">Wuzzuf</button>
+                    <button
+                      onClick={() => setTab('linkedin')}
+                      className="px-4 py-2.5 min-h-[44px] bg-[#0077B5] text-white text-xs font-semibold rounded-xl hover:opacity-90 active:opacity-80 transition-opacity"
+                    >
+                      LinkedIn
+                    </button>
+                    <button
+                      onClick={() => setTab('wuzzuf')}
+                      className="px-4 py-2.5 min-h-[44px] bg-[#E8464E] text-white text-xs font-semibold rounded-xl hover:opacity-90 active:opacity-80 transition-opacity"
+                    >
+                      Wuzzuf
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -656,11 +708,22 @@ export function HomeScreen() {
             </div>
 
             {state.liveJobsLoading ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3" aria-label={ar ? 'جارٍ التحميل...' : 'Loading jobs…'} aria-busy="true">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-neutral-100 p-4 animate-pulse">
-                    <div className="h-3 bg-neutral-100 rounded w-1/2 mb-2" />
-                    <div className="h-2 bg-neutral-100 rounded w-1/3" />
+                  <div key={i} className="bg-white rounded-xl border border-neutral-100 p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 space-y-2">
+                        <div className="skeleton h-3.5 w-3/5 rounded-md" />
+                        <div className="skeleton h-2.5 w-2/5 rounded-md" />
+                      </div>
+                      <div className="skeleton h-5 w-14 rounded-md" />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="skeleton h-5 w-20 rounded-full" />
+                      <div className="skeleton h-5 w-16 rounded-full" />
+                      <div className="skeleton h-5 w-12 rounded-full" />
+                    </div>
+                    <div className="skeleton h-8 w-24 rounded-lg" />
                   </div>
                 ))}
               </div>

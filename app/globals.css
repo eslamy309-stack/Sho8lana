@@ -36,9 +36,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Eliminate 300ms tap delay on iOS for all interactive elements */
-  button, a, [role="button"], input, select, textarea {
+  /* ── Touch: eliminate 300 ms tap delay globally ── */
+  a, button, [role="button"], input, select, textarea, label {
     touch-action: manipulation;
+  }
+
+  /* ── Cursor: always pointer on interactive elements ── */
+  a, button, [role="button"], label[for], [tabindex="0"] {
+    cursor: pointer;
   }
 
   /* RTL support */
@@ -51,11 +56,11 @@
   ::-webkit-scrollbar-thumb:hover { background: theme(colors.neutral.400); }
   * { scrollbar-width: thin; scrollbar-color: theme(colors.neutral.300) transparent; }
 
-  /* Focus ring */
+  /* Focus ring — 3:1 brand color, clear offset */
   :focus-visible {
     outline: 2px solid var(--color-brand);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 }
 
@@ -74,6 +79,47 @@
   .pt-safe  { padding-top: max(8px, env(safe-area-inset-top)); }
   .h-dvh    { height: 100dvh; }
   .min-h-dvh { min-height: 100dvh; }
+
+  /* ── Skeleton shimmer — use instead of plain animate-pulse ── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      theme(colors.neutral.100) 25%,
+      theme(colors.neutral.200) 50%,
+      theme(colors.neutral.100) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-sweep 1.6s ease-in-out infinite;
+    border-radius: 6px;
+  }
+  .skeleton-dark {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.06) 25%,
+      rgba(255,255,255,0.12) 50%,
+      rgba(255,255,255,0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-sweep 1.6s ease-in-out infinite;
+    border-radius: 6px;
+  }
+}
+
+/* ── Shimmer keyframe ── */
+@keyframes shimmer-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Respect reduced-motion: collapse all animations / transitions ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton, .skeleton-dark { animation: none; }
 }
 
 /* Gradient text helper */

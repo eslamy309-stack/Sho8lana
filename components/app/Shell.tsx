@@ -62,9 +62,9 @@ const COMPANY_SCREENS = new Set([
 ])
 
 const pageVariants = {
-  enter:  { opacity: 0, x: 40 },
-  center: { opacity: 1, x: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
-  exit:   { opacity: 0, x: -20, transition: { duration: 0.2 } },
+  enter:  { opacity: 0, y: 10, scale: 0.99 },
+  center: { opacity: 1, y: 0,  scale: 1, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
+  exit:   { opacity: 0, y: -6, scale: 1,  transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } },
 }
 
 function ScreenRouter() {
