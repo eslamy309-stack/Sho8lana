@@ -1,72 +1,59 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Wifi, TrendingUp, Newspaper } from 'lucide-react'
+import {
+  ChevronLeft, ChevronRight, Wifi, TrendingUp, Newspaper,
+  Target, BarChart2, Briefcase, Brain, Mic,
+} from 'lucide-react'
 import { useApp } from '@/lib/store'
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }
 const up = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }
 
-const FEED_ITEMS = [
+const FEED_ITEMS: {
+  tag: string; tagAr: string; title: string; titleAr: string;
+  body: string; bodyAr: string; color: string; icon: React.ElementType;
+  date: string; dateAr: string;
+}[] = [
   {
-    tag: 'Internship Tip',
-    tagAr: 'نصيحة تدريب',
+    tag: 'Internship Tip', tagAr: 'نصيحة تدريب',
     title: 'How to stand out in your first internship application',
     titleAr: 'كيف تتميز في أول طلب تدريب',
     body: 'Tailor your CV to each role, highlight university projects, and follow up within a week.',
     bodyAr: 'خصص سيرتك الذاتية لكل وظيفة، أبرز مشاريعك الجامعية، وتابع خلال أسبوع.',
-    color: '#0D9488',
-    icon: '🎯',
-    date: 'Today',
-    dateAr: 'اليوم',
+    color: '#0D9488', icon: Target, date: 'Today', dateAr: 'اليوم',
   },
   {
-    tag: 'Market Insight',
-    tagAr: 'رؤية السوق',
+    tag: 'Market Insight', tagAr: 'رؤية السوق',
     title: 'Top in-demand skills for Egyptian graduates in 2025',
     titleAr: 'أكثر المهارات طلباً لخريجي مصر 2025',
     body: 'Data analysis, digital marketing, and financial modeling top the list for business graduates.',
     bodyAr: 'تحليل البيانات، التسويق الرقمي، والنمذجة المالية في صدارة القائمة.',
-    color: '#7C3AED',
-    icon: '📊',
-    date: '2 days ago',
-    dateAr: 'منذ يومين',
+    color: '#7C3AED', icon: BarChart2, date: '2 days ago', dateAr: 'منذ يومين',
   },
   {
-    tag: 'Career Advice',
-    tagAr: 'نصيحة مهنية',
+    tag: 'Career Advice', tagAr: 'نصيحة مهنية',
     title: 'Build your LinkedIn before you graduate',
     titleAr: 'ابنِ ملفك على LinkedIn قبل التخرج',
     body: 'Students with active LinkedIn profiles are 2× more likely to get interview calls.',
     bodyAr: 'الطلاب الذين لديهم ملفات LinkedIn نشطة أكثر عرضة مرتين للحصول على دعوات مقابلات.',
-    color: '#0891B2',
-    icon: '💼',
-    date: '3 days ago',
-    dateAr: 'منذ 3 أيام',
+    color: '#0891B2', icon: Briefcase, date: '3 days ago', dateAr: 'منذ 3 أيام',
   },
   {
-    tag: 'AI & Tech',
-    tagAr: 'الذكاء الاصطناعي',
+    tag: 'AI & Tech', tagAr: 'الذكاء الاصطناعي',
     title: 'How AI is changing internship hiring in Egypt',
     titleAr: 'كيف يغير الذكاء الاصطناعي التوظيف في مصر',
     body: 'Platforms now use AI screening — strong keywords and clear achievements beat generic CVs.',
     bodyAr: 'المنصات تستخدم الذكاء الاصطناعي في الفرز — الكلمات المفتاحية القوية تفوق السير الذاتية العامة.',
-    color: '#D97706',
-    icon: '🤖',
-    date: '5 days ago',
-    dateAr: 'منذ 5 أيام',
+    color: '#D97706', icon: Brain, date: '5 days ago', dateAr: 'منذ 5 أيام',
   },
   {
-    tag: 'Interview Prep',
-    tagAr: 'تحضير المقابلة',
+    tag: 'Interview Prep', tagAr: 'تحضير المقابلة',
     title: 'Common behavioral questions Egyptian companies ask',
     titleAr: 'أسئلة السلوك الشائعة في الشركات المصرية',
     body: 'Prepare STAR-format answers for: teamwork, handling pressure, and problem-solving scenarios.',
     bodyAr: 'احضّر إجابات بصيغة STAR لـ: العمل الجماعي، والتعامل مع الضغط، وحل المشكلات.',
-    color: '#059669',
-    icon: '🎤',
-    date: '1 week ago',
-    dateAr: 'منذ أسبوع',
+    color: '#059669', icon: Mic, date: '1 week ago', dateAr: 'منذ أسبوع',
   },
 ]
 
@@ -78,7 +65,11 @@ export function FeedsScreen() {
     <div className="min-h-dvh bg-neutral-50">
       {/* Topbar */}
       <div className="sticky top-0 z-20 bg-white border-b border-neutral-100 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => dispatch({ type: 'GO_BACK' })} className="p-1 text-neutral-500">
+        <button
+          onClick={() => dispatch({ type: 'GO_BACK' })}
+          aria-label="Go back"
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 transition-colors -ml-1"
+        >
           {ar ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
         <div className="flex items-center gap-2 flex-1">
@@ -112,10 +103,15 @@ export function FeedsScreen() {
             className="bg-white rounded-2xl border border-neutral-200 p-4 shadow-card"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                   style={{ background: `${item.color}15` }}>
-                {item.icon}
-              </div>
+              {(() => {
+                const FeedIcon = item.icon
+                return (
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                       style={{ background: `${item.color}15` }}>
+                    <FeedIcon className="w-5 h-5" style={{ color: item.color }} />
+                  </div>
+                )
+              })()}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-2xs font-bold px-2 py-0.5 rounded-md"

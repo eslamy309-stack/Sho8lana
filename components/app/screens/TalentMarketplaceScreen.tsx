@@ -309,8 +309,10 @@ export function TalentMarketplaceScreen() {
 
         <motion.div initial="hidden" animate="visible" className="space-y-3 pb-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-3xl mb-2">🔍</p>
+            <div className="text-center py-16 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
+                <Search className="w-6 h-6 text-neutral-400" />
+              </div>
               <p className="text-sm font-semibold text-neutral-700">No candidates found</p>
               <p className="text-xs text-neutral-400 mt-1">Try adjusting your filters</p>
             </div>

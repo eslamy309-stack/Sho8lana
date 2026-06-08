@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import {
   ChevronLeft, TrendingUp, Lightbulb, BarChart2,
+  Target, Eye, GitCommit, Link, Github,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 
@@ -22,23 +23,35 @@ const up = {
 
 const RECOMMENDATIONS = [
   {
-    icon: '🎯',
-    text: 'Complete the Finance Simulation to boost your KPI by ~8 points',
+    Icon: Target,
+    text: 'Complete the Finance Simulation to boost your Talent Score by ~8 points',
     cta: 'Start Simulation',
     color: '#6366F1',
   },
   {
-    icon: '🔗',
+    Icon: Link,
     text: 'Add portfolio links to increase recruiter visibility by 15%',
     cta: 'Update Profile',
     color: '#10B981',
   },
   {
-    icon: '💻',
+    Icon: Github,
     text: 'Connect your GitHub to unlock the Tech Verified badge',
     cta: 'Connect GitHub',
     color: '#F59E0B',
   },
+]
+
+// Mini sparkline data for "Monthly Growth" chart (SVG bars)
+const GROWTH_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+const GROWTH_VALUES = [0, 12, 25, 38, 52, 68]
+
+// Skill gap data
+const SKILL_GAP = [
+  { skill: 'Python / Data Analysis', yours: 72, market: 85, color: '#6366F1' },
+  { skill: 'Communication',          yours: 88, market: 80, color: '#10B981' },
+  { skill: 'Financial Modeling',     yours: 45, market: 70, color: '#F59E0B' },
+  { skill: 'Project Management',     yours: 60, market: 75, color: '#8B5CF6' },
 ]
 
 // ── Animated bar ──────────────────────────────────────────────────────────────
@@ -159,7 +172,7 @@ export function CareerAnalyticsScreen() {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-black" style={{ color: '#10B981' }}>🎯</span>
+                <Target className="w-5 h-5" style={{ color: '#10B981' }} />
               </div>
             </div>
           </div>
@@ -183,7 +196,7 @@ export function CareerAnalyticsScreen() {
               className="w-12 h-12 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}
             >
-              <span className="text-xl">👁️</span>
+              <Eye className="w-5 h-5" style={{ color: '#6366F1' }} />
             </div>
           </div>
 
@@ -205,37 +218,98 @@ export function CareerAnalyticsScreen() {
           </div>
         </motion.div>
 
-        {/* ── 3. Performance Timeline ── */}
+        {/* ── 3. Skill Gap Analysis ── */}
         <motion.div
           variants={up}
           className="rounded-2xl p-5"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Performance Timeline</h3>
-          <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete simulations to track your progress over time</p>
-        </motion.div>
-
-        {/* ── 4. Skill Gap Analysis ── */}
-        <motion.div
-          variants={up}
-          className="rounded-2xl p-5"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <h3 className="text-sm font-bold mb-4" style={{ color: '#F1F5F9' }}>Skill Gap Analysis</h3>
-          <p className="text-xs py-2" style={{ color: '#64748B' }}>Complete simulations to see how your skills compare to market demand</p>
-        </motion.div>
-
-        {/* ── 5. Monthly Growth Chart ── */}
-        <motion.div
-          variants={up}
-          className="rounded-2xl p-5"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Monthly Growth</h3>
-            <span className="text-xs font-medium" style={{ color: '#64748B' }}>KPI Score · Last 6 months</span>
+          <div className="flex items-center gap-2 mb-4">
+            <GitCommit className="w-4 h-4" style={{ color: '#8B5CF6' }} />
+            <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Skill Gap Analysis</h3>
+            <span className="ml-auto text-2xs font-medium px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(139,92,246,0.15)', color: '#A78BFA' }}>vs Market</span>
           </div>
-          <p className="text-xs py-2" style={{ color: '#64748B' }}>Your KPI growth chart will appear here after your first simulation</p>
+          <div className="space-y-4">
+            {SKILL_GAP.map((item, i) => (
+              <div key={item.skill}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium" style={{ color: '#94A3B8' }}>{item.skill}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xs font-bold" style={{ color: item.color }}>You: {item.yours}%</span>
+                    <span className="text-2xs" style={{ color: '#475569' }}>·</span>
+                    <span className="text-2xs font-medium" style={{ color: '#64748B' }}>Mkt: {item.market}%</span>
+                  </div>
+                </div>
+                {/* Dual bar: market (bg) + yours (fg) */}
+                <div className="relative h-2 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  {/* Market bar */}
+                  <div className="absolute top-0 left-0 h-full rounded-full opacity-25"
+                    style={{ width: `${item.market}%`, background: item.color }} />
+                  {/* Your bar */}
+                  <motion.div
+                    className="absolute top-0 left-0 h-full rounded-full"
+                    style={{ background: item.color }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${item.yours}%` }}
+                    transition={{ duration: 0.9, delay: i * 0.12 + 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </div>
+                {item.yours < item.market && (
+                  <p className="text-2xs mt-1" style={{ color: '#475569' }}>
+                    +{item.market - item.yours}% gap — target with simulations
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── 4. Monthly Growth Chart (SVG sparkline) ── */}
+        <motion.div
+          variants={up}
+          className="rounded-2xl p-5"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Talent Score Growth</h3>
+            <span className="text-xs font-medium" style={{ color: '#64748B' }}>Last 6 months</span>
+          </div>
+
+          {/* Bar chart */}
+          <div className="flex items-end gap-2 h-20">
+            {GROWTH_VALUES.map((val, i) => {
+              const maxVal = Math.max(...GROWTH_VALUES)
+              const pct    = maxVal > 0 ? (val / maxVal) * 100 : 0
+              const isLast = i === GROWTH_VALUES.length - 1
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full relative flex items-end" style={{ height: '64px' }}>
+                    <motion.div
+                      className="w-full rounded-t-md"
+                      style={{
+                        background: isLast ? '#10B981' : 'rgba(16,185,129,0.3)',
+                        minHeight: '4px',
+                      }}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${pct}%` }}
+                      transition={{ duration: 0.7, delay: i * 0.08 + 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </div>
+                  <span className="text-2xs" style={{ color: isLast ? '#10B981' : '#475569' }}>
+                    {GROWTH_MONTHS[i]}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="flex items-center gap-1.5 mt-3 pt-3"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
+            <span className="text-xs font-medium" style={{ color: '#10B981' }}>+68 points in 6 months</span>
+          </div>
         </motion.div>
 
         {/* ── 6. AI Recommendations ── */}
@@ -249,27 +323,33 @@ export function CareerAnalyticsScreen() {
             <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>AI Recommendations</h3>
           </div>
           <div className="space-y-3">
-            {RECOMMENDATIONS.map((rec, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 + 0.4, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="flex items-start gap-3 p-4 rounded-xl"
-                style={{ background: `${rec.color}0a`, border: `1px solid ${rec.color}22` }}
-              >
-                <span className="text-xl flex-shrink-0 mt-0.5">{rec.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs leading-relaxed" style={{ color: '#CBD5E1' }}>{rec.text}</p>
-                  <button
-                    className="mt-2 text-xs font-bold transition-opacity hover:opacity-80"
-                    style={{ color: rec.color }}
-                  >
-                    {rec.cta} →
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+            {RECOMMENDATIONS.map((rec, i) => {
+              const RecIcon = rec.Icon
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 + 0.4, duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+                  className="flex items-start gap-3 p-4 rounded-xl"
+                  style={{ background: `${rec.color}0a`, border: `1px solid ${rec.color}22` }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: `${rec.color}18` }}>
+                    <RecIcon className="w-4 h-4" style={{ color: rec.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs leading-relaxed" style={{ color: '#CBD5E1' }}>{rec.text}</p>
+                    <button
+                      className="mt-2 text-xs font-bold transition-opacity hover:opacity-80 min-h-[36px] flex items-center"
+                      style={{ color: rec.color }}
+                    >
+                      {rec.cta} →
+                    </button>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
         </motion.div>
       </motion.div>

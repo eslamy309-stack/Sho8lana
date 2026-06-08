@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, Search, Bookmark, BookmarkCheck, CheckCircle2,
   MapPin, Calendar, DollarSign, Briefcase, X,
+  Package, ClipboardList, BookOpen,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 
@@ -28,7 +29,8 @@ type FilterCategory = 'All' | 'Tech' | 'Marketing' | 'Finance' | 'Operations' | 
 
 interface Internship {
   id: number
-  logo: string
+  initials: string
+  color: string
   company: string
   title: string
   location: string
@@ -43,15 +45,82 @@ interface Internship {
 interface MockApplication {
   id: number
   company: string
-  logo: string
+  initials: string
+  color: string
   role: string
   appliedDate: string
   status: AppStatus
 }
 
-const INTERNSHIPS: Internship[] = []
+const INTERNSHIPS: Internship[] = [
+  {
+    id: 1, initials: 'VF', color: '#E60000',
+    company: 'Vodafone Egypt', title: 'Data Analytics Intern',
+    location: 'Cairo', salaryMin: 2500, salaryMax: 4000, match: 94,
+    skills: ['Python', 'SQL', 'Power BI'], deadline: 'Jun 30', category: 'Tech',
+  },
+  {
+    id: 2, initials: 'OT', color: '#FF6B35',
+    company: 'Orange Telecom', title: 'Software Engineering Intern',
+    location: 'Cairo', salaryMin: 3000, salaryMax: 5000, match: 89,
+    skills: ['React', 'Node.js', 'REST APIs'], deadline: 'Jul 15', category: 'Tech',
+  },
+  {
+    id: 3, initials: 'BM', color: '#0066CC',
+    company: 'Bank Misr', title: 'Financial Analyst Intern',
+    location: 'Cairo', salaryMin: 2000, salaryMax: 3500, match: 82,
+    skills: ['Excel', 'Financial Modeling', 'Bloomberg'], deadline: 'Jul 1', category: 'Finance',
+  },
+  {
+    id: 4, initials: 'OC', color: '#00B140',
+    company: 'OceanBlue Consulting', title: 'Strategy & Operations Intern',
+    location: 'Giza', salaryMin: 2500, salaryMax: 4000, match: 78,
+    skills: ['PowerPoint', 'Market Research', 'Data Analysis'], deadline: 'Jun 25', category: 'Consulting',
+  },
+  {
+    id: 5, initials: 'AM', color: '#9B59B6',
+    company: 'Aman Financial', title: 'Digital Marketing Intern',
+    location: 'Cairo', salaryMin: 1800, salaryMax: 3000, match: 75,
+    skills: ['Google Ads', 'Social Media', 'SEO'], deadline: 'Jul 20', category: 'Marketing',
+  },
+  {
+    id: 6, initials: 'SS', color: '#E74C3C',
+    company: 'Souq.com (Amazon)', title: 'Operations & Logistics Intern',
+    location: 'Cairo', salaryMin: 2200, salaryMax: 3800, match: 71,
+    skills: ['Supply Chain', 'Excel', 'ERP'], deadline: 'Jul 10', category: 'Operations',
+  },
+  {
+    id: 7, initials: 'EG', color: '#1ABC9C',
+    company: 'EGBank', title: 'Retail Banking Intern',
+    location: 'Alexandria', salaryMin: 1500, salaryMax: 2800, match: 68,
+    skills: ['Customer Service', 'Banking Operations', 'Finance'], deadline: 'Aug 1', category: 'Finance',
+  },
+  {
+    id: 8, initials: 'WP', color: '#F39C12',
+    company: 'WideBot (AI)', title: 'ML Engineering Intern',
+    location: 'Remote', salaryMin: 3500, salaryMax: 6000, match: 88,
+    skills: ['Python', 'TensorFlow', 'NLP'], deadline: 'Jun 28', category: 'Tech',
+  },
+  {
+    id: 9, initials: 'MK', color: '#2ECC71',
+    company: 'Mashreq Bank', title: 'Risk Management Intern',
+    location: 'Cairo', salaryMin: 2000, salaryMax: 3500, match: 65,
+    skills: ['Risk Analysis', 'Excel', 'Compliance'], deadline: 'Jul 5', category: 'Finance',
+  },
+  {
+    id: 10, initials: 'CM', color: '#E91E8C',
+    company: 'Careem', title: 'Product Management Intern',
+    location: 'Cairo', salaryMin: 4000, salaryMax: 6500, match: 91,
+    skills: ['Product Strategy', 'SQL', 'User Research'], deadline: 'Jun 22', category: 'Tech',
+  },
+]
 
-const MOCK_APPLICATIONS: MockApplication[] = []
+const MOCK_APPLICATIONS: MockApplication[] = [
+  { id: 1, initials: 'VF', color: '#E60000', company: 'Vodafone Egypt',       role: 'Data Analytics Intern',         appliedDate: 'Jun 2',  status: 'reviewing'  },
+  { id: 2, initials: 'CM', color: '#E91E8C', company: 'Careem',               role: 'Product Management Intern',     appliedDate: 'Jun 5',  status: 'interview'  },
+  { id: 3, initials: 'BM', color: '#0066CC', company: 'Bank Misr',            role: 'Financial Analyst Intern',      appliedDate: 'May 28', status: 'applied'    },
+  { id: 4, initials: 'WP', color: '#F39C12', company: 'WideBot (AI)',         role: 'ML Engineering Intern',         appliedDate: 'May 20', status: 'rejected'   },
+]
 
 const PIPELINE_STAGES: AppStatus[] = ['applied', 'reviewing', 'interview', 'offer']
 
@@ -96,10 +165,10 @@ function JobCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+            style={{ background: job.color }}
           >
-            {job.logo}
+            {job.initials}
           </div>
           <div>
             <p className="text-sm font-bold leading-tight" style={{ color: '#F1F5F9' }}>{job.title}</p>
@@ -178,7 +247,9 @@ function JobCard({
         <motion.button
           onClick={onSave}
           whileTap={{ scale: 0.9 }}
-          className="w-11 h-10 rounded-xl flex items-center justify-center transition-colors"
+          aria-label={isSaved ? 'Remove from saved' : 'Save internship'}
+          aria-pressed={isSaved}
+          className="w-11 h-11 rounded-xl flex items-center justify-center transition-colors"
           style={{
             background: isSaved ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.05)',
             border: isSaved ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.08)',
@@ -206,10 +277,10 @@ function ApplicationCard({ app }: { app: MockApplication }) {
     >
       <div className="flex items-center gap-3">
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.06)' }}
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+          style={{ background: app.color }}
         >
-          {app.logo}
+          {app.initials}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold truncate" style={{ color: '#F1F5F9' }}>{app.role}</p>
@@ -380,14 +451,13 @@ export function InternshipHubScreen() {
                   ))}
                 </AnimatePresence>
                 {filtered.length === 0 && (
-                  <div className="text-center py-16" style={{ color: '#64748B' }}>
-                    <p className="text-3xl mb-3">💼</p>
-                    <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>
-                      {INTERNSHIPS.length === 0 ? 'No internships yet' : 'No internships match your search'}
-                    </p>
-                    <p className="text-xs mt-1">
-                      {INTERNSHIPS.length === 0 ? 'Check back soon — companies are joining!' : 'Try a different search or filter'}
-                    </p>
+                  <div className="text-center py-16 flex flex-col items-center" style={{ color: '#64748B' }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                      style={{ background: 'rgba(16,185,129,0.1)' }}>
+                      <Briefcase className="w-6 h-6" style={{ color: '#10B981' }} />
+                    </div>
+                    <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>No internships match your search</p>
+                    <p className="text-xs mt-1">Try a different search or filter</p>
                   </div>
                 )}
               </motion.div>
@@ -408,8 +478,11 @@ export function InternshipHubScreen() {
                   <ApplicationCard key={app.id} app={app} />
                 ))}
                 {MOCK_APPLICATIONS.length === 0 && (
-                  <div className="text-center py-16" style={{ color: '#64748B' }}>
-                    <p className="text-3xl mb-3">📋</p>
+                  <div className="text-center py-16 flex flex-col items-center" style={{ color: '#64748B' }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                      style={{ background: 'rgba(99,102,241,0.1)' }}>
+                      <ClipboardList className="w-6 h-6" style={{ color: '#6366F1' }} />
+                    </div>
                     <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>No applications yet</p>
                     <p className="text-xs mt-1">Apply to internships to track them here</p>
                   </div>
@@ -428,8 +501,11 @@ export function InternshipHubScreen() {
               transition={{ duration: 0.2 }}
             >
               {savedJobs.length === 0 ? (
-                <div className="text-center py-16" style={{ color: '#64748B' }}>
-                  <p className="text-3xl mb-3">🔖</p>
+                <div className="text-center py-16 flex flex-col items-center" style={{ color: '#64748B' }}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                    style={{ background: 'rgba(99,102,241,0.1)' }}>
+                    <BookOpen className="w-6 h-6" style={{ color: '#6366F1' }} />
+                  </div>
                   <p className="text-sm font-medium">No saved internships yet</p>
                   <p className="text-xs mt-1">Tap the bookmark icon on any listing</p>
                 </div>
@@ -444,10 +520,10 @@ export function InternshipHubScreen() {
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                          style={{ background: 'rgba(255,255,255,0.06)' }}
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                          style={{ background: job.color }}
                         >
-                          {job.logo}
+                          {job.initials}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold truncate" style={{ color: '#F1F5F9' }}>{job.title}</p>

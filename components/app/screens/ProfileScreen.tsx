@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, FileText, CheckCircle2, Edit3, Flame, Star,
   GraduationCap, MapPin, Upload, RefreshCw, X, AlertCircle,
-  Loader2, Lock, ShieldCheck, ChevronRight,
+  Loader2, Lock, ShieldCheck, ChevronRight, User,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { useDocumentUpload } from '@/lib/useDocumentUpload'
@@ -114,10 +114,10 @@ function DocCard({
           failed && 'bg-red-100',
           !uploaded && !isUploading && !failed && 'bg-neutral-100',
         )}>
-          {uploaded && <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600" />}
-          {isUploading && <Loader2 className="w-4.5 h-4.5 text-brand-600 animate-spin" />}
-          {failed && <AlertCircle className="w-4.5 h-4.5 text-red-500" />}
-          {!uploaded && !isUploading && !failed && <FileText className="w-4.5 h-4.5 text-neutral-400" />}
+          {uploaded && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+          {isUploading && <Loader2 className="w-5 h-5 text-brand-600 animate-spin" />}
+          {failed && <AlertCircle className="w-5 h-5 text-red-500" />}
+          {!uploaded && !isUploading && !failed && <FileText className="w-5 h-5 text-neutral-400" />}
         </div>
 
         {/* Content */}
@@ -296,8 +296,11 @@ export function ProfileScreen() {
         >
           <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
           <div className="relative">
-            <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center text-3xl mb-3">
-              {user.name ? user.name[0].toUpperCase() : '👤'}
+            <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center mb-3">
+              {user.name
+                ? <span className="text-2xl font-bold text-white">{user.name[0].toUpperCase()}</span>
+                : <User className="w-7 h-7 text-white/70" />
+              }
             </div>
             <h3 className="text-lg font-extrabold">
               {user.name || (ar ? 'طالب' : 'Student')}

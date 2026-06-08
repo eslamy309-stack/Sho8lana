@@ -6,6 +6,7 @@ import {
   Users, FlaskConical, TrendingUp, Award, Search,
   BarChart2, GitBranch, Plus, Bell, ChevronRight,
   CheckCircle, Clock, Star, Zap, ArrowUpRight, Brain,
+  Send, Eye, FileText, CircleCheck, CircleX,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { TALENT_POOL, PIPELINE, CAMPAIGNS, HR_ANALYTICS, RECRUITER_ACTIVITY, TIER_COLORS } from '@/lib/hr-data'
@@ -16,13 +17,13 @@ const up = {
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: i * 0.06 } }),
 }
 
-const ACTIVITY_ICONS: Record<string, { icon: string; color: string }> = {
-  invited:     { icon: '📨', color: '#3B82F6' },
-  shortlisted: { icon: '⭐', color: '#F59E0B' },
-  viewed:      { icon: '👁️', color: '#8B5CF6' },
-  note:        { icon: '📝', color: '#6B7280' },
-  hired:       { icon: '✅', color: '#10B981' },
-  rejected:    { icon: '❌', color: '#EF4444' },
+const ACTIVITY_ICONS: Record<string, { Icon: React.ElementType; color: string }> = {
+  invited:     { Icon: Send,        color: '#3B82F6' },
+  shortlisted: { Icon: Star,        color: '#F59E0B' },
+  viewed:      { Icon: Eye,         color: '#8B5CF6' },
+  note:        { Icon: FileText,    color: '#6B7280' },
+  hired:       { Icon: CircleCheck, color: '#10B981' },
+  rejected:    { Icon: CircleX,     color: '#EF4444' },
 }
 
 function talentScoreColor(score: number) {
@@ -41,7 +42,7 @@ function StatCard({ icon: Icon, label, value, sub, color, delay }: {
     >
       <div className="flex items-start justify-between mb-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${color}18` }}>
-          <Icon className="w-4.5 h-4.5" style={{ color }} />
+          <Icon className="w-5 h-5" style={{ color }} />
         </div>
         <ArrowUpRight className="w-3.5 h-3.5 text-neutral-300" />
       </div>
@@ -104,9 +105,10 @@ export function HRDashboardScreen() {
           <div className="relative">
             <motion.button
               whileTap={{ scale: 0.9 }}
-              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"
+              aria-label="Notifications"
+              className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center"
             >
-              <Bell className="w-4 h-4 text-white" />
+              <Bell className="w-5 h-5 text-white" />
             </motion.button>
             {notifCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
@@ -150,7 +152,7 @@ export function HRDashboardScreen() {
           className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 flex items-start gap-3"
         >
           <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
-            <Brain className="w-4.5 h-4.5 text-white" />
+            <Brain className="w-5 h-5 text-white" />
           </div>
           <div>
             <p className="text-sm font-bold text-indigo-900">Talent Score</p>
@@ -167,7 +169,7 @@ export function HRDashboardScreen() {
             {[
               { icon: Search,    label: 'Search',      screen: 'talentMarketplace',   color: '#6366F1' },
               { icon: GitBranch, label: 'Pipeline',    screen: 'recruitmentPipeline', color: '#F59E0B' },
-              { icon: BarChart2, label: 'Analytics',   screen: 'hrAnalytics',         color: '#10B981' },
+              { icon: BarChart2, label: 'Analytics',   screen: 'candidateIntelligence', color: '#10B981' },
               { icon: FlaskConical, label: 'Add Sim',   screen: 'simulationUploadHub', color: '#8B5CF6' },
             ].map(({ icon: Icon, label, screen, color }) => (
               <motion.button
@@ -309,10 +311,14 @@ export function HRDashboardScreen() {
           </div>
           <div className="divide-y divide-neutral-50">
             {recentActivity.map(act => {
-              const meta = ACTIVITY_ICONS[act.type]
+              const meta = ACTIVITY_ICONS[act.type] ?? ACTIVITY_ICONS.note
+              const ActIcon = meta.Icon
               return (
                 <div key={act.id} className="flex items-start gap-3 px-4 py-3">
-                  <span className="text-base shrink-0 mt-0.5">{meta.icon}</span>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ background: `${meta.color}18` }}>
+                    <ActIcon className="w-3.5 h-3.5" style={{ color: meta.color }} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-neutral-900">{act.candidateName}</p>
                     <p className="text-[10px] text-neutral-500 mt-0.5 leading-relaxed">{act.message}</p>
