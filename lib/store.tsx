@@ -15,6 +15,7 @@ interface AppState {
   user: UserProfile
   applications: Application[]
   simDone: string[]
+  forageDone: string[]
   simXP: number
   simBadges: Badge[]
   chat: ChatMessage[]
@@ -75,6 +76,7 @@ type Action =
   | { type: 'SET_ANSWER'; step: number; answer: string | string[] }
   | { type: 'TOGGLE_MULTI'; step: number; option: string }
   | { type: 'COMPLETE_TASK' }
+  | { type: 'AWARD_FORAGE'; programId: string; xp: number; badgeLabel: string; trackId: string }
   | { type: 'SET_SIM_FEEDBACK'; feedback: string | null }
   | { type: 'SET_SIM_FEEDBACK_LOADING'; loading: boolean }
   | { type: 'TOGGLE_HINT' }
@@ -132,6 +134,7 @@ function getInitialState(): AppState {
     user: loadFromStorage('sho8_user', defaultUser),
     applications: loadFromStorage('sho8_apps', []),
     simDone: loadFromStorage('sho8_sim_done', []),
+    forageDone: loadFromStorage<string[]>('sho8_forage_done', []),
     simXP: loadFromStorage('sho8_xp', 0),
     simBadges: loadFromStorage('sho8_badges', []),
     chat: [],
@@ -318,6 +321,17 @@ function reducer(state: AppState, action: Action): AppState {
       }
     }
 
+    case 'AWARD_FORAGE': {
+      if (state.forageDone.includes(action.programId)) return state
+      const badge: Badge = { id: `forage_${action.programId}`, label: action.badgeLabel, trackId: action.trackId }
+      return {
+        ...state,
+        simXP: state.simXP + action.xp,
+        simBadges: [...state.simBadges, badge],
+        forageDone: [...state.forageDone, action.programId],
+      }
+    }
+
     case 'SET_SIM_FEEDBACK':
       return { ...state, simFeedback: action.feedback }
 
@@ -420,6 +434,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sho8_user', JSON.stringify(state.user))
     localStorage.setItem('sho8_apps', JSON.stringify(state.applications))
     localStorage.setItem('sho8_sim_done', JSON.stringify(state.simDone))
+    localStorage.setItem('sho8_forage_done', JSON.stringify(state.forageDone))
     localStorage.setItem('sho8_xp', JSON.stringify(state.simXP))
     localStorage.setItem('sho8_badges', JSON.stringify(state.simBadges))
     localStorage.setItem('sho8_saved', JSON.stringify(state.savedJobs))
@@ -429,7 +444,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       Object.entries(state.documentFiles).map(([k, v]) => [k, { ...v, url: undefined }])
     )
     localStorage.setItem('sho8_doc_meta', JSON.stringify(docMeta))
-  }, [state.user, state.applications, state.simDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles, state.notifications])
+  }, [state.user, state.applications, state.simDone, state.forageDone, state.simXP, state.simBadges, state.savedJobs, state.documentFiles, state.notifications])
 
   // ── Load job local_id → UUID map on mount (public, no auth needed) ─────────
   useEffect(() => {

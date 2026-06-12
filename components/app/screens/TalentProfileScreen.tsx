@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, Edit3, Share2, MapPin, GraduationCap, Calendar,
   Github, Globe, Plus, Award, CheckCircle2, Eye, EyeOff,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
+import { getActivity, type ForageAttempt } from '@/lib/forage-tracking'
 
 // ── Animation variants ────────────────────────────────────────────────────────
 
@@ -62,6 +63,58 @@ function AnimatedBar({ value, color, delay = 0 }: { value: number; color: string
         transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
       />
     </div>
+  )
+}
+
+// ── Forage experience (completed simulations) ──────────────────────────────────
+
+function ForageExperience() {
+  const [sims, setSims] = useState<ForageAttempt[]>([])
+  useEffect(() => {
+    let cancelled = false
+    getActivity()
+      .then(({ attempts }) => {
+        if (cancelled) return
+        setSims(
+          attempts
+            .filter(a => a.status === 'completed')
+            .sort((a, b) => +new Date(b.completed_at ?? b.last_activity_at) - +new Date(a.completed_at ?? a.last_activity_at)),
+        )
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  if (sims.length === 0) return null
+
+  return (
+    <motion.div variants={up} className="rounded-2xl p-5"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="flex items-center gap-2 mb-4">
+        <Globe className="w-4 h-4" style={{ color: '#3B82F6' }} />
+        <h3 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>Forage Experience</h3>
+        <span className="text-xs" style={{ color: '#64748B' }}>{sims.length} completed</span>
+      </div>
+      <div className="space-y-2.5">
+        {sims.map(s => (
+          <div key={s.attempt_token} className="flex items-center gap-3 rounded-xl p-3"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate" style={{ color: '#F1F5F9' }}>{s.title}</p>
+              <p className="text-[11px]" style={{ color: '#64748B' }}>
+                {s.company}{s.completed_at ? ` · ${new Date(s.completed_at).toLocaleDateString('en-GB')}` : ''}
+              </p>
+            </div>
+            {s.score != null && <span className="text-xs font-bold" style={{ color: '#3B82F6' }}>{s.score}%</span>}
+            {s.certificate_verified
+              ? <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{ background: 'rgba(16,185,129,0.12)', color: '#10B981' }}><CheckCircle2 className="w-3 h-3" /> Verified</span>
+              : <span className="text-[10px] font-semibold px-2 py-1 rounded-full"
+                  style={{ background: 'rgba(148,163,184,0.12)', color: '#94A3B8' }}>Completed</span>}
+          </div>
+        ))}
+      </div>
+    </motion.div>
   )
 }
 
@@ -293,6 +346,9 @@ export function TalentProfileScreen() {
             )}
           </div>
         </motion.div>
+
+        {/* ── Forage Experience ── */}
+        <ForageExperience />
 
         {/* ── Simulation History ── */}
         <motion.div

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Search, Globe, Wifi, MapPin, Star, Zap, Map, Bookmark,
   BookmarkCheck, Building2, ExternalLink, ChevronRight, ChevronLeft,
-  TrendingUp, Briefcase, BarChart2, Send, Check, Loader2, MessageCircle,
+  TrendingUp, Briefcase, BarChart2, Send, Check, Loader2, MessageCircle, PlayCircle,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { COMPANIES, JOBS, SOURCE_CONFIG } from '@/lib/data'
@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Job, LiveJob } from '@/lib/types'
 import { fetchLiveJobs, getWuzzufMockJobs, formatTimeAgo } from '@/lib/api'
+import { getActivity, type ForageAttempt } from '@/lib/forage-tracking'
 
 interface DbJob {
   id: string
@@ -179,6 +180,63 @@ function FeaturedCard({ job }: { job: Job }) {
         </span>
       </div>
       <p className="text-2xs text-neutral-400 mt-2">{job.applicants} {ar ? 'متقدم' : 'applicants'} · {job.postedAgo}</p>
+    </motion.button>
+  )
+}
+
+/** Surfaces the user's most recent in-progress Forage simulation so they can jump
+ *  back in. Renders nothing if the user is logged out or has no open attempt. */
+function ForageResumeCard() {
+  const { state, dispatch } = useApp()
+  const ar = state.lang === 'ar'
+  const [attempt, setAttempt] = useState<ForageAttempt | null>(null)
+
+  useEffect(() => {
+    if (!state.user.supabaseId) { setAttempt(null); return }
+    let cancelled = false
+    getActivity()
+      .then(({ attempts }) => {
+        if (cancelled) return
+        const open = attempts
+          .filter(a => a.status === 'launched' || a.status === 'in_progress')
+          .sort((a, b) => +new Date(b.last_activity_at) - +new Date(a.last_activity_at))[0]
+        setAttempt(open ?? null)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [state.user.supabaseId])
+
+  if (!attempt) return null
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={() => dispatch({ type: 'GO', screen: 'forageHub' })}
+      className="w-full rounded-2xl p-4 text-left relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%)' }}
+    >
+      <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-15"
+           style={{ background: 'radial-gradient(circle,#60A5FA,transparent 70%)' }} />
+      <div className="flex items-center gap-3 relative z-10">
+        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-5 h-5 text-blue-300" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-semibold text-blue-300/80 uppercase tracking-wider">
+            {ar ? 'تابع محاكاة Forage' : 'Continue your Forage simulation'}
+          </p>
+          <p className="text-sm font-bold text-white truncate">{attempt.title}</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="h-1.5 flex-1 rounded-full bg-white/15 overflow-hidden">
+              <div className="h-full rounded-full bg-blue-400" style={{ width: `${attempt.progress_pct}%` }} />
+            </div>
+            <span className="text-[10px] text-white/60 tabular-nums">{attempt.progress_pct}%</span>
+          </div>
+        </div>
+        {ar ? <ChevronLeft className="w-4 h-4 text-white/50 flex-shrink-0" />
+            : <ChevronRight className="w-4 h-4 text-white/50 flex-shrink-0" />}
+      </div>
     </motion.button>
   )
 }
@@ -425,6 +483,9 @@ export function HomeScreen() {
             </div>
           ))}
         </div>
+
+        {/* Continue your Forage simulation (only if an open attempt exists) */}
+        <ForageResumeCard />
 
         {/* Source tabs */}
         <div className="flex gap-1 bg-neutral-100 rounded-xl p-1">

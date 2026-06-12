@@ -40,6 +40,7 @@ import {
   BarChart2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import ForageActivityPanel from '@/components/admin/ForageActivityPanel'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1864,6 +1865,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'companies',    label: 'Companies',         icon: Building2 },
   { id: 'applications', label: 'Applications',      icon: ScrollText },
   { id: 'simulations',  label: 'Simulations',       icon: FlaskConical },
+  { id: 'forage',       label: 'Forage Activity',   icon: ExternalLink },
   { id: 'payments',     label: 'Payments',          icon: CreditCard },
   { id: 'audit',        label: 'Audit Log',         icon: ScrollText },
   { id: 'support',      label: 'Support',           icon: Headphones },
@@ -2003,6 +2005,7 @@ export default function AdminPage() {
       case 'companies':    return <CompaniesView />
       case 'applications': return <ApplicationsView />
       case 'simulations':  return <SimulationsView />
+      case 'forage':      return <ForageActivityPanel />
       case 'payments':    return <PaymentsView />
       case 'audit':       return <AuditLogView />
       case 'support':     return <SupportView />
