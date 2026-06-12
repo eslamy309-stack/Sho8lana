@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, SlidersHorizontal, Star, MapPin, GraduationCap,
-  ChevronLeft, UserPlus, Eye, Zap, X,
+  ChevronLeft, UserPlus, Eye, Zap, X, ShieldCheck, Globe, Loader2,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { TALENT_POOL, TIER_COLORS, TIER_LABELS } from '@/lib/hr-data'
 import type { TalentCandidate, HRTier } from '@/lib/hr-types'
 import { cn } from '@/lib/utils'
+import { getForageCandidates, type ForageCandidate } from '@/lib/forage-tracking'
+import { FORAGE_PROGRAMS } from '@/lib/forage-programs'
 
 const up = {
   hidden:  { opacity: 0, y: 10 },
@@ -147,6 +149,50 @@ function CandidateCard({ candidate, onView, onAdd, delay }: {
   )
 }
 
+function initials(name: string): string {
+  return name.split(' ').map(w => w[0]).filter(Boolean).join('').slice(0, 2).toUpperCase() || 'C'
+}
+
+/** Candidate card for the real Forage-verified talent source. */
+function ForageCandidateCard({ c, delay }: { c: ForageCandidate; delay: number }) {
+  return (
+    <motion.div variants={up} custom={delay}
+      className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shrink-0">
+          <span className="text-white text-xs font-bold">{initials(c.name)}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-neutral-900 truncate">{c.name}</p>
+          <p className="text-[10px] text-neutral-500 mt-0.5 truncate">
+            {[c.major, c.university].filter(Boolean).join(' · ') || 'Candidate'}
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          {c.verifiedCount > 0 && (
+            <span className="flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(16,185,129,0.12)', color: '#10B981' }}>
+              <ShieldCheck className="w-3 h-3" /> {c.verifiedCount} verified
+            </span>
+          )}
+          <span className="text-[9px] text-neutral-400">{c.completionCount} sim{c.completionCount !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {c.completions.slice(0, 4).map((s, i) => (
+          <div key={i} className="flex items-center gap-2 text-[11px]">
+            <Globe className="w-3 h-3 text-blue-500 shrink-0" />
+            <span className="text-neutral-700 truncate flex-1">{s.title} <span className="text-neutral-400">· {s.company}</span></span>
+            {s.score != null && <span className="text-neutral-500">{s.score}%</span>}
+            {s.certificate_verified && <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />}
+          </div>
+        ))}
+        {c.completions.length > 4 && <p className="text-[10px] text-neutral-400">+{c.completions.length - 4} more</p>}
+      </div>
+    </motion.div>
+  )
+}
+
 export function TalentMarketplaceScreen() {
   const { dispatch } = useApp()
   const [query, setQuery]         = useState('')
@@ -156,6 +202,40 @@ export function TalentMarketplaceScreen() {
   const [minScore, setMinScore]   = useState(0)
   const [showFilters, setFilters] = useState(false)
   const [addedId, setAddedId]     = useState<string | null>(null)
+
+  // ── Forage-verified talent (real data source) ──────────────────────────────
+  const [forageMode, setForageMode]               = useState(false)
+  const [forageProgram, setForageProgram]         = useState('all')
+  const [forageVerifiedOnly, setForageVerifiedOnly] = useState(false)
+  const [forageCandidates, setForageCandidates]   = useState<ForageCandidate[]>([])
+  const [forageLoading, setForageLoading]         = useState(false)
+  const [forageError, setForageError]             = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!forageMode) return
+    let cancelled = false
+    setForageLoading(true); setForageError(null)
+    getForageCandidates({ program: forageProgram, verifiedOnly: forageVerifiedOnly })
+      .then(({ candidates, error }) => {
+        if (cancelled) return
+        if (error === 'unauthorized') setForageError('Sign in as a recruiter to view Forage-verified candidates.')
+        else if (error) setForageError('Could not load candidates right now.')
+        setForageCandidates(candidates)
+      })
+      .finally(() => { if (!cancelled) setForageLoading(false) })
+    return () => { cancelled = true }
+  }, [forageMode, forageProgram, forageVerifiedOnly])
+
+  const forageFiltered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return forageCandidates
+    return forageCandidates.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.university.toLowerCase().includes(q) ||
+      c.major.toLowerCase().includes(q) ||
+      c.completions.some(s => s.title.toLowerCase().includes(q) || s.company.toLowerCase().includes(q)),
+    )
+  }, [forageCandidates, query])
 
   const filtered = useMemo(() => {
     let list = [...TALENT_POOL]
@@ -222,6 +302,42 @@ export function TalentMarketplaceScreen() {
             <button onClick={() => setQuery('')}>
               <X className="w-3.5 h-3.5 text-neutral-400" />
             </button>
+          )}
+        </div>
+
+        {/* Forage-verified talent source */}
+        <div className="mt-2.5">
+          <button
+            onClick={() => setForageMode(m => !m)}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors',
+              forageMode ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-neutral-600 border-neutral-200',
+            )}
+          >
+            <Globe className="w-4 h-4" />
+            Forage-verified talent
+            {forageMode && <span className="ml-auto text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">ON</span>}
+          </button>
+          {forageMode && (
+            <div className="mt-2 flex items-center gap-2">
+              <select
+                value={forageProgram}
+                onChange={e => setForageProgram(e.target.value)}
+                className="flex-1 min-w-0 bg-neutral-100 rounded-lg px-2.5 py-2 text-[11px] text-neutral-700 outline-none"
+              >
+                <option value="all">All simulations</option>
+                {FORAGE_PROGRAMS.map(p => <option key={p.id} value={p.id}>{p.company} · {p.title}</option>)}
+              </select>
+              <button
+                onClick={() => setForageVerifiedOnly(v => !v)}
+                className={cn(
+                  'shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-lg text-[11px] font-semibold border transition-colors',
+                  forageVerifiedOnly ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-neutral-600 border-neutral-200',
+                )}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" /> Verified only
+              </button>
+            </div>
           )}
         </div>
 
@@ -292,42 +408,76 @@ export function TalentMarketplaceScreen() {
 
       {/* ── Results ── */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-xs font-semibold text-neutral-700">
-              {filtered.length} candidate{filtered.length !== 1 ? 's' : ''} found
-            </p>
-            <p className="text-[10px] text-neutral-400">Sorted by Talent Score</p>
-          </div>
-          {(track !== 'All' || tier !== 'All' || query || minScore > 0) && (
-            <button
-              onClick={() => { setQuery(''); setTrack('All'); setTier('All'); setMinScore(0) }}
-              className="text-[11px] text-red-500 font-semibold"
-            >Clear filters</button>
-          )}
-        </div>
-
-        <motion.div initial="hidden" animate="visible" className="space-y-3 pb-4">
-          {filtered.length === 0 ? (
-            <div className="text-center py-16 flex flex-col items-center">
-              <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
-                <Search className="w-6 h-6 text-neutral-400" />
+        {forageMode ? (
+          <>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold text-neutral-700">
+                  {forageLoading ? 'Loading…' : `${forageFiltered.length} Forage-verified candidate${forageFiltered.length !== 1 ? 's' : ''}`}
+                </p>
+                <p className="text-[10px] text-neutral-400">Ranked by verified completions</p>
               </div>
-              <p className="text-sm font-semibold text-neutral-700">No candidates found</p>
-              <p className="text-xs text-neutral-400 mt-1">Try adjusting your filters</p>
             </div>
-          ) : (
-            filtered.map((c, i) => (
-              <CandidateCard
-                key={c.id}
-                candidate={c}
-                delay={i}
-                onView={() => dispatch({ type: 'GO', screen: 'candidateIntelligence' as never })}
-                onAdd={handleAdd}
-              />
-            ))
-          )}
-        </motion.div>
+            {forageError ? (
+              <div className="text-center py-16">
+                <p className="text-sm font-semibold text-neutral-700">{forageError}</p>
+              </div>
+            ) : forageLoading ? (
+              <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>
+            ) : forageFiltered.length === 0 ? (
+              <div className="text-center py-16 flex flex-col items-center">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
+                  <Globe className="w-6 h-6 text-neutral-400" />
+                </div>
+                <p className="text-sm font-semibold text-neutral-700">No matching candidates yet</p>
+                <p className="text-xs text-neutral-400 mt-1">As students complete Forage simulations they&apos;ll appear here</p>
+              </div>
+            ) : (
+              <motion.div initial="hidden" animate="visible" className="space-y-3 pb-4">
+                {forageFiltered.map((c, i) => <ForageCandidateCard key={c.userId} c={c} delay={i} />)}
+              </motion.div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold text-neutral-700">
+                  {filtered.length} candidate{filtered.length !== 1 ? 's' : ''} found
+                </p>
+                <p className="text-[10px] text-neutral-400">Sorted by Talent Score</p>
+              </div>
+              {(track !== 'All' || tier !== 'All' || query || minScore > 0) && (
+                <button
+                  onClick={() => { setQuery(''); setTrack('All'); setTier('All'); setMinScore(0) }}
+                  className="text-[11px] text-red-500 font-semibold"
+                >Clear filters</button>
+              )}
+            </div>
+
+            <motion.div initial="hidden" animate="visible" className="space-y-3 pb-4">
+              {filtered.length === 0 ? (
+                <div className="text-center py-16 flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
+                    <Search className="w-6 h-6 text-neutral-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-neutral-700">No candidates found</p>
+                  <p className="text-xs text-neutral-400 mt-1">Try the Forage-verified filter above, or adjust filters</p>
+                </div>
+              ) : (
+                filtered.map((c, i) => (
+                  <CandidateCard
+                    key={c.id}
+                    candidate={c}
+                    delay={i}
+                    onView={() => dispatch({ type: 'GO', screen: 'candidateIntelligence' as never })}
+                    onAdd={handleAdd}
+                  />
+                ))
+              )}
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* ── Toast ── */}

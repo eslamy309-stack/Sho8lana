@@ -143,3 +143,35 @@ export async function getActivity(): Promise<{ attempts: ForageAttempt[] }> {
   if (!res.ok) return { attempts: [] }
   return res.json()
 }
+
+// ── Recruiter: candidates who completed Forage simulations ────────────────────
+
+export interface ForageCandidate {
+  userId: string
+  name: string
+  university: string
+  major: string
+  kpiScore: number
+  verifiedCount: number
+  completionCount: number
+  completions: {
+    program_id: string
+    company: string
+    title: string
+    score: number | null
+    certificate_verified: boolean
+    completed_at: string | null
+  }[]
+}
+
+export async function getForageCandidates(
+  opts: { program?: string; verifiedOnly?: boolean } = {},
+): Promise<{ candidates: ForageCandidate[]; error?: string }> {
+  const params = new URLSearchParams()
+  if (opts.program && opts.program !== 'all') params.set('program', opts.program)
+  if (opts.verifiedOnly) params.set('verifiedOnly', 'true')
+  const res = await fetch(`/api/forage/candidates?${params.toString()}`, { headers: await authHeaders() })
+  if (res.status === 401) return { candidates: [], error: 'unauthorized' }
+  if (!res.ok) return { candidates: [], error: `failed_${res.status}` }
+  return res.json()
+}
