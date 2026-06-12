@@ -204,7 +204,14 @@ export function TalentMarketplaceScreen() {
   const [addedId, setAddedId]     = useState<string | null>(null)
 
   // ── Forage-verified talent (real data source) ──────────────────────────────
-  const [forageMode, setForageMode]               = useState(false)
+  // Deep-link: the recruitment pipeline can open this screen straight into Forage mode.
+  const [forageMode, setForageMode] = useState(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('sho8_forage_recruit') === '1') {
+      sessionStorage.removeItem('sho8_forage_recruit')
+      return true
+    }
+    return false
+  })
   const [forageProgram, setForageProgram]         = useState('all')
   const [forageVerifiedOnly, setForageVerifiedOnly] = useState(false)
   const [forageCandidates, setForageCandidates]   = useState<ForageCandidate[]>([])

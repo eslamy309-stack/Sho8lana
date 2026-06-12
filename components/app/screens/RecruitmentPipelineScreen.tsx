@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, ChevronRight, Star, Clock,
-  MessageSquare, Plus, MoreHorizontal, Check, X,
+  MessageSquare, Plus, MoreHorizontal, Check, X, Globe,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { PIPELINE, TIER_COLORS, STAGE_COLORS, STAGE_LABELS } from '@/lib/hr-data'
 import type { PipelineCandidate, PipelineStage } from '@/lib/hr-types'
 import { cn } from '@/lib/utils'
+import { getForageCandidates } from '@/lib/forage-tracking'
 
 const STAGES: PipelineStage[] = ['sourced', 'screening', 'assessment', 'interview', 'offer', 'hired']
 
@@ -155,6 +156,27 @@ export function RecruitmentPipelineScreen() {
   const [items, setItems]         = useState<PipelineCandidate[]>(PIPELINE)
   const [activeStage, setActive]  = useState<PipelineStage>('interview')
 
+  // Live Forage-verified talent-pool counts (real data)
+  const [forage, setForage] = useState<{ total: number; verified: number } | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    getForageCandidates({})
+      .then(({ candidates }) => {
+        if (cancelled) return
+        setForage({
+          total: candidates.length,
+          verified: candidates.filter(c => c.verifiedCount > 0).length,
+        })
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  const openForageTalent = () => {
+    if (typeof window !== 'undefined') sessionStorage.setItem('sho8_forage_recruit', '1')
+    dispatch({ type: 'GO', screen: 'talentMarketplace' })
+  }
+
   function moveCandidate(id: string, direction: 'forward' | 'back') {
     setItems(prev => prev.map(item => {
       if (item.id !== id) return item
@@ -224,6 +246,29 @@ export function RecruitmentPipelineScreen() {
           })}
         </div>
       </div>
+
+      {/* ── Forage-verified talent pool ── */}
+      {forage && forage.total > 0 && (
+        <div className="px-4 pt-3 shrink-0">
+          <button
+            onClick={openForageTalent}
+            className="w-full flex items-center gap-3 rounded-2xl p-3 text-left text-white"
+            style={{ background: 'linear-gradient(135deg,#0F172A,#1E3A5F)' }}
+          >
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <Globe className="w-4 h-4 text-blue-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-blue-300/80 uppercase tracking-wider">Forage-verified talent pool</p>
+              <p className="text-sm font-bold">
+                {forage.total} candidate{forage.total !== 1 ? 's' : ''}
+                {forage.verified > 0 && <span className="text-white/60 font-medium"> · {forage.verified} certificate-verified</span>}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/50 shrink-0" />
+          </button>
+        </div>
+      )}
 
       {/* ── Stage indicator ── */}
       <div className="px-4 pt-3 pb-1 shrink-0">
